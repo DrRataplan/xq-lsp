@@ -109,9 +109,18 @@ function findPrecedingDoc(comments: Terminal[], text: string, offset: number): D
 
 // ── Extract from valid AST ───────────────────────────────────────────────────
 
+function sequenceTypeText(text: string, node: Node): string | undefined {
+  if (node.start === undefined || node.end === null) return undefined;
+  return text.slice(node.start, node.end ?? undefined).trim() || undefined;
+}
+
 function extractFunctions(ast: Node, sourceUri: string, comments: Terminal[], text: string): FunctionSymbol[] {
   const results: FunctionSymbol[] = [];
-  for (const decl of findAll(ast, "FunctionDecl")) {
+  // Use AnnotatedDecl (starts at 'declare') so the comment lookup clears the 'declare' keyword
+  for (const annotated of findAll(ast, "AnnotatedDecl")) {
+    const decl = directChildOf(annotated, "FunctionDecl");
+    if (!decl) continue;
+
     const eqname = directChildOf(decl, "EQName");
     const name = eqname ? firstTerminalValue(eqname) : null;
     if (!name) continue;
@@ -120,7 +129,7 @@ function extractFunctions(ast: Node, sourceUri: string, comments: Terminal[], te
     const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : "";
     const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
 
-    const doc = findPrecedingDoc(comments, text, decl.start);
+    const doc = findPrecedingDoc(comments, text, annotated.start);
 
     const params: ParamInfo[] = [];
     const paramList = directChildOf(decl, "ParamList");
@@ -130,9 +139,8 @@ function extractFunctions(ast: Node, sourceUri: string, comments: Terminal[], te
         const paramName = paramEqname ? firstTerminalValue(paramEqname) : null;
         if (!paramName) continue;
         const typeDecl = directChildOf(param, "TypeDeclaration");
-        const paramType = typeDecl
-          ? (firstTerminalValue(typeDecl) ?? undefined)
-          : undefined;
+        const seqTypeNode = typeDecl && directChildOf(typeDecl, "SequenceType");
+        const paramType = seqTypeNode ? sequenceTypeText(text, seqTypeNode) : undefined;
         params.push({
           name: paramName,
           type: paramType,
@@ -141,11 +149,9 @@ function extractFunctions(ast: Node, sourceUri: string, comments: Terminal[], te
       }
     }
 
-    // Return type: 'as' followed by SequenceType
+    // Return type: 'as' followed by SequenceType (direct child of FunctionDecl)
     const seqType = directChildOf(decl, "SequenceType");
-    const returnType = seqType
-      ? (firstTerminalValue(seqType) ?? undefined)
-      : undefined;
+    const returnType = seqType ? sequenceTypeText(text, seqType) : undefined;
 
     results.push({
       name,
@@ -156,7 +162,7 @@ function extractFunctions(ast: Node, sourceUri: string, comments: Terminal[], te
       returnType,
       doc,
       sourceUri,
-      sourceOffset: decl.start,
+      sourceOffset: annotated.start,
     });
   }
   return results;

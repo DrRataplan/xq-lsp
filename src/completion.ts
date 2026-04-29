@@ -156,6 +156,19 @@ export function getCompletions(
       }
     }
 
+    // Functions from pre-injected analyses (e.g. builtins) matching the prefix
+    for (const analysis of importedAnalyses.values()) {
+      for (const fn of analysis.functions) {
+        if (fn.prefix !== nsPrefix) continue;
+        const item = buildFunctionItem(fn, token.prefix, snippets);
+        if (item) {
+          item.label = fn.localName;
+          item.insertText = localInsert(fn);
+          items.push(item);
+        }
+      }
+    }
+
     return items;
   }
 

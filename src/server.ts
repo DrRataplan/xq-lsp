@@ -12,6 +12,7 @@ import * as fs from 'fs';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { XQuery31Full } from 'xq-parser';
 import { analyze } from './analyzer.ts';
+import { getBuiltins } from './builtins.ts';
 import { getCompletions } from './completion.ts';
 import { getHover, getSignatureHelp, getDocumentSymbols, getDefinition } from './features.ts';
 import type { FileAnalysis } from './types.ts';
@@ -56,6 +57,7 @@ function getImportedAnalysis(importUri: string): FileAnalysis | null {
 
 function resolveImports(currentUri: string, analysis: FileAnalysis): Map<string, FileAnalysis> {
   const result = new Map<string, FileAnalysis>();
+  result.set('builtin:fn', getBuiltins());
   for (const imp of analysis.imports) {
     const uri = resolveImportUri(currentUri, imp.atPath);
     const imported = getImportedAnalysis(uri);

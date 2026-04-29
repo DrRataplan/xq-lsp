@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { analyze } from "./analyzer.ts";
 import { getCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
+import { getBuiltins } from "./builtins.ts";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
 // ── analyzer: valid XQuery via AST ──────────────────────────────────────────
@@ -343,5 +344,49 @@ declare function local:noop() { () };`;
 		const symbols = getDocumentSymbols(doc, analysis);
 		const add = symbols.find((s) => s.name === "local:add");
 		assert.ok(add?.detail?.includes("2"), `expected arity 2, got ${add?.detail}`);
+	});
+});
+
+// ── builtins ──────────────────────────────────────────────────────────────────
+
+describe("builtins", () => {
+	const builtins = getBuiltins();
+
+	test("loads fn:exists with correct arity", () => {
+		const fn = builtins.functions.find((f) => f.name === "fn:exists");
+		assert.ok(fn, "fn:exists not found");
+		assert.equal(fn.arity, 1);
+	});
+
+	test("fn:exists has full type text for param and return", () => {
+		const fn = builtins.functions.find((f) => f.name === "fn:exists");
+		assert.equal(fn?.params[0].type, "item()*");
+		assert.equal(fn?.returnType, "xs:boolean");
+	});
+
+	test("fn:true has arity 0", () => {
+		const fn = builtins.functions.find((f) => f.name === "fn:true");
+		assert.ok(fn, "fn:true not found");
+		assert.equal(fn.arity, 0);
+	});
+
+	test("builtins have doc comments", () => {
+		const fn = builtins.functions.find((f) => f.name === "fn:empty");
+		assert.ok(fn?.doc?.description, "expected doc description");
+		assert.ok(fn?.params[0].description, "expected param description");
+	});
+
+	test("fn: functions appear in completions via imported analyses", () => {
+		const empty = analyze("1", "file:///test.xq");
+		const items = getCompletions(
+			{ textBeforeCursor: "fn:", cursorOffset: 3 },
+			empty,
+			new Map([["builtin:fn", builtins]]),
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("exists"), `expected exists, got ${labels}`);
+		assert.ok(labels.includes("empty"), `expected empty, got ${labels}`);
+		assert.ok(labels.includes("true"), `expected true, got ${labels}`);
+		assert.ok(labels.includes("false"), `expected false, got ${labels}`);
 	});
 });
