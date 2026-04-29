@@ -71,6 +71,43 @@ local:add(1, 2)
 		assert.equal(result.imports[0].atPath, "./math.xq");
 	});
 
+	// ── doc comments ─────────────────────────────────────────────────────────────
+
+	const WITH_DOC = `(:~
+ : Adds two numbers.
+ : @param $a The first operand
+ : @param $b The second operand
+ : @return The sum
+ :)
+declare function local:add($a as xs:integer, $b as xs:integer) as xs:integer {
+  $a + $b
+};`;
+
+	test("analyzer: extracts doc comment description", () => {
+		const result = analyze(WITH_DOC, "file:///test.xq");
+		const fn = result.functions.find((f) => f.name === "local:add");
+		assert.ok(fn?.doc?.description.includes("Adds two numbers"), `got: ${fn?.doc?.description}`);
+	});
+
+	test("analyzer: extracts @param descriptions", () => {
+		const result = analyze(WITH_DOC, "file:///test.xq");
+		const fn = result.functions.find((f) => f.name === "local:add");
+		assert.equal(fn?.params[0].description, "The first operand");
+		assert.equal(fn?.params[1].description, "The second operand");
+	});
+
+	test("analyzer: extracts @return description", () => {
+		const result = analyze(WITH_DOC, "file:///test.xq");
+		const fn = result.functions.find((f) => f.name === "local:add");
+		assert.equal(fn?.doc?.returns, "The sum");
+	});
+
+	test("analyzer: regex fallback extracts doc comments", () => {
+		const result = analyze(WITH_DOC + "\nlet $x := local:add(", "file:///test.xq");
+		const fn = result.functions.find((f) => f.name === "local:add");
+		assert.ok(fn?.doc?.description.includes("Adds two numbers"), `got: ${fn?.doc?.description}`);
+	});
+
 	// ── analyzer: regex fallback for invalid XQuery ──────────────────────────────
 
 	const INVALID_XQ = `

@@ -6,6 +6,7 @@ import type {
   VariableSymbol,
   ImportInfo,
   ParamInfo,
+  DocComment,
 } from "./types.ts";
 
 // ── AST helpers ─────────────────────────────────────────────────────────────
@@ -47,9 +48,68 @@ function directChildrenOf(node: Node, type: string): Node[] {
   return asNonTerminal(node).children.filter((c) => c.type === type);
 }
 
+// ── Doc comment parsing ──────────────────────────────────────────────────────
+
+function parseDocComment(raw: string): DocComment {
+  // Strip (: / (:~ opening and :) closing, then strip leading " : " per line
+  const inner = raw
+    .replace(/^\(:~?/, '')
+    .replace(/:\)$/, '')
+    .split('\n')
+    .map(l => l.replace(/^\s*:?\s?/, ''))
+    .join('\n')
+    .trim();
+
+  const params: Record<string, string> = {};
+  let returns: string | undefined;
+  const descLines: string[] = [];
+  let inDescription = true;
+
+  for (const line of inner.split('\n')) {
+    const paramMatch = line.match(/^@param\s+\$?([\w:\-]+)\s*(.*)/);
+    const returnMatch = line.match(/^@returns?\s+(.*)/);
+    if (paramMatch) {
+      inDescription = false;
+      params[paramMatch[1]] = paramMatch[2].trim();
+    } else if (returnMatch) {
+      inDescription = false;
+      returns = returnMatch[1].trim();
+    } else if (inDescription) {
+      descLines.push(line);
+    }
+  }
+
+  return { description: descLines.join('\n').trim(), params, returns };
+}
+
+/** Find a doc comment immediately preceding `offset` in raw text (regex fallback path). */
+function findPrecedingDocInText(text: string, offset: number): DocComment | undefined {
+  const before = text.slice(0, offset);
+  const match = before.match(/\(:~?[\s\S]*?:\)\s*$/);
+  if (!match) return undefined;
+  return parseDocComment(match[0]);
+}
+
+/** Find the xqDoc comment immediately preceding `offset` (only whitespace between). */
+function findPrecedingDoc(comments: Terminal[], text: string, offset: number): DocComment | undefined {
+  // Walk backwards through comments sorted by end position
+  const before = comments
+    .filter(c => c.end <= offset)
+    .sort((a, b) => b.end - a.end);
+
+  for (const c of before) {
+    const between = text.slice(c.end, offset);
+    if (!/^\s*$/.test(between)) break; // something other than whitespace — stop
+    if (c.value.startsWith('(:~') || c.value.startsWith('(:')) {
+      return parseDocComment(c.value);
+    }
+  }
+  return undefined;
+}
+
 // ── Extract from valid AST ───────────────────────────────────────────────────
 
-function extractFunctions(ast: Node, sourceUri: string): FunctionSymbol[] {
+function extractFunctions(ast: Node, sourceUri: string, comments: Terminal[], text: string): FunctionSymbol[] {
   const results: FunctionSymbol[] = [];
   for (const decl of findAll(ast, "FunctionDecl")) {
     const eqname = directChildOf(decl, "EQName");
@@ -59,6 +119,8 @@ function extractFunctions(ast: Node, sourceUri: string): FunctionSymbol[] {
     const colonIdx = name.indexOf(":");
     const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : "";
     const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
+
+    const doc = findPrecedingDoc(comments, text, decl.start);
 
     const params: ParamInfo[] = [];
     const paramList = directChildOf(decl, "ParamList");
@@ -71,7 +133,11 @@ function extractFunctions(ast: Node, sourceUri: string): FunctionSymbol[] {
         const paramType = typeDecl
           ? (firstTerminalValue(typeDecl) ?? undefined)
           : undefined;
-        params.push({ name: paramName, type: paramType });
+        params.push({
+          name: paramName,
+          type: paramType,
+          description: doc?.params[paramName],
+        });
       }
     }
 
@@ -88,6 +154,7 @@ function extractFunctions(ast: Node, sourceUri: string): FunctionSymbol[] {
       arity: params.length,
       params,
       returnType,
+      doc,
       sourceUri,
       sourceOffset: decl.start,
     });
@@ -152,9 +219,9 @@ function stripQuotes(s: string): string {
   return s.replace(/^["']|["']$/g, "");
 }
 
-function analyzeAst(ast: Node, sourceUri: string): FileAnalysis {
+function analyzeAst(ast: Node, comments: Terminal[], text: string, sourceUri: string): FileAnalysis {
   return {
-    functions: extractFunctions(ast, sourceUri),
+    functions: extractFunctions(ast, sourceUri, comments, text),
     moduleVariables: extractModuleVariables(ast, sourceUri),
     localBindings: extractLocalBindings(ast, sourceUri),
     imports: extractImports(ast),
@@ -186,14 +253,17 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
     const colonIdx = name.indexOf(":");
     const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : "";
     const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
+    const doc = findPrecedingDocInText(text, m.index);
     const rawParams = m[2].trim();
     const params: ParamInfo[] = rawParams
       ? rawParams.split(",").map((p) => {
           const varMatch = p.match(/\$([\w:\-]+)/);
           const typeMatch = p.match(/as\s+([\w:\-]+(?:\(.*?\))?)/);
+          const paramName = varMatch ? varMatch[1] : p.trim();
           return {
-            name: varMatch ? varMatch[1] : p.trim(),
+            name: paramName,
             type: typeMatch ? typeMatch[1] : undefined,
+            description: doc?.params[paramName],
           };
         })
       : [];
@@ -203,6 +273,7 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
       localName,
       arity: params.length,
       params,
+      doc,
       sourceUri,
       sourceOffset: m.index,
     });
@@ -250,8 +321,8 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 
 export function analyze(text: string, sourceUri: string): FileAnalysis {
   try {
-    const { ast } = XQuery31Full(text);
-    return analyzeAst(ast, sourceUri);
+    const { ast, comments } = XQuery31Full(text);
+    return analyzeAst(ast, comments, text, sourceUri);
   } catch {
     return analyzeRegex(text, sourceUri);
   }

@@ -1,6 +1,13 @@
 export interface ParamInfo {
   name: string;
   type?: string;
+  description?: string;
+}
+
+export interface DocComment {
+  description: string;
+  params: Record<string, string>; // param name (without $) → description
+  returns?: string;
 }
 
 export interface FunctionSymbol {
@@ -10,6 +17,7 @@ export interface FunctionSymbol {
   arity: number;
   params: ParamInfo[];
   returnType?: string;
+  doc?: DocComment;
   sourceUri: string;
   sourceOffset?: number; // char offset of the declare keyword
 }

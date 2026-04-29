@@ -40,7 +40,20 @@ function parseToken(textBefore: string): TokenInfo {
 function functionDoc(fn: FunctionSymbol): string {
   const paramStr = fn.params.map(p => `$${p.name}${p.type ? ' as ' + p.type : ''}`).join(', ');
   const ret = fn.returnType ? ` as ${fn.returnType}` : '';
-  return `\`\`\`xquery\ndeclare function ${fn.name}(${paramStr})${ret}\n\`\`\``;
+  const sig = `\`\`\`xquery\ndeclare function ${fn.name}(${paramStr})${ret}\n\`\`\``;
+
+  if (!fn.doc) return sig;
+
+  const parts: string[] = [sig];
+  if (fn.doc.description) parts.push(fn.doc.description);
+
+  const paramDocs = fn.params.filter(p => p.description);
+  if (paramDocs.length > 0) {
+    parts.push(paramDocs.map(p => `- \`$${p.name}\` — ${p.description}`).join('\n'));
+  }
+  if (fn.doc.returns) parts.push(`**Returns:** ${fn.doc.returns}`);
+
+  return parts.join('\n\n');
 }
 
 function functionSnippet(fn: FunctionSymbol): string {
