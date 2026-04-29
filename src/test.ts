@@ -214,6 +214,7 @@ return $myVar
 	test("completion: imported functions appear under correct prefix", () => {
 		const importedAnalysis = analyze(
 			`
+    module namespace util="http://example.com/util";
     declare function util:trim($s) { $s };
   `,
 			"file:///util.xq",
@@ -253,6 +254,52 @@ return $myVar
 		assert.ok(addItem.insertText?.includes("$a"), `expected plain param names, got: ${addItem.insertText}`);
 	});
 });
+
+	// ── default function namespace ───────────────────────────────────────────────
+
+	test("completion: fn: builtins appear without prefix in plain-name mode", () => {
+		const empty = analyze("1", "file:///test.xq");
+		const builtins = getBuiltins();
+		const items = getCompletions(
+			{ textBeforeCursor: "exi", cursorOffset: 3 },
+			empty,
+			new Map([["builtin:fn", builtins]]),
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("exists"), `expected exists without prefix, got ${labels}`);
+		assert.ok(!labels.some(l => l.startsWith("fn:")), `fn: prefix should not appear, got ${labels}`);
+	});
+
+	test("completion: alias prefix resolves to same namespace as declared prefix", () => {
+		const libAnalysis = analyze(
+			`module namespace math="http://example.com/math";
+declare function math:sin($x) { $x };`,
+			"file:///math.xq",
+		);
+		const mainAnalysis = analyze(
+			`import module namespace m="http://example.com/math" at "./math.xq";
+1`,
+			"file:///main.xq",
+		);
+		const items = getCompletions(
+			{ textBeforeCursor: "m:", cursorOffset: 2 },
+			mainAnalysis,
+			new Map([["./math.xq", libAnalysis]]),
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("sin"), `expected sin via aliased prefix m:, got ${labels}`);
+	});
+
+	test("hover: unprefixed builtin name resolves via default function namespace", () => {
+		const src = `fn:true()`;
+		const doc = makeDoc(src);
+		const analysis = analyze(src, "file:///test.xq");
+		const builtins = getBuiltins();
+		const hover = getHover(doc, src.indexOf("true"), analysis, new Map([["builtin:fn", builtins]]));
+		assert.ok(hover, "expected hover");
+		const value = typeof hover.contents === "object" && "value" in hover.contents ? hover.contents.value : "";
+		assert.ok(value.includes("fn:true"), `expected fn:true in hover, got: ${value}`);
+	});
 
 // ── helpers for feature tests ────────────────────────────────────────────────
 
