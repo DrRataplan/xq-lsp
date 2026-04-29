@@ -1,0 +1,28 @@
+{
+  "name": "xquery-lsp-vscode",
+  "displayName": "XQuery Language Server",
+  "description": "XQuery language support via xq-lsp",
+  "version": "0.1.0",
+  "publisher": "elliat",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": ["Programming Languages"],
+  "activationEvents": [],
+  "contributes": {
+    "languages": [
+      {
+        "id": "xquery",
+        "aliases": ["XQuery", "xquery"],
+        "extensions": [".xq", ".xql", ".xqm", ".xqy"],
+        "configuration": "./language-configuration.json"
+      }
+    ]
+  },
+  "main": "./extension.js",
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1",
+    "xq-lsp": "../.."
+  }
+}
