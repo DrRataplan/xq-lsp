@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"target": "esnext",
+		"module": "preserve",
+		"moduleResolution": "bundler",
+		"strict": true,
+		"erasableSyntaxOnly": true,
+		"verbatimModuleSyntax": true,
+		"outDir": "dist",
+		"rootDir": "src",
+		"rewriteRelativeImportExtensions": true,
+		"declaration": true,
+		"skipLibCheck": true,
+		"types": ["node"]
+	},
+	"paths": {
+		"vscode-languageserver/node.js": ["./node_modules/vscode-languageserver/node.d.ts"]
+	},
+	"include": [
+		"./src/*"
+	]
+}
