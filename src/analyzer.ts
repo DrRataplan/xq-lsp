@@ -4,14 +4,20 @@ import type { FileAnalysis, FunctionSymbol, VariableSymbol, ImportInfo, ParamInf
 
 // ── Well-known namespace URIs ────────────────────────────────────────────────
 
-export const XMLNS_FN = "http://www.w3.org/2005/xpath-functions";
+export const XMLNS_FN    = "http://www.w3.org/2005/xpath-functions";
 export const XMLNS_LOCAL = "http://www.w3.org/2005/xquery-local-functions";
-export const XMLNS_XS = "http://www.w3.org/2001/XMLSchema";
+export const XMLNS_XS    = "http://www.w3.org/2001/XMLSchema";
+export const XMLNS_MATH  = "http://www.w3.org/2005/xpath-functions/math";
+export const XMLNS_MAP   = "http://www.w3.org/2005/xpath-functions/map";
+export const XMLNS_ARRAY = "http://www.w3.org/2005/xpath-functions/array";
 
 const BUILTIN_PREFIXES: Record<string, string> = {
-	fn: XMLNS_FN,
+	fn:    XMLNS_FN,
 	local: XMLNS_LOCAL,
-	xs: XMLNS_XS,
+	xs:    XMLNS_XS,
+	math:  XMLNS_MATH,
+	map:   XMLNS_MAP,
+	array: XMLNS_ARRAY,
 };
 
 /**
