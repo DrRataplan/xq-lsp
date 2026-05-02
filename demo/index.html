@@ -8,25 +8,23 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:              #1e1e1e;
-      --panel:           #252526;
-      --border:          #3e3e42;
-      --text:            #d4d4d4;
-      --muted:           #808080;
-      --accent:          #0e639c;
-      --selection:       #264f78;
-      --dropdown-bg:     #252526;
-      --dropdown-sel:    #04395e;
-      --dropdown-hover:  #2a2d2e;
-      --fn-col:          #dcdcaa;
-      --var-col:         #9cdcfe;
-      --code-bg:         #1a1a2e;
+      --bg:             #1e1e1e;
+      --panel:          #252526;
+      --border:         #3e3e42;
+      --text:           #d4d4d4;
+      --muted:          #808080;
+      --accent:         #0e639c;
+      --selection:      #264f78;
+      --dropdown-bg:    #252526;
+      --dropdown-sel:   #04395e;
+      --dropdown-hover: #2a2d2e;
+      --fn-col:         #dcdcaa;
+      --var-col:        #9cdcfe;
+      --code-bg:        #1a1a2e;
       --mono: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
     }
 
-    html, body {
-      height: 100%;
-    }
+    html, body { height: 100%; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -37,7 +35,7 @@
       overflow: hidden;
     }
 
-    /* ── Header ─────────────────────────────────────────────────────────────── */
+    /* ── Header ──────────────────────────────────────────────────────────────── */
     header {
       flex-shrink: 0;
       background: var(--panel);
@@ -47,37 +45,15 @@
       align-items: center;
       gap: 10px;
     }
-    header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.5px; }
-    header .sep { color: var(--border); }
-    header .subtitle { font-size: 13px; color: var(--muted); }
-    #status-badge {
-      margin-left: auto;
-      font-size: 11px;
-      padding: 2px 9px;
-      border-radius: 10px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      min-width: 52px;
-      text-align: center;
-    }
-    #status-badge.loading { color: #dcdcaa; border-color: #dcdcaa44; }
-    #status-badge.error   { color: #f48771; border-color: #f4877144; }
+    header h1    { font-size: 15px; font-weight: 600; letter-spacing: 0.5px; }
+    header .sep  { color: var(--border); }
+    header .sub  { font-size: 13px; color: var(--muted); }
 
-    /* ── Layout ─────────────────────────────────────────────────────────────── */
-    main {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-    }
+    /* ── Layout ───────────────────────────────────────────────────────────────── */
+    main { flex: 1; display: flex; overflow: hidden; }
 
-    /* ── Editor pane ────────────────────────────────────────────────────────── */
-    .editor-pane {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
+    /* ── Editor pane ──────────────────────────────────────────────────────────── */
+    .editor-pane { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
     .tab-bar {
       flex-shrink: 0;
@@ -87,200 +63,120 @@
       align-items: stretch;
     }
     .tab {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      display: flex; align-items: center; gap: 6px;
       padding: 6px 16px;
-      font-size: 13px;
-      font-family: var(--mono);
+      font-size: 13px; font-family: var(--mono);
       background: var(--panel);
       border-right: 1px solid var(--border);
       border-bottom: 2px solid var(--accent);
       color: var(--text);
     }
-    .tab-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-      opacity: 0.8;
-    }
+    .tab-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: .8; }
     .shortcuts {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-left: auto;
-      padding: 0 16px;
-      font-size: 11px;
-      color: var(--muted);
+      display: flex; align-items: center; gap: 12px;
+      margin-left: auto; padding: 0 16px;
+      font-size: 11px; color: var(--muted);
     }
     .shortcuts kbd {
       display: inline-block;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-bottom-width: 2px;
-      border-radius: 3px;
+      background: var(--panel); border: 1px solid var(--border);
+      border-bottom-width: 2px; border-radius: 3px;
       padding: 1px 5px;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--text);
+      font-family: var(--mono); font-size: 10px; color: var(--text);
     }
 
-    .editor-wrapper {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-    }
+    .editor-wrapper { flex: 1; position: relative; overflow: hidden; }
 
     #editor {
-      width: 100%;
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      border: none;
-      outline: none;
-      resize: none;
-      font-family: var(--mono);
-      font-size: 14px;
-      line-height: 1.65;
+      width: 100%; height: 100%;
+      background: var(--bg); color: var(--text);
+      border: none; outline: none; resize: none;
+      font-family: var(--mono); font-size: 14px; line-height: 1.65;
       padding: 16px 20px;
-      caret-color: #aeafad;
-      tab-size: 2;
-      overflow: auto;
+      caret-color: #aeafad; tab-size: 2; overflow: auto;
     }
     #editor::selection { background: var(--selection); }
 
-    /* ── Autocomplete dropdown ───────────────────────────────────────────────── */
+    /* ── Autocomplete dropdown ────────────────────────────────────────────────── */
     #autocomplete {
-      position: fixed;
-      z-index: 200;
+      position: fixed; z-index: 200;
       background: var(--dropdown-bg);
-      border: 1px solid #555;
-      border-radius: 4px;
+      border: 1px solid #555; border-radius: 4px;
       box-shadow: 0 6px 28px rgba(0,0,0,.55);
-      min-width: 260px;
-      max-width: 420px;
-      max-height: 260px;
-      display: flex;
-      flex-direction: column;
-      font-family: var(--mono);
-      font-size: 13px;
+      min-width: 260px; max-width: 420px; max-height: 260px;
+      display: flex; flex-direction: column;
+      font-family: var(--mono); font-size: 13px;
       overflow: hidden;
     }
     #autocomplete.hidden { display: none; }
 
-    #completion-list {
-      overflow-y: auto;
-      flex: 1;
-    }
+    #completion-list { overflow-y: auto; flex: 1; }
 
     .c-item {
-      display: flex;
-      align-items: center;
-      padding: 3px 10px 3px 8px;
-      gap: 7px;
-      cursor: pointer;
-      user-select: none;
+      display: flex; align-items: center;
+      padding: 3px 10px 3px 8px; gap: 7px;
+      cursor: pointer; user-select: none;
     }
-    .c-item:hover     { background: var(--dropdown-hover); }
-    .c-item.selected  { background: var(--dropdown-sel); }
+    .c-item:hover    { background: var(--dropdown-hover); }
+    .c-item.selected { background: var(--dropdown-sel); }
 
     .c-icon {
-      flex-shrink: 0;
-      width: 18px; height: 18px;
-      border-radius: 3px;
+      flex-shrink: 0; width: 18px; height: 18px; border-radius: 3px;
       display: flex; align-items: center; justify-content: center;
       font-size: 10px; font-weight: 700;
     }
     .c-icon.fn  { background: #dcdcaa22; color: var(--fn-col); }
     .c-icon.var { background: #9cdcfe22; color: var(--var-col); }
 
-    .c-label {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--text);
-    }
-    .c-detail {
-      flex-shrink: 0;
-      font-size: 11px;
-      color: var(--muted);
-    }
+    .c-label  { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+    .c-detail { flex-shrink: 0; font-size: 11px; color: var(--muted); }
 
     .c-footer {
-      flex-shrink: 0;
-      padding: 3px 10px;
+      flex-shrink: 0; padding: 3px 10px;
       border-top: 1px solid var(--border);
-      font-size: 11px;
-      color: var(--muted);
+      font-size: 11px; color: var(--muted);
       font-family: -apple-system, sans-serif;
     }
 
-    /* ── Docs pane ──────────────────────────────────────────────────────────── */
+    /* ── Docs pane ────────────────────────────────────────────────────────────── */
     .docs-pane {
-      width: 300px;
-      flex-shrink: 0;
-      background: var(--panel);
-      border-left: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      width: 300px; flex-shrink: 0;
+      background: var(--panel); border-left: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
     }
     .docs-header {
-      flex-shrink: 0;
-      padding: 7px 14px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .6px;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
+      flex-shrink: 0; padding: 7px 14px;
+      font-size: 11px; text-transform: uppercase; letter-spacing: .6px;
+      color: var(--muted); border-bottom: 1px solid var(--border);
     }
     #docs-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px 14px;
-      font-size: 13px;
-      line-height: 1.6;
+      flex: 1; overflow-y: auto;
+      padding: 12px 14px; font-size: 13px; line-height: 1.6;
     }
     #docs-body .placeholder { color: var(--muted); font-style: italic; }
     #docs-body pre {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 8px 10px;
-      margin: 8px 0;
-      overflow-x: auto;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--fn-col);
+      background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px;
+      padding: 8px 10px; margin: 8px 0; overflow-x: auto;
+      font-family: var(--mono); font-size: 12px; color: var(--fn-col);
     }
     #docs-body code {
-      font-family: var(--mono);
-      font-size: 12px;
-      background: var(--code-bg);
-      padding: 1px 4px;
-      border-radius: 2px;
-      color: var(--var-col);
+      font-family: var(--mono); font-size: 12px;
+      background: var(--code-bg); padding: 1px 4px; border-radius: 2px; color: var(--var-col);
     }
-    #docs-body p   { margin: 6px 0; }
-    #docs-body ul  { margin: 6px 0; padding-left: 16px; }
-    #docs-body li  { margin: 3px 0; }
+    #docs-body p      { margin: 6px 0; }
+    #docs-body ul     { margin: 6px 0; padding-left: 16px; }
+    #docs-body li     { margin: 3px 0; }
     #docs-body strong { color: #c586c0; }
 
-    /* ── Status bar ─────────────────────────────────────────────────────────── */
+    /* ── Status bar ───────────────────────────────────────────────────────────── */
     .statusbar {
-      flex-shrink: 0;
-      background: var(--accent);
-      color: rgba(255,255,255,.9);
-      padding: 2px 14px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      gap: 18px;
+      flex-shrink: 0; background: var(--accent);
+      color: rgba(255,255,255,.9); padding: 2px 14px;
+      font-size: 12px; display: flex; align-items: center; gap: 18px;
     }
     #status-count { margin-left: auto; }
 
-    /* ── Scrollbars ─────────────────────────────────────────────────────────── */
+    /* ── Scrollbars ───────────────────────────────────────────────────────────── */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #424242; border-radius: 3px; }
@@ -292,17 +188,13 @@
 <header>
   <h1>xq-lsp</h1>
   <span class="sep">—</span>
-  <span class="subtitle">XQuery Language Server · Autocomplete Demo</span>
-  <span id="status-badge">Ready</span>
+  <span class="sub">XQuery Language Server · Autocomplete Demo</span>
 </header>
 
 <main>
   <div class="editor-pane">
     <div class="tab-bar">
-      <div class="tab">
-        <span class="tab-dot"></span>
-        demo.xq
-      </div>
+      <div class="tab"><span class="tab-dot"></span>demo.xq</div>
       <div class="shortcuts">
         <span><kbd>Ctrl</kbd>+<kbd>Space</kbd> trigger</span>
         <span><kbd>↑↓</kbd> navigate</span>
@@ -321,9 +213,7 @@
 
   <div class="docs-pane">
     <div class="docs-header">Documentation</div>
-    <div id="docs-body">
-      <p class="placeholder">Select a completion to see docs.</p>
-    </div>
+    <div id="docs-body"><p class="placeholder">Select a completion to see docs.</p></div>
   </div>
 </main>
 
@@ -333,8 +223,9 @@
   <span id="status-count"></span>
 </div>
 
+<script src="xq-lsp.bundle.js"></script>
 <script>
-// ── Sample content ────────────────────────────────────────────────────────────
+// ── Sample ────────────────────────────────────────────────────────────────────
 const SAMPLE = `module namespace demo = "http://example.com/demo";
 
 declare variable $demo:max-items := 100;
@@ -373,7 +264,7 @@ declare function demo:greet-all($names as xs:string*) as xs:string {
 demo:greet-all(("Alice", "Bob", "Carol"))
 `;
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function esc(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -381,174 +272,136 @@ function esc(s) {
 
 function renderMarkdown(md) {
   if (!md) return '';
-  // Code blocks
   md = md.replace(/```[^\n]*\n([\s\S]*?)```/g, (_, c) => `<pre>${esc(c.trim())}</pre>`);
-  // Inline code
   md = md.replace(/`([^`]+)`/g, (_, c) => `<code>${esc(c)}</code>`);
-  // Bold
   md = md.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  // Split paragraphs
   return md.split(/\n{2,}/).map(p => {
     p = p.trim();
-    if (!p) return '';
-    if (p.startsWith('<pre>')) return p;
+    if (!p || p.startsWith('<pre>')) return p;
     if (/^[-•]/.test(p) || p.includes('\n- ')) {
-      const items = p.replace(/^[-•] ?/, '').split(/\n[-•] ?/).map(i => `<li>${i.trim()}</li>`);
-      return '<ul>' + items.join('') + '</ul>';
+      return '<ul>' + p.replace(/^[-•] ?/, '').split(/\n[-•] ?/).map(i => `<li>${i.trim()}</li>`).join('') + '</ul>';
     }
     return `<p>${p}</p>`;
   }).join('');
 }
 
-// Pixel position of the caret in a textarea, using a mirror div.
+// Pixel coordinates of the caret in a textarea via a mirror div.
 function caretCoords(el, pos) {
   const m = document.createElement('div');
   const cs = getComputedStyle(el);
   Object.assign(m.style, {
     position: 'absolute', visibility: 'hidden', overflow: 'hidden',
-    top: '0', left: '0',
-    whiteSpace: 'pre-wrap', wordWrap: 'break-word',
+    top: '0', left: '0', whiteSpace: 'pre-wrap', wordWrap: 'break-word',
     width: el.offsetWidth + 'px',
   });
   for (const p of ['paddingTop','paddingRight','paddingBottom','paddingLeft',
-    'borderTopWidth','borderRightWidth','borderBottomWidth','borderLeftWidth',
-    'fontSize','fontFamily','fontWeight','fontStyle','lineHeight',
-    'letterSpacing','wordSpacing','boxSizing']) {
+      'borderTopWidth','borderRightWidth','borderBottomWidth','borderLeftWidth',
+      'fontSize','fontFamily','fontWeight','fontStyle','lineHeight',
+      'letterSpacing','wordSpacing','boxSizing']) {
     m.style[p] = cs[p];
   }
   m.textContent = el.value.slice(0, pos);
   const span = document.createElement('span');
-  span.textContent = '​';
+  span.textContent = '​'; // zero-width space
   m.appendChild(span);
   document.body.appendChild(m);
-
-  const elR  = el.getBoundingClientRect();
-  const mR   = m.getBoundingClientRect();
-  const spR  = span.getBoundingClientRect();
-  const result = {
+  const elR = el.getBoundingClientRect(), mR = m.getBoundingClientRect(), spR = span.getBoundingClientRect();
+  const r = {
     top:  elR.top  + (spR.top  - mR.top)  - el.scrollTop  + parseFloat(cs.lineHeight),
     left: elR.left + (spR.left - mR.left) - el.scrollLeft,
   };
   document.body.removeChild(m);
-  return result;
+  return r;
 }
 
-// Where the current token starts (and where the replacement begins).
+// Start of the current token (determines what gets replaced on insertion).
 function replaceStart(text, offset) {
   const before = text.slice(0, offset);
-  // Variable token:  $name
-  let m = before.match(/\$[\w:\-]*$/);
-  if (m) return offset - m[0].length;
-  // Qualified name: ns:local  → replace only the local part
-  m = before.match(/[\w\-]+:([\w\-]*)$/);
-  if (m) return offset - m[1].length;
-  // Plain word
-  m = before.match(/[\w\-]+$/);
-  if (m) return offset - m[0].length;
+  let m;
+  if ((m = before.match(/\$[\w:\-]*$/)))       return offset - m[0].length; // $var
+  if ((m = before.match(/[\w\-]+:([\w\-]*)$/))) return offset - m[1].length; // ns:local → replace local only
+  if ((m = before.match(/[\w\-]+$/)))           return offset - m[0].length; // plain word
   return offset;
 }
 
-// Strip snippet placeholders: ${1:$param} → $param
 function stripSnippets(s) {
   return s.replace(/\$\{\d+:([^}]*)\}/g, '$1');
 }
 
-// ── State ────────────────────────────────────────────────────────────────────
+// ── LSP completion call (synchronous, in-browser) ─────────────────────────────
 
-let items = [];
-let selIdx = 0;
-let open = false;
-let debounce = null;
-let reqId = 0;
+const BUILTINS = xqlsp.getBuiltins(); // compute once
+
+function getItems(text, offset) {
+  const analysis = xqlsp.analyze(text, 'demo://demo.xq');
+  return xqlsp.getCompletions(
+    { textBeforeCursor: text.slice(0, offset), cursorOffset: offset },
+    analysis,
+    new Map([['builtin:', BUILTINS]]),
+    false,
+  );
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+
+let items = [], selIdx = 0, open = false, debounce = null;
 
 const editor  = document.getElementById('editor');
 const ac      = document.getElementById('autocomplete');
 const cList   = document.getElementById('completion-list');
 const cFooter = document.getElementById('c-footer');
 const docsEl  = document.getElementById('docs-body');
-const badge   = document.getElementById('status-badge');
 const posEl   = document.getElementById('status-pos');
 const countEl = document.getElementById('status-count');
 
-// ── Init ─────────────────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────────
 
 editor.value = SAMPLE;
-// Position cursor at the end of the last line
 editor.selectionStart = editor.selectionEnd = SAMPLE.length;
 editor.focus();
 updatePos();
 
-// ── Completions API ───────────────────────────────────────────────────────────
+// ── Completions ───────────────────────────────────────────────────────────────
 
-async function fetchCompletions() {
-  const text   = editor.value;
-  const offset = editor.selectionStart;
-  const id     = ++reqId;
-
-  badge.textContent = '…';
-  badge.className   = 'loading';
-
-  try {
-    const r = await fetch('/complete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, offset }),
-    });
-    if (id !== reqId) return;
-    if (!r.ok) throw new Error(r.statusText);
-    items  = await r.json();
-    selIdx = 0;
-    badge.textContent = 'Ready';
-    badge.className   = '';
-    if (id !== reqId) return;
-    if (items.length) showDropdown();
-    else hideDropdown();
-  } catch {
-    if (id === reqId) { badge.textContent = 'Error'; badge.className = 'error'; }
-  }
+function triggerCompletion() {
+  items  = getItems(editor.value, editor.selectionStart);
+  selIdx = 0;
+  if (items.length) showDropdown();
+  else hideDropdown();
 }
 
 function scheduleCompletion(immediate) {
   clearTimeout(debounce);
-  debounce = setTimeout(fetchCompletions, immediate ? 0 : 180);
+  debounce = setTimeout(triggerCompletion, immediate ? 0 : 120);
 }
 
-// ── Render ───────────────────────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────────────────────────────────
 
 const MAX = 60;
 
 function renderDropdown() {
-  const visible = items.slice(0, MAX);
-  cList.innerHTML = visible.map((it, i) => {
-    const isVar   = it.kind === 6;
-    const icon    = isVar ? '$' : 'ƒ';
-    const iconCls = isVar ? 'var' : 'fn';
-    const sel     = i === selIdx ? ' selected' : '';
+  cList.innerHTML = items.slice(0, MAX).map((it, i) => {
+    const isVar = it.kind === 6;
+    const sel   = i === selIdx ? ' selected' : '';
     return `<div class="c-item${sel}" data-i="${i}">` +
-      `<span class="c-icon ${iconCls}">${icon}</span>` +
+      `<span class="c-icon ${isVar ? 'var' : 'fn'}">${isVar ? '$' : 'ƒ'}</span>` +
       `<span class="c-label">${esc(it.label)}</span>` +
       (it.detail ? `<span class="c-detail">${esc(it.detail)}</span>` : '') +
       `</div>`;
   }).join('');
-
   const extra = items.length > MAX ? ` (${items.length} total — type to filter)` : '';
   cFooter.textContent = `${Math.min(items.length, MAX)} item${items.length === 1 ? '' : 's'}${extra}`;
   countEl.textContent = items.length ? `${items.length} completion${items.length === 1 ? '' : 's'}` : '';
-
   renderDocs();
 }
 
 function showDropdown() {
-  const tokenOffset = replaceStart(editor.value, editor.selectionStart);
-  const coords = caretCoords(editor, tokenOffset);
-
+  const coords = caretCoords(editor, replaceStart(editor.value, editor.selectionStart));
   ac.style.top  = coords.top  + 'px';
   ac.style.left = coords.left + 'px';
   ac.classList.remove('hidden');
   open = true;
   renderDropdown();
-
-  // Clamp to viewport after paint
   requestAnimationFrame(() => {
     const r = ac.getBoundingClientRect();
     if (r.right  > window.innerWidth  - 8) ac.style.left = (window.innerWidth  - r.width  - 8) + 'px';
@@ -557,7 +410,6 @@ function showDropdown() {
       ac.style.top = (coords.top - r.height - lh) + 'px';
     }
   });
-
   scrollSel();
 }
 
@@ -584,16 +436,11 @@ function renderDocs() {
 function insertSelected() {
   const it = items[selIdx];
   if (!it) return;
-
-  const text  = editor.value;
-  const cur   = editor.selectionStart;
+  const text  = editor.value, cur = editor.selectionStart;
   const start = replaceStart(text, cur);
   const ins   = stripSnippets(it.insertText ?? it.label);
-  const next  = start + ins.length;
-
   editor.value = text.slice(0, start) + ins + text.slice(cur);
-  editor.selectionStart = editor.selectionEnd = next;
-
+  editor.selectionStart = editor.selectionEnd = start + ins.length;
   hideDropdown();
   editor.focus();
   updatePos();
@@ -603,50 +450,14 @@ function insertSelected() {
 
 editor.addEventListener('keydown', e => {
   if (open) {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      selIdx = Math.min(selIdx + 1, Math.min(items.length, MAX) - 1);
-      renderDropdown(); scrollSel();
-      return;
-    }
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      selIdx = Math.max(selIdx - 1, 0);
-      renderDropdown(); scrollSel();
-      return;
-    }
-    if (e.key === 'PageDown') {
-      e.preventDefault();
-      selIdx = Math.min(selIdx + 10, Math.min(items.length, MAX) - 1);
-      renderDropdown(); scrollSel();
-      return;
-    }
-    if (e.key === 'PageUp') {
-      e.preventDefault();
-      selIdx = Math.max(selIdx - 10, 0);
-      renderDropdown(); scrollSel();
-      return;
-    }
-    if (e.key === 'Enter' || e.key === 'Tab') {
-      e.preventDefault();
-      insertSelected();
-      return;
-    }
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      hideDropdown();
-      return;
-    }
+    if (e.key === 'ArrowDown')  { e.preventDefault(); selIdx = Math.min(selIdx+1, Math.min(items.length, MAX)-1); renderDropdown(); scrollSel(); return; }
+    if (e.key === 'ArrowUp')    { e.preventDefault(); selIdx = Math.max(selIdx-1, 0);                             renderDropdown(); scrollSel(); return; }
+    if (e.key === 'PageDown')   { e.preventDefault(); selIdx = Math.min(selIdx+10, Math.min(items.length, MAX)-1); renderDropdown(); scrollSel(); return; }
+    if (e.key === 'PageUp')     { e.preventDefault(); selIdx = Math.max(selIdx-10, 0);                             renderDropdown(); scrollSel(); return; }
+    if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); insertSelected(); return; }
+    if (e.key === 'Escape')     { e.preventDefault(); hideDropdown(); return; }
   }
-
-  // Ctrl+Space → manual trigger
-  if (e.key === ' ' && (e.ctrlKey || e.metaKey)) {
-    e.preventDefault();
-    scheduleCompletion(true);
-    return;
-  }
-
-  // Tab inserts spaces when dropdown is closed
+  if (e.key === ' ' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); scheduleCompletion(true); return; }
   if (e.key === 'Tab' && !open) {
     e.preventDefault();
     const s = editor.selectionStart, end = editor.selectionEnd;
@@ -662,13 +473,11 @@ editor.addEventListener('input', () => {
   scheduleCompletion(ch === ':' || ch === '$');
 });
 
-editor.addEventListener('click', () => { updatePos(); hideDropdown(); });
-editor.addEventListener('keyup',  () => { updatePos(); });
-
-// ── Dropdown mouse ────────────────────────────────────────────────────────────
+editor.addEventListener('click',  () => { updatePos(); hideDropdown(); });
+editor.addEventListener('keyup',  () =>  updatePos());
 
 cList.addEventListener('mousedown', e => {
-  e.preventDefault(); // keep editor focused
+  e.preventDefault();
   const row = e.target.closest('.c-item');
   if (row) { selIdx = +row.dataset.i; insertSelected(); }
 });
@@ -688,12 +497,9 @@ document.addEventListener('mousedown', e => {
   if (!ac.contains(e.target) && e.target !== editor) hideDropdown();
 });
 
-// ── Status ────────────────────────────────────────────────────────────────────
-
 function updatePos() {
-  const text  = editor.value.slice(0, editor.selectionStart);
-  const lines = text.split('\n');
-  posEl.textContent = `Ln ${lines.length}, Col ${lines[lines.length - 1].length + 1}`;
+  const text = editor.value.slice(0, editor.selectionStart).split('\n');
+  posEl.textContent = `Ln ${text.length}, Col ${text[text.length-1].length + 1}`;
 }
 </script>
 </body>
