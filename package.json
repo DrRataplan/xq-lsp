@@ -12,7 +12,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node ./src/server.ts --stdio",
-    "test": "node --test src/test.ts"
+    "test": "node --test src/test.ts",
+    "demo": "node --experimental-strip-types demo/server.ts"
   },
   "dependencies": {
     "vscode-languageserver": "^9.0.1",
