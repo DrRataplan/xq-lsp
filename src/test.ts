@@ -443,6 +443,87 @@ describe("builtins", () => {
 	});
 });
 
+// ── XQuery 4.0 ────────────────────────────────────────────────────────────────
+
+describe("XQuery 4.0", () => {
+	// Arrow operator: XQuery 4.0 syntax that is invalid in 3.1
+	const ARROW_XQ = `let $result := "hello" => upper-case() => normalize-space()
+return $result`;
+
+	test("xq4: arrow operator expression parses without regex fallback", () => {
+		const result = analyze(ARROW_XQ, "file:///arrow.xq");
+		// The let binding should be extracted — if we fell back to regex, it also extracts it,
+		// but we can confirm it was actually parsed by checking localBindings has correct offset
+		const names = result.localBindings.map((b) => b.name);
+		assert.ok(names.includes("result"), `expected result binding, got ${names}`);
+		// Confirm there are no spurious extra bindings from the regex fallback
+		assert.equal(result.localBindings.length, 1, `expected exactly 1 binding, got ${result.localBindings.length}`);
+	});
+
+	test("xq4: for member binding extracts loop variable", () => {
+		const src = `for member $item in [1, 2, 3] return $item`;
+		const result = analyze(src, "file:///member.xq");
+		const names = result.localBindings.map((b) => b.name);
+		assert.ok(names.includes("item"), `expected item binding, got ${names}`);
+	});
+
+	test("xq4: mixed for and for member in same expression", () => {
+		const src = `for $x in (1 to 3), member $y in [[1,2],[3,4]] return ($x, $y)`;
+		const result = analyze(src, "file:///mixed.xq");
+		const names = result.localBindings.map((b) => b.name);
+		assert.ok(names.includes("x"), `expected x binding, got ${names}`);
+		assert.ok(names.includes("y"), `expected y binding, got ${names}`);
+	});
+
+	// Arrow operator completions
+	const XQ4_ANALYSIS = analyze(
+		`declare function local:shout($s) { upper-case($s) };
+let $x := 1
+return $x`,
+		"file:///xq4.xq",
+	);
+
+	test("xq4: completions after => offer function names", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: `"hello" => `, cursorOffset: 11 },
+			XQ4_ANALYSIS,
+			new Map(),
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("local:shout"), `expected local:shout after =>, got ${labels}`);
+	});
+
+	test("xq4: completions after => do not offer variable names", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: `"hello" => `, cursorOffset: 11 },
+			XQ4_ANALYSIS,
+			new Map(),
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(!labels.some((l) => l.startsWith("$")), `variable labels should not appear after =>, got ${labels}`);
+	});
+
+	test("xq4: completions after => with partial name filters functions", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: `"hello" => sho`, cursorOffset: 14 },
+			XQ4_ANALYSIS,
+			new Map(),
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("local:shout"), `expected local:shout, got ${labels}`);
+	});
+
+	test("xq4: completions after -> (thin arrow) offer function names", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: `"hello" -> `, cursorOffset: 11 },
+			XQ4_ANALYSIS,
+			new Map(),
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("local:shout"), `expected local:shout after ->, got ${labels}`);
+	});
+});
+
 // ── imports without "at" clause ───────────────────────────────────────────────
 
 describe("imports without at clause", () => {

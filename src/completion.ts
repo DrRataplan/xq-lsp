@@ -15,11 +15,27 @@ interface TokenInfo {
 	prefix: string;
 	/** For qualified names, the namespace prefix before the colon */
 	nsPrefix?: string;
+	/** True when the token immediately follows an XQuery 4.0 `=>` or `->` arrow operator */
+	afterArrow?: boolean;
+}
+
+/**
+ * Detect whether the text immediately before the current token (skipping the
+ * partial word typed so far) ends with an XQuery 4.0 arrow operator `=>` or `->`.
+ */
+function isAfterArrow(textBefore: string, partialWord: string): boolean {
+	// Strip the partial word from the end, then check for => or -> with optional whitespace
+	const beforePartial = partialWord.length > 0 ? textBefore.slice(0, -partialWord.length) : textBefore;
+	return /(?:=>|->)\s*$/.test(beforePartial);
 }
 
 function parseToken(textBefore: string): TokenInfo {
 	const match = textBefore.match(/\$([\w:\-]*)$|(?:([\w\-]+):)([\w\-]*)$|([\w\-]+)$/);
-	if (!match) return { kind: "name", prefix: "" };
+	if (!match) {
+		// No word at cursor — check if we're right after an arrow operator
+		const afterArrow = /(?:=>|->)\s*$/.test(textBefore);
+		return { kind: "name", prefix: "", afterArrow };
+	}
 
 	if (match[0].startsWith("$")) {
 		return { kind: "variable", prefix: match[1] ?? "" };
@@ -27,7 +43,9 @@ function parseToken(textBefore: string): TokenInfo {
 	if (match[2] !== undefined) {
 		return { kind: "qualified-name", nsPrefix: match[2], prefix: match[3] ?? "" };
 	}
-	return { kind: "name", prefix: match[4] ?? "" };
+	const prefix = match[4] ?? "";
+	const afterArrow = isAfterArrow(textBefore, prefix);
+	return { kind: "name", prefix, afterArrow };
 }
 
 function functionDoc(fn: FunctionSymbol): string {

@@ -1,4 +1,4 @@
-import { XQuery31Full } from "xq-parser";
+import { XQuery31Full, XQuery4Full } from "xq-parser";
 import type { Node, NonTerminal, Terminal } from "xq-parser";
 import type { FileAnalysis, FunctionSymbol, VariableSymbol, ImportInfo, ParamInfo, DocComment } from "./types.ts";
 
@@ -162,6 +162,63 @@ function sequenceTypeText(text: string, node: Node): string | undefined {
 	return text.slice(node.start, node.end ?? undefined).trim() || undefined;
 }
 
+/**
+ * Extract the function name from a FunctionDecl node.
+ * XQuery 3.1: direct EQName child.
+ * XQuery 4.0: UnreservedFunctionEQName child (no AnnotatedDecl wrapper).
+ */
+function extractFuncName(decl: Node): string | null {
+	// XQuery 3.1: EQName is a direct child of FunctionDecl
+	const eqname = directChildOf(decl, "EQName");
+	if (eqname) return firstTerminalValue(eqname);
+	// XQuery 4.0: UnreservedFunctionEQName is a direct child of FunctionDecl
+	const unreserved = directChildOf(decl, "UnreservedFunctionEQName");
+	if (unreserved) return firstTerminalValue(unreserved);
+	return null;
+}
+
+/**
+ * Extract ParamInfo list from a FunctionDecl node.
+ * XQuery 3.1: ParamList > Param > EQName
+ * XQuery 4.0: ParamListWithDefaults > ParamWithDefault > VarNameAndType > EQName
+ */
+function extractFuncParams(decl: Node, text: string, doc: DocComment | undefined): ParamInfo[] {
+	const params: ParamInfo[] = [];
+
+	// XQuery 3.1 path
+	const paramList = directChildOf(decl, "ParamList");
+	if (paramList) {
+		for (const param of findAll(paramList, "Param")) {
+			const paramEqname = directChildOf(param, "EQName");
+			const paramName = paramEqname ? firstTerminalValue(paramEqname) : null;
+			if (!paramName) continue;
+			const typeDecl = directChildOf(param, "TypeDeclaration");
+			const seqTypeNode = typeDecl && directChildOf(typeDecl, "SequenceType");
+			const paramType = seqTypeNode ? sequenceTypeText(text, seqTypeNode) : undefined;
+			params.push({ name: paramName, type: paramType, description: doc?.params[paramName] });
+		}
+		return params;
+	}
+
+	// XQuery 4.0 path
+	const paramListWithDefaults = directChildOf(decl, "ParamListWithDefaults");
+	if (paramListWithDefaults) {
+		for (const param of findAll(paramListWithDefaults, "ParamWithDefault")) {
+			const varNameAndType = directChildOf(param, "VarNameAndType");
+			if (!varNameAndType) continue;
+			const paramEqname = directChildOf(varNameAndType, "EQName");
+			const paramName = paramEqname ? firstTerminalValue(paramEqname) : null;
+			if (!paramName) continue;
+			const typeDecl = directChildOf(varNameAndType, "TypeDeclaration");
+			const seqTypeNode = typeDecl && directChildOf(typeDecl, "SequenceType");
+			const paramType = seqTypeNode ? sequenceTypeText(text, seqTypeNode) : undefined;
+			params.push({ name: paramName, type: paramType, description: doc?.params[paramName] });
+		}
+	}
+
+	return params;
+}
+
 function extractFunctions(
 	ast: Node,
 	sourceUri: string,
@@ -170,13 +227,14 @@ function extractFunctions(
 	prefixMap: Map<string, string>,
 ): FunctionSymbol[] {
 	const results: FunctionSymbol[] = [];
-	// Use AnnotatedDecl (starts at 'declare') so the comment lookup clears the 'declare' keyword
+
+	// XQuery 3.1: FunctionDecl is wrapped in AnnotatedDecl (starts at 'declare')
+	// We use AnnotatedDecl as the anchor for comment lookup.
 	for (const annotated of findAll(ast, "AnnotatedDecl")) {
 		const decl = directChildOf(annotated, "FunctionDecl");
 		if (!decl) continue;
 
-		const eqname = directChildOf(decl, "EQName");
-		const name = eqname ? firstTerminalValue(eqname) : null;
+		const name = extractFuncName(decl);
 		if (!name) continue;
 
 		const colonIdx = name.indexOf(":");
@@ -184,26 +242,9 @@ function extractFunctions(
 		const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
 
 		const doc = findPrecedingDoc(comments, text, annotated.start);
+		const params = extractFuncParams(decl, text, doc);
 
-		const params: ParamInfo[] = [];
-		const paramList = directChildOf(decl, "ParamList");
-		if (paramList) {
-			for (const param of findAll(paramList, "Param")) {
-				const paramEqname = directChildOf(param, "EQName");
-				const paramName = paramEqname ? firstTerminalValue(paramEqname) : null;
-				if (!paramName) continue;
-				const typeDecl = directChildOf(param, "TypeDeclaration");
-				const seqTypeNode = typeDecl && directChildOf(typeDecl, "SequenceType");
-				const paramType = seqTypeNode ? sequenceTypeText(text, seqTypeNode) : undefined;
-				params.push({
-					name: paramName,
-					type: paramType,
-					description: doc?.params[paramName],
-				});
-			}
-		}
-
-		// Return type: 'as' followed by SequenceType (direct child of FunctionDecl)
+		// Return type: SequenceType direct child of FunctionDecl (both XQ3.1 and XQ4)
 		const seqType = directChildOf(decl, "SequenceType");
 		const returnType = seqType ? sequenceTypeText(text, seqType) : undefined;
 
@@ -220,30 +261,99 @@ function extractFunctions(
 			sourceOffset: annotated.start,
 		});
 	}
+
+	// XQuery 4.0: FunctionDecl appears directly in Prolog (no AnnotatedDecl wrapper).
+	// Detect this by finding FunctionDecl nodes that are NOT inside an AnnotatedDecl.
+	const annotatedDecls = new Set(findAll(ast, "AnnotatedDecl"));
+	for (const decl of findAll(ast, "FunctionDecl")) {
+		// Skip if this FunctionDecl is inside an AnnotatedDecl (already handled above)
+		let isWrapped = false;
+		for (const annotated of annotatedDecls) {
+			if (!isTerminal(annotated) && findAll(annotated, "FunctionDecl").includes(decl)) {
+				isWrapped = true;
+				break;
+			}
+		}
+		if (isWrapped) continue;
+
+		const name = extractFuncName(decl);
+		if (!name) continue;
+
+		const colonIdx = name.indexOf(":");
+		const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : "";
+		const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
+
+		const doc = findPrecedingDoc(comments, text, decl.start);
+		const params = extractFuncParams(decl, text, doc);
+
+		const seqType = directChildOf(decl, "SequenceType");
+		const returnType = seqType ? sequenceTypeText(text, seqType) : undefined;
+
+		results.push({
+			name,
+			prefix,
+			localName,
+			namespaceUri: resolveNamespaceUri(prefix, prefixMap),
+			arity: params.length,
+			params,
+			returnType,
+			doc,
+			sourceUri,
+			sourceOffset: decl.start,
+		});
+	}
+
 	return results;
 }
 
 function extractModuleVariables(ast: Node, sourceUri: string): VariableSymbol[] {
 	const results: VariableSymbol[] = [];
 	for (const varDecl of findAll(ast, "VarDecl")) {
+		// XQuery 3.1: direct VarName child
 		const varName = directChildOf(varDecl, "VarName");
-		const name = varName ? firstTerminalValue(varName) : null;
-		if (!name) continue;
-		results.push({
-			name,
-			offset: varDecl.start,
-			isModuleLevel: true,
-			sourceUri,
-		});
+		if (varName) {
+			const name = firstTerminalValue(varName);
+			if (name) results.push({ name, offset: varDecl.start, isModuleLevel: true, sourceUri });
+			continue;
+		}
+		// XQuery 4.0: VarNameAndType > EQName
+		const varNameAndType = directChildOf(varDecl, "VarNameAndType");
+		if (varNameAndType) {
+			const eqname = directChildOf(varNameAndType, "EQName");
+			const name = eqname ? firstTerminalValue(eqname) : null;
+			if (name) results.push({ name, offset: varDecl.start, isModuleLevel: true, sourceUri });
+		}
 	}
 	return results;
 }
 
+/**
+ * Extract the variable name from a binding node.
+ * XQuery 3.1 uses a direct VarName child.
+ * XQuery 4.0 uses a VarNameAndType child containing an EQName.
+ * Both ultimately contain an EQName with the variable name.
+ */
+function extractVarNameFromBinding(binding: Node): string | null {
+	// XQuery 3.1: LetBinding/$  VarName  / EQName
+	const varName = directChildOf(binding, "VarName");
+	if (varName) return firstTerminalValue(varName);
+
+	// XQuery 4.0: LetValueBinding / VarNameAndType / EQName  (or ForItemBinding / ForMemberBinding)
+	// The binding node passed in may be LetBinding, ForBinding, ForItemBinding, or ForMemberBinding
+	const varNameAndType = directChildOf(binding, "VarNameAndType");
+	if (varNameAndType) {
+		const eqname = directChildOf(varNameAndType, "EQName");
+		if (eqname) return firstTerminalValue(eqname);
+	}
+	return null;
+}
+
 function extractLocalBindings(ast: Node, sourceUri: string): VariableSymbol[] {
 	const results: VariableSymbol[] = [];
+
+	// XQuery 3.1 LetBinding and ForBinding (direct children with VarName)
 	for (const binding of [...findAll(ast, "LetBinding"), ...findAll(ast, "ForBinding")]) {
-		const varName = directChildOf(binding, "VarName");
-		const name = varName ? firstTerminalValue(varName) : null;
+		const name = extractVarNameFromBinding(binding);
 		if (!name) continue;
 		results.push({
 			name,
@@ -252,6 +362,25 @@ function extractLocalBindings(ast: Node, sourceUri: string): VariableSymbol[] {
 			sourceUri,
 		});
 	}
+
+	// XQuery 4.0: LetValueBinding, ForItemBinding, ForMemberBinding
+	// These appear as children of LetBinding/ForBinding in XQ4 ASTs.
+	// We look for them directly so both XQ3.1 and XQ4 paths work.
+	for (const binding of [
+		...findAll(ast, "LetValueBinding"),
+		...findAll(ast, "ForItemBinding"),
+		...findAll(ast, "ForMemberBinding"),
+	]) {
+		const name = extractVarNameFromBinding(binding);
+		if (!name) continue;
+		results.push({
+			name,
+			offset: binding.start,
+			isModuleLevel: false,
+			sourceUri,
+		});
+	}
+
 	return results;
 }
 
@@ -392,13 +521,15 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	};
 }
 
-// Testing
-
 export function analyze(text: string, sourceUri: string): FileAnalysis {
-	try {
-		const { ast, comments } = XQuery31Full(text);
-		return analyzeAst(ast, comments, text, sourceUri);
-	} catch {
-		return analyzeRegex(text, sourceUri);
+	// Try XQuery 4.0 first (superset of 3.1 for most constructs), then 3.1, then regex fallback.
+	for (const parser of [XQuery4Full, XQuery31Full]) {
+		try {
+			const { ast, comments } = parser(text);
+			return analyzeAst(ast, comments, text, sourceUri);
+		} catch {
+			// try next parser
+		}
 	}
+	return analyzeRegex(text, sourceUri);
 }
