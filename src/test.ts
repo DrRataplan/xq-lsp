@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { analyze, analyzeWithAst } from "./analyzer.ts";
 import { getCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
@@ -612,6 +612,42 @@ util:trim("x")`;
 			assert.equal(result.config.generateLocationHints, false);
 		});
 	});
+
+	test("findConfig: parses single runtime string", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "lsp-config.xq"),
+				`map { "runtime": "basex" }`,
+			);
+			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
+			const result = findConfig(fileUri);
+			assert.ok(result);
+			assert.deepEqual(result.config.runtimes, ["basex"]);
+		});
+	});
+
+	test("findConfig: parses multiple runtimes as a sequence", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "lsp-config.xq"),
+				`map { "runtime": ("basex", "saxonhe") }`,
+			);
+			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
+			const result = findConfig(fileUri);
+			assert.ok(result);
+			assert.deepEqual(result.config.runtimes, ["basex", "saxonhe"]);
+		});
+	});
+
+	test("findConfig: runtimes defaults to empty when key absent", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(path.join(dir, "lsp-config.xq"), `map { "glob": "**/*.xq" }`);
+			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
+			const result = findConfig(fileUri);
+			assert.ok(result);
+			assert.deepEqual(result.config.runtimes, []);
+		});
+	});
 });
 
 // ── namespace diagnostics ─────────────────────────────────────────────────────
@@ -725,6 +761,72 @@ describe("insert positions", () => {
 	test("findDeclareNsInsertPosition: skips xquery version decl", () => {
 		const text = `xquery version "3.1";\ndeclare function local:f() { 1 };`;
 		assert.deepEqual(findDeclareNsInsertPosition(text), { line: 1, character: 0 });
+	});
+});
+
+// ── runtime defs ──────────────────────────────────────────────────────────────
+
+describe("runtime defs", () => {
+	const runtimesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "runtimes");
+
+	test("basex.xq: db:open appears in analysis", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "basex.xq"), "utf-8");
+		const analysis = analyze(text, "builtin:basex");
+		const names = analysis.functions.map((f) => formatQName(f.qname));
+		assert.ok(names.includes("db:open"), `expected db:open, got ${names}`);
+	});
+
+	test("basex.xq: db:open has two overloads (arity 1 and 2)", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "basex.xq"), "utf-8");
+		const analysis = analyze(text, "builtin:basex");
+		const opens = analysis.functions.filter((f) => formatQName(f.qname) === "db:open");
+		assert.ok(opens.some((f) => f.arity === 1), "expected db:open with arity 1");
+		assert.ok(opens.some((f) => f.arity === 2), "expected db:open with arity 2");
+	});
+
+	test("basex.xq: db:list appears with arity 0", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "basex.xq"), "utf-8");
+		const analysis = analyze(text, "builtin:basex");
+		const fn = analysis.functions.find((f) => formatQName(f.qname) === "db:list");
+		assert.ok(fn, "db:list not found");
+		assert.equal(fn.arity, 0);
+	});
+
+	test("basex.xq: functions have doc comments", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "basex.xq"), "utf-8");
+		const analysis = analyze(text, "builtin:basex");
+		const fn = analysis.functions.find((f) => formatQName(f.qname) === "db:open" && f.arity === 1);
+		assert.ok(fn?.doc?.description, "expected doc comment on db:open");
+	});
+
+	test("marklogic.xq: xdmp:log appears in analysis", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "marklogic.xq"), "utf-8");
+		const analysis = analyze(text, "builtin:marklogic");
+		const names = analysis.functions.map((f) => formatQName(f.qname));
+		assert.ok(names.includes("xdmp:log"), `expected xdmp:log, got ${names}`);
+	});
+
+	test("marklogic.xq: xdmp:eval appears with arity 1", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "marklogic.xq"), "utf-8");
+		const analysis = analyze(text, "builtin:marklogic");
+		const fn = analysis.functions.find((f) => formatQName(f.qname) === "xdmp:eval");
+		assert.ok(fn, "xdmp:eval not found");
+		assert.equal(fn.arity, 1);
+	});
+
+	test("saxonhe.xq: saxon:evaluate appears in analysis", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "saxonhe.xq"), "utf-8");
+		const analysis = analyze(text, "builtin:saxonhe");
+		const names = analysis.functions.map((f) => formatQName(f.qname));
+		assert.ok(names.includes("saxon:evaluate"), `expected saxon:evaluate, got ${names}`);
+	});
+
+	test("saxonhe.xq: saxon:version has arity 0", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "saxonhe.xq"), "utf-8");
+		const analysis = analyze(text, "builtin:saxonhe");
+		const fn = analysis.functions.find((f) => formatQName(f.qname) === "saxon:version");
+		assert.ok(fn, "saxon:version not found");
+		assert.equal(fn.arity, 0);
 	});
 });
 

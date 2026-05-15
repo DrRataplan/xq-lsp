@@ -26,6 +26,40 @@ import {
 } from './namespace-diagnostics.ts';
 import type { NamespaceUsageKind } from './namespace-diagnostics.ts';
 
+// ── Runtime definition files ─────────────────────────────────────────────────
+
+const runtimesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'runtimes');
+
+const RUNTIME_FILES: Record<string, string> = {
+  basex: path.join(runtimesDir, 'basex.xq'),
+  marklogic: path.join(runtimesDir, 'marklogic.xq'),
+  saxonhe: path.join(runtimesDir, 'saxonhe.xq'),
+};
+
+const runtimeAnalysisCache = new Map<string, FileAnalysis>();
+
+export function getRuntimeAnalyses(runtimes: string[]): FileAnalysis[] {
+  const results: FileAnalysis[] = [];
+  for (const runtime of runtimes) {
+    const cached = runtimeAnalysisCache.get(runtime);
+    if (cached) {
+      results.push(cached);
+      continue;
+    }
+    const filePath = RUNTIME_FILES[runtime];
+    if (!filePath) continue;
+    try {
+      const text = fs.readFileSync(filePath, 'utf-8');
+      const analysis = analyze(text, `builtin:${runtime}`);
+      runtimeAnalysisCache.set(runtime, analysis);
+      results.push(analysis);
+    } catch {
+      // ignore missing or unreadable runtime files
+    }
+  }
+  return results;
+}
+
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 
@@ -95,12 +129,16 @@ function getImportedAnalysis(importUri: string): FileAnalysis | null {
   }
 }
 
-function getGlobAnalyses(currentUri: string): Map<string, FileAnalysis> {
+function getGlobAnalyses(currentUri: string): { byNamespace: Map<string, FileAnalysis>; runtimes: string[] } {
   const found = findConfig(currentUri);
-  if (!found) return new Map();
+  if (!found) return { byNamespace: new Map(), runtimes: [] };
 
   const { config, configDir } = found;
-  if (globAnalysesByConfigDir.has(configDir)) return globAnalysesByConfigDir.get(configDir)!;
+  const runtimes = config.runtimes;
+
+  if (globAnalysesByConfigDir.has(configDir)) {
+    return { byNamespace: globAnalysesByConfigDir.get(configDir)!, runtimes };
+  }
 
   const byNamespace = new Map<string, FileAnalysis>();
   for (const filePath of expandGlobs(config.globs, configDir)) {
@@ -109,13 +147,18 @@ function getGlobAnalyses(currentUri: string): Map<string, FileAnalysis> {
     if (imported?.moduleNamespaceUri) byNamespace.set(imported.moduleNamespaceUri, imported);
   }
   globAnalysesByConfigDir.set(configDir, byNamespace);
-  return byNamespace;
+  return { byNamespace, runtimes };
 }
 
 function resolveImports(currentUri: string, analysis: FileAnalysis): Map<string, FileAnalysis> {
   const result = new Map<string, FileAnalysis>();
   result.set('builtin:fn', getBuiltins());
-  const globAnalyses = getGlobAnalyses(currentUri);
+  const { byNamespace: globAnalyses, runtimes } = getGlobAnalyses(currentUri);
+  for (const runtimeAnalysis of getRuntimeAnalyses(runtimes)) {
+    if (runtimeAnalysis.modulePrefix) {
+      result.set(`builtin:${runtimeAnalysis.modulePrefix}`, runtimeAnalysis);
+    }
+  }
   for (const imp of analysis.imports) {
     if (imp.atPath) {
       const uri = resolveImportUri(currentUri, imp.atPath);

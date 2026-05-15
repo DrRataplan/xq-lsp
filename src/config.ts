@@ -8,6 +8,7 @@ export interface LspConfig {
 	globs: string[];
 	/** When false, auto-import code actions omit the `at "path"` location hint. Default: true. */
 	generateLocationHints: boolean;
+	runtimes: string[];
 }
 
 function parseConfig(text: string): LspConfig {
@@ -28,6 +29,18 @@ function parseConfig(text: string): LspConfig {
 	}
 }
 
+function parseRuntimes(text: string): string[] {
+	// Evaluate the config and look up the "runtime" key.
+	// Can be a single string or a sequence:
+	//   map { "runtime": "basex" }
+	//   map { "runtime": ("basex", "marklogic") }
+	try {
+		return evaluateXPathToStrings(`(${text.trim()})?runtime`, null, null, {});
+	} catch {
+		return [];
+	}
+}
+
 export function findConfig(fromUri: string): { config: LspConfig; configDir: string } | null {
 	let dir: string;
 	try {
@@ -40,7 +53,8 @@ export function findConfig(fromUri: string): { config: LspConfig; configDir: str
 		const configPath = path.join(dir, "lsp-config.xq");
 		try {
 			const text = fs.readFileSync(configPath, "utf-8");
-			return { config: parseConfig(text), configDir: dir };
+			const parsed = parseConfig(text);
+			return { config: { ...parsed, runtimes: parseRuntimes(text) }, configDir: dir };
 		} catch {
 			/* not found here, try parent */
 		}
