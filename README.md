@@ -15,6 +15,10 @@ Language Server Protocol implementation for XQuery, providing autocompletion, ho
 
 - **Finding files without 'at' imports** — so you don't have to relate them by hand but they resolve automatically
 - **Definition files for different runtimes** — so you don't have to declare them by hand
+- **Completion of keywords** — like `function`, `declare` and `ancestor-or-self`, which saves you some keystrokes
+- **Context-depending completion** — which prevent syntactical errors
+- **Treesitter parser** — shoukld improve performance and scalability for huge files
+- **XQuery 4** — the parser already supports this. Just make it work
 
 Imports written as `import module namespace prefix="uri" at "./other-file.xq"` are followed automatically; symbols from imported files are included in completions.
 
