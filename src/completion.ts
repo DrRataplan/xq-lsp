@@ -17,6 +17,47 @@ interface TokenInfo {
 	nsPrefix?: string;
 }
 
+type SyntaxContext =
+	| { kind: "after-declare" }
+	| { kind: "after-import" }
+	| { kind: "after-for-in" }
+	| { kind: "after-let-assign" }
+	| { kind: "after-return" }
+	| { kind: "after-then" }
+	| { kind: "after-else" }
+	| { kind: "after-satisfies" }
+	| { kind: "after-operator" }
+	| { kind: "top-level" }
+	| { kind: "expression" };
+
+function detectContext(textBefore: string): SyntaxContext {
+	const tail = textBefore.slice(-200);
+
+	if (/\bdeclare\s+%[\w:]+(?:\([^)]*\))?\s+$/i.test(tail)) return { kind: "after-declare" };
+	if (/\bdeclare\s+$/i.test(tail)) return { kind: "after-declare" };
+	if (/\bimport\s+$/i.test(tail)) return { kind: "after-import" };
+	if (/\bfor\s+\$[\w:\-]+(?:\s+as\s+\S+)?\s+$/i.test(tail)) return { kind: "after-for-in" };
+	if (/\blet\s+\$[\w:\-]+\s*:=\s+$/.test(tail)) return { kind: "after-let-assign" };
+	if (/\breturn\s+$/i.test(tail)) return { kind: "after-return" };
+	if (/\bthen\s+$/i.test(tail)) return { kind: "after-then" };
+	if (/\belse\s+$/i.test(tail)) return { kind: "after-else" };
+	if (/\bsatisfies\s+$/i.test(tail)) return { kind: "after-satisfies" };
+	if (/(?:[+\-*]|div|idiv|mod|and|or|eq|ne|lt|le|gt|ge|=|!=|<=|>=|,|\()\s*$/.test(tail)) return { kind: "after-operator" };
+	return { kind: "expression" };
+}
+
+const DECLARE_KEYWORDS = ["function", "variable", "namespace", "option", "default"];
+const IMPORT_KEYWORDS = ["module", "schema"];
+
+function buildKeywordItem(word: string): CompletionItem {
+	return {
+		label: word,
+		kind: CompletionItemKind.Keyword,
+		insertText: word,
+		insertTextFormat: InsertTextFormat.PlainText,
+	};
+}
+
 function parseToken(textBefore: string): TokenInfo {
 	const match = textBefore.match(/\$([\w:\-]*)$|(?:([\w\-]+):)([\w\-]*)$|([\w\-]+)$/);
 	if (!match) return { kind: "name", prefix: "" };
@@ -125,6 +166,27 @@ export function getCompletions(
 
 	const filter = token.prefix.toLowerCase();
 	const defaultUri = currentAnalysis.defaultFunctionNamespace;
+	const syntaxCtx = detectContext(ctx.textBeforeCursor);
+
+	// Context-restricted completions
+	if (syntaxCtx.kind === "after-declare") {
+		for (const kw of DECLARE_KEYWORDS) {
+			if (!filter || kw.startsWith(filter)) items.push(buildKeywordItem(kw));
+		}
+		return items;
+	}
+
+	if (syntaxCtx.kind === "after-import") {
+		for (const kw of IMPORT_KEYWORDS) {
+			if (!filter || kw.startsWith(filter)) items.push(buildKeywordItem(kw));
+		}
+		return items;
+	}
+
+	if (syntaxCtx.kind === "after-for-in") {
+		if (!filter || "in".startsWith(filter)) items.push(buildKeywordItem("in"));
+		return items;
+	}
 
 	// Functions declared in the current file (full qualified name)
 	for (const fn of currentAnalysis.functions) {
