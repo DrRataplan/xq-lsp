@@ -1,6 +1,7 @@
 import { XQuery31Full } from "xq-parser";
 import type { Node, NonTerminal, Terminal } from "xq-parser";
 import type { FileAnalysis, FunctionSymbol, VariableSymbol, ImportInfo, ParamInfo, DocComment } from "./types.ts";
+import { analyzeWithTreeSitter } from "./treesitter.ts";
 
 // ── Well-known namespace URIs ────────────────────────────────────────────────
 
@@ -392,13 +393,18 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	};
 }
 
-// Testing
+// ── Public entry point ────────────────────────────────────────────────────────
 
 export function analyze(text: string, sourceUri: string): FileAnalysis {
+	// Try tree-sitter first (fastest path for valid files).
+	const ts = analyzeWithTreeSitter(text, sourceUri);
+	if (ts) return ts;
+	// Fall back to xq-parser for valid files tree-sitter can't handle.
 	try {
 		const { ast, comments } = XQuery31Full(text);
 		return analyzeAst(ast, comments, text, sourceUri);
 	} catch {
+		// Fall back to regex for syntactically incomplete/invalid files.
 		return analyzeRegex(text, sourceUri);
 	}
 }
