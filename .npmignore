@@ -1,0 +1,8 @@
+editors
+*~
+.*
+CLAUDE.md
+dist/test.js
+dist/test.d.ts
+dist/src/
+src/test.ts

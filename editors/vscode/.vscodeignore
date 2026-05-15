@@ -1,0 +1,8 @@
+package-lock.json
+package.json~
+node_modules/xq-lsp/src/**
+node_modules/xq-lsp/dist/test.js
+node_modules/xq-lsp/dist/test.d.ts
+node_modules/xq-lsp/tsconfig.json
+node_modules/xq-lsp/CLAUDE.md
+node_modules/xq-lsp/README.md~

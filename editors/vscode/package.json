@@ -5,9 +5,11 @@
   "version": "0.1.0",
   "publisher": "elliat",
   "license": "MIT",
+  "type": "module",
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.86.0"
   },
+  "repository": "https://github.com/DrRataplan/xq-lsp.git",
   "categories": ["Programming Languages"],
   "activationEvents": [],
   "contributes": {
@@ -21,8 +23,14 @@
     ]
   },
   "main": "./extension.js",
+  "scripts": {
+    "package": "vsce package"
+  },
   "dependencies": {
     "vscode-languageclient": "^9.0.1",
     "xq-lsp": "../.."
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.0.0"
   }
 }

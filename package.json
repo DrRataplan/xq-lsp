@@ -1,18 +1,20 @@
 {
   "name": "xq-lsp",
   "version": "1.0.0",
-  "description": "",
+  "description": "XQuery Language Server Protocol implementation",
   "license": "MIT",
   "author": "Martin Middel",
   "type": "module",
   "main": "dist/server.js",
+  "repository": "https://github.com/DrRataplan/xq-lsp.git",
   "bin": {
     "xq-lsp": "./src/server.ts"
   },
   "scripts": {
     "build": "tsc",
     "start": "node ./src/server.ts --stdio",
-    "test": "node --test src/test.ts"
+    "test": "node --test src/test.ts",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "vscode-languageserver": "^9.0.1",
