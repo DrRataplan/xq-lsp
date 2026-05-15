@@ -1,21 +1,24 @@
 import * as fs from "fs";
 import * as path from "path";
-import { fileURLToPath, pathToFileURL } from "url";
+import { fileURLToPath } from "url";
+import fontoxpath from "fontoxpath";
+const { evaluateXPathToStrings } = fontoxpath;
 
 export interface LspConfig {
 	globs: string[];
 }
 
 function parseGlobs(text: string): string[] {
-	// Single string: "glob": "pattern"
-	const single = text.match(/"glob"\s*:\s*"([^"]+)"/);
-	if (single) return [single[1]];
-
-	// Sequence: "glob": ("pattern1", "pattern2")
-	const seq = text.match(/"glob"\s*:\s*\(([^)]+)\)/);
-	if (seq) return [...seq[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-
-	return [];
+	// Evaluate the config as an XPath 3.1 expression and look up the "glob" key.
+	// The config file should contain a map expression, e.g.:
+	//   map { "glob": "src/**/*.xq" }
+	// or with multiple patterns:
+	//   map { "glob": ("src/**/*.xq", "lib/**/*.xq") }
+	try {
+		return evaluateXPathToStrings(`(${text.trim()})?glob`, null, null, {});
+	} catch {
+		return [];
+	}
 }
 
 export function findConfig(fromUri: string): { config: LspConfig; configDir: string } | null {
