@@ -45,60 +45,8 @@ export function findConfig(fromUri: string): { config: LspConfig; configDir: str
 	return null;
 }
 
-function patternToRegex(pattern: string): RegExp {
-	const escaped = pattern
-		.replace(/[.+^${}()|[\]\\]/g, "\\$&")
-		.replace(/\*/g, "[^/]*");
-	return new RegExp(`^${escaped}$`);
-}
-
-function expandGlob(pattern: string, baseDir: string): string[] {
-	const results: string[] = [];
-	const starStar = pattern.indexOf("**/");
-
-	if (starStar === -1) {
-		// No recursive wildcard — match files in the specified directory only
-		const dirPart = path.join(baseDir, path.dirname(pattern));
-		const filePat = path.basename(pattern);
-		const re = patternToRegex(filePat);
-		try {
-			for (const entry of fs.readdirSync(dirPart, { withFileTypes: true })) {
-				if (entry.isFile() && re.test(entry.name)) {
-					results.push(path.join(dirPart, entry.name));
-				}
-			}
-		} catch {
-			/* ignore unreadable directories */
-		}
-	} else {
-		// Recursive: descend from the prefix directory and match the suffix pattern
-		const prefix = pattern.slice(0, starStar).replace(/\/$/, "");
-		const suffix = pattern.slice(starStar + 3);
-		const startDir = prefix ? path.join(baseDir, prefix) : baseDir;
-		const re = patternToRegex(suffix);
-
-		function walk(dir: string): void {
-			let entries: fs.Dirent[];
-			try {
-				entries = fs.readdirSync(dir, { withFileTypes: true });
-			} catch {
-				return;
-			}
-			for (const entry of entries) {
-				const fullPath = path.join(dir, entry.name);
-				if (entry.isDirectory()) {
-					walk(fullPath);
-				} else if (entry.isFile() && re.test(entry.name)) {
-					results.push(fullPath);
-				}
-			}
-		}
-		walk(startDir);
-	}
-
-	return results;
-}
-
 export function expandGlobs(globs: string[], baseDir: string): string[] {
-	return globs.flatMap((g) => expandGlob(g, baseDir));
+	return globs.flatMap((pattern) =>
+		fs.globSync(pattern, { cwd: baseDir }).map((f) => path.resolve(baseDir, f)),
+	);
 }
