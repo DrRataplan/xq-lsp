@@ -589,3 +589,85 @@ util:trim("x")`;
 		});
 	});
 });
+
+// ── context-dependent completion ─────────────────────────────────────────────
+
+describe("context-dependent completion", () => {
+	const ANALYSIS = analyze(
+		`declare function local:myFunc($x) { $x };
+declare variable $local:myVar := 1;`,
+		"file:///ctx.xq",
+	);
+	const NO_IMPORTS = new Map<string, ReturnType<typeof analyze>>();
+
+	test("after 'declare ', only keyword items appear (no function items)", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "declare ", cursorOffset: 8 },
+			ANALYSIS,
+			NO_IMPORTS,
+		);
+		const hasFunction = items.some((i) => i.kind === 3 /* CompletionItemKind.Function */);
+		assert.ok(!hasFunction, `no function items expected after 'declare ', got: ${items.map((i) => i.label)}`);
+	});
+
+	test("after 'declare ', 'function' keyword appears in completions", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "declare ", cursorOffset: 8 },
+			ANALYSIS,
+			NO_IMPORTS,
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("function"), `expected 'function' keyword, got ${labels}`);
+	});
+
+	test("after 'import ', 'module' appears and function names do not", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "import ", cursorOffset: 7 },
+			ANALYSIS,
+			NO_IMPORTS,
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("module"), `expected 'module' keyword, got ${labels}`);
+		assert.ok(!labels.includes("local:myFunc"), `function name should not appear after 'import ', got ${labels}`);
+	});
+
+	test("after 'for $x ', only 'in' keyword appears", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "for $x ", cursorOffset: 7 },
+			ANALYSIS,
+			NO_IMPORTS,
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("in"), `expected 'in' keyword, got ${labels}`);
+		assert.equal(labels.length, 1, `expected only 'in', got ${labels}`);
+	});
+
+	test("after 'let $x := ', function names DO appear (normal expression context)", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "let $x := ", cursorOffset: 10 },
+			ANALYSIS,
+			NO_IMPORTS,
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("local:myFunc"), `expected function name after 'let $x := ', got ${labels}`);
+	});
+
+	test("after 'return ', function names DO appear", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "return ", cursorOffset: 7 },
+			ANALYSIS,
+			NO_IMPORTS,
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("local:myFunc"), `expected function name after 'return ', got ${labels}`);
+	});
+
+	test("in normal expression context (after open paren), completions are returned", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "local:myFunc(", cursorOffset: 13 },
+			ANALYSIS,
+			NO_IMPORTS,
+		);
+		assert.ok(items.length > 0, "expected some completions in expression context");
+	});
+});
