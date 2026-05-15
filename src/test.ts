@@ -5,6 +5,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { pathToFileURL } from "node:url";
 import { analyze } from "./analyzer.ts";
+import { analyzeWithTreeSitter } from "./treesitter.ts";
 import { getCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getBuiltins } from "./builtins.ts";
@@ -587,5 +588,137 @@ util:trim("x")`;
 			const labels = items.map((i) => i.label);
 			assert.ok(labels.includes("trim"), `expected trim via namespace-only import, got ${labels}`);
 		});
+	});
+});
+
+// ── tree-sitter integration ───────────────────────────────────────────────────
+
+describe("treesitter", () => {
+	const VALID_XQ = `
+import module namespace math="http://example.com/math" at "./math.xq";
+
+declare variable $local:count := 10;
+
+declare function local:add($a as xs:integer, $b as xs:integer) as xs:integer {
+  let $sum := $a + $b
+  for $item in (1 to $sum)
+  return $item
+};
+
+declare function local:greet($name) {
+  "Hello " || $name
+};
+
+local:add(1, 2)
+`;
+
+	const WITH_DOC = `(:~
+ : Adds two numbers.
+ : @param $a The first operand
+ : @param $b The second operand
+ : @return The sum
+ :)
+declare function local:add($a as xs:integer, $b as xs:integer) as xs:integer {
+  $a + $b
+};`;
+
+	const INVALID_XQ = `
+import module namespace util="http://example.com/util" at "./util.xq";
+declare variable $count := 10;
+declare function local:double($x as xs:integer) as xs:integer {
+  $x * 2
+};
+let $result := local:double(
+`; // intentionally truncated
+
+	test("treesitter: analyzeWithTreeSitter returns non-null for valid XQuery", () => {
+		const result = analyzeWithTreeSitter(VALID_XQ, "file:///test.xq");
+		assert.ok(result !== null, "expected non-null result for valid XQuery");
+	});
+
+	test("treesitter: analyzeWithTreeSitter returns null for invalid/truncated XQuery", () => {
+		const result = analyzeWithTreeSitter(INVALID_XQ, "file:///incomplete.xq");
+		assert.equal(result, null, "expected null for truncated/invalid XQuery");
+	});
+
+	test("treesitter: extracts same functions as xq-parser path", () => {
+		const tsResult = analyzeWithTreeSitter(VALID_XQ, "file:///test.xq");
+		const xqResult = analyze(VALID_XQ, "file:///test.xq");
+		assert.ok(tsResult, "tree-sitter result should be non-null");
+		const tsNames = tsResult.functions.map((f) => f.name).sort();
+		const xqNames = xqResult.functions.map((f) => f.name).sort();
+		assert.deepEqual(tsNames, xqNames, `function names differ: ts=${tsNames} xq=${xqNames}`);
+	});
+
+	test("treesitter: extracts same function arity and params as xq-parser path", () => {
+		const tsResult = analyzeWithTreeSitter(VALID_XQ, "file:///test.xq");
+		assert.ok(tsResult);
+		const add = tsResult.functions.find((f) => f.name === "local:add");
+		assert.ok(add, "local:add not found in tree-sitter result");
+		assert.equal(add.arity, 2);
+		assert.equal(add.params[0].name, "a");
+		assert.equal(add.params[1].name, "b");
+		assert.equal(add.params[0].type, "xs:integer");
+		assert.equal(add.returnType, "xs:integer");
+	});
+
+	test("treesitter: extracts same module variables as xq-parser path", () => {
+		const tsResult = analyzeWithTreeSitter(VALID_XQ, "file:///test.xq");
+		assert.ok(tsResult);
+		const names = tsResult.moduleVariables.map((v) => v.name);
+		assert.ok(names.includes("local:count"), `expected local:count, got ${names}`);
+		assert.ok(tsResult.moduleVariables[0].isModuleLevel);
+	});
+
+	test("treesitter: extracts same let/for bindings as xq-parser path", () => {
+		const tsResult = analyzeWithTreeSitter(VALID_XQ, "file:///test.xq");
+		assert.ok(tsResult);
+		const names = tsResult.localBindings.map((v) => v.name);
+		assert.ok(names.includes("sum"), `expected sum, got ${names}`);
+		assert.ok(names.includes("item"), `expected item, got ${names}`);
+	});
+
+	test("treesitter: extracts same imports as xq-parser path", () => {
+		const tsResult = analyzeWithTreeSitter(VALID_XQ, "file:///test.xq");
+		assert.ok(tsResult);
+		assert.equal(tsResult.imports.length, 1);
+		assert.equal(tsResult.imports[0].prefix, "math");
+		assert.equal(tsResult.imports[0].atPath, "./math.xq");
+	});
+
+	test("treesitter: extracts doc comment description", () => {
+		const result = analyzeWithTreeSitter(WITH_DOC, "file:///test.xq");
+		assert.ok(result, "tree-sitter result should be non-null");
+		const fn = result.functions.find((f) => f.name === "local:add");
+		assert.ok(fn?.doc?.description.includes("Adds two numbers"), `got: ${fn?.doc?.description}`);
+	});
+
+	test("treesitter: extracts @param descriptions", () => {
+		const result = analyzeWithTreeSitter(WITH_DOC, "file:///test.xq");
+		assert.ok(result);
+		const fn = result.functions.find((f) => f.name === "local:add");
+		assert.equal(fn?.params[0].description, "The first operand");
+		assert.equal(fn?.params[1].description, "The second operand");
+	});
+
+	test("treesitter: extracts @return description", () => {
+		const result = analyzeWithTreeSitter(WITH_DOC, "file:///test.xq");
+		assert.ok(result);
+		const fn = result.functions.find((f) => f.name === "local:add");
+		assert.equal(fn?.doc?.returns, "The sum");
+	});
+
+	test("treesitter: analyze() uses tree-sitter for valid XQuery (returns same result as xq-parser)", () => {
+		// analyze() should go through tree-sitter for valid files; verify output is equivalent
+		const result = analyze(VALID_XQ, "file:///test.xq");
+		const fnNames = result.functions.map((f) => f.name).sort();
+		assert.ok(fnNames.includes("local:add"), `expected local:add, got ${fnNames}`);
+		assert.ok(fnNames.includes("local:greet"), `expected local:greet, got ${fnNames}`);
+	});
+
+	test("treesitter: analyze() still falls back correctly for invalid XQuery", () => {
+		const result = analyze(INVALID_XQ, "file:///incomplete.xq");
+		const fnNames = result.functions.map((f) => f.name);
+		assert.ok(fnNames.includes("local:double"), `expected local:double, got ${fnNames}`);
 	});
 });

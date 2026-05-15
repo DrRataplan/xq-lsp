@@ -29,7 +29,9 @@
 
 import { createRequire } from "module";
 import type { FileAnalysis, FunctionSymbol, VariableSymbol, ImportInfo, ParamInfo, DocComment } from "./types.ts";
-import { XMLNS_FN } from "./analyzer.ts";
+
+// Default function namespace (matches XMLNS_FN in analyzer.ts)
+const XMLNS_FN = "http://www.w3.org/2005/xpath-functions";
 
 // ── Lazy-load tree-sitter ────────────────────────────────────────────────────
 
@@ -52,26 +54,6 @@ function getParser(): any | null {
 }
 
 // ── AST helpers ──────────────────────────────────────────────────────────────
-
-/** Return all nodes of the given type in a depth-first walk (non-recursive via cursor). */
-function findAll(root: any, type: string): any[] {
-	const results: any[] = [];
-	const cursor = root.walk();
-	let reached = false;
-	do {
-		const node = cursor.currentNode();
-		if (node.type === type) results.push(node);
-		if (cursor.gotoFirstChild()) continue;
-		if (cursor.gotoNextSibling()) continue;
-		while (cursor.gotoParent()) {
-			if (node === root) { reached = true; break; }
-			if (cursor.gotoNextSibling()) break;
-		}
-		// Check if we've circled back to root
-		if (cursor.currentNode() === root && !cursor.gotoNextSibling()) break;
-	} while (!reached);
-	return results;
-}
 
 /** Named children of `node`. */
 function namedChildren(node: any): any[] {
@@ -214,7 +196,6 @@ function extractQName(node: any): { prefix: string; localName: string; name: str
 function extractImports(rootNode: any): ImportInfo[] {
 	const results: ImportInfo[] = [];
 	for (const mi of collectAll(rootNode, "module_import")) {
-		const kids = allChildren(mi);
 		// Collect named children: identifier (prefix) then string_literals and source_at
 		const namedKids = namedChildren(mi);
 		// First named child: identifier = prefix
@@ -351,13 +332,24 @@ function extractLocalBindings(rootNode: any, sourceUri: string): VariableSymbol[
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
+/** Return true if the tree contains any ERROR node (i.e., a syntax error). */
+function hasErrorNodes(node: any): boolean {
+	if (node.type === "ERROR") return true;
+	for (let i = 0; i < node.childCount; i++) {
+		if (hasErrorNodes(node.child(i))) return true;
+	}
+	return false;
+}
+
 /**
  * Parse `text` with tree-sitter. Returns a `FileAnalysis` if tree-sitter is available
- * and the file parses without errors, otherwise returns `null`.
+ * and the file parses without syntax errors, otherwise returns `null`.
  *
- * Note: tree-sitter can produce a partial tree even for invalid input. We reject trees
- * that contain any `ERROR` nodes so that the xq-parser or regex fallback handles
- * syntactically incomplete files (e.g., files being actively edited).
+ * Note: tree-sitter produces a partial tree even for invalid input. We reject trees
+ * that contain `ERROR` nodes (hard syntax errors) so that the xq-parser or regex
+ * fallback handles syntactically incomplete files (e.g., files being actively edited).
+ * We do NOT reject on `hasError()` alone — the XQuery grammar produces harmless
+ * "missing" nodes for declaration-only files that lack a trailing query body expression.
  */
 export function analyzeWithTreeSitter(text: string, sourceUri: string): FileAnalysis | null {
 	const parser = getParser();
@@ -371,8 +363,8 @@ export function analyzeWithTreeSitter(text: string, sourceUri: string): FileAnal
 	}
 
 	const rootNode = tree.rootNode;
-	// Reject trees with parse errors — fall through to xq-parser
-	if (rootNode.hasError()) return null;
+	// Reject trees with actual syntax errors — fall through to xq-parser
+	if (hasErrorNodes(rootNode)) return null;
 
 	const imports = extractImports(rootNode);
 	const moduleNs = extractModuleNamespace(text);
