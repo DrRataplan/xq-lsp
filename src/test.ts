@@ -5,11 +5,12 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { pathToFileURL } from "node:url";
 import { analyze } from "./analyzer.ts";
-import { getCompletions } from "./completion.ts";
+import { getCompletions, getKeywordCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getBuiltins } from "./builtins.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { CompletionItemKind } from "vscode-languageserver/node.js";
 
 // ── analyzer: valid XQuery via AST ──────────────────────────────────────────
 describe("analyze", () => {
@@ -587,5 +588,60 @@ util:trim("x")`;
 			const labels = items.map((i) => i.label);
 			assert.ok(labels.includes("trim"), `expected trim via namespace-only import, got ${labels}`);
 		});
+	});
+});
+
+// ── keyword completion ────────────────────────────────────────────────────────
+
+describe("keyword completion", () => {
+	const EMPTY_ANALYSIS = analyze("1", "file:///test.xq");
+
+	test("'let' keyword appears when typing 'le'", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "le", cursorOffset: 2 },
+			EMPTY_ANALYSIS,
+			new Map(),
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("let"), `expected 'let', got ${labels}`);
+	});
+
+	test("'declare function' appears when typing 'decl'", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "decl", cursorOffset: 4 },
+			EMPTY_ANALYSIS,
+			new Map(),
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("declare function"), `expected 'declare function', got ${labels}`);
+	});
+
+	test("'child' axis has insertText 'child::' when typing 'chi'", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "chi", cursorOffset: 3 },
+			EMPTY_ANALYSIS,
+			new Map(),
+		);
+		const childItem = items.find((i) => i.label === "child");
+		assert.ok(childItem, `expected 'child' item, got ${items.map((i) => i.label)}`);
+		assert.equal(childItem.insertText, "child::");
+	});
+
+	test("keyword items have CompletionItemKind.Keyword", () => {
+		const items = getKeywordCompletions("let");
+		assert.ok(items.length > 0, "expected at least one keyword item");
+		for (const item of items) {
+			assert.equal(item.kind, CompletionItemKind.Keyword, `expected Keyword kind, got ${item.kind} for '${item.label}'`);
+		}
+	});
+
+	test("keywords do NOT appear in variable context ($let)", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "$let", cursorOffset: 4 },
+			EMPTY_ANALYSIS,
+			new Map(),
+		);
+		const keywordItems = items.filter((i) => i.kind === CompletionItemKind.Keyword);
+		assert.equal(keywordItems.length, 0, `expected no keyword items in variable context, got ${keywordItems.map((i) => i.label)}`);
 	});
 });

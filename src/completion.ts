@@ -175,5 +175,84 @@ export function getCompletions(
 		}
 	}
 
+	// ── Keyword completions ──────────────────────────────────────────────────
+	items.push(...getKeywordCompletions(filter));
+
+	return items;
+}
+
+interface KeywordDef {
+	label: string;
+	insertText: string;
+}
+
+function buildKeywordDefs(): KeywordDef[] {
+	const expressionKeywords = [
+		"let", "for", "return", "where", "if", "then", "else", "in", "as",
+		"and", "or", "not", "every", "some", "satisfies", "is",
+		"eq", "ne", "lt", "le", "gt", "ge",
+		"div", "idiv", "mod",
+		"cast", "castable", "treat", "instance",
+		"union", "intersect", "except",
+	];
+
+	const declarationPhrases = [
+		"declare function",
+		"declare variable",
+		"declare namespace",
+		"declare default function namespace",
+		"declare default element namespace",
+		"declare option",
+		"module namespace",
+		"import module namespace",
+		"import schema namespace",
+	];
+
+	const axes = [
+		"child", "descendant", "attribute", "self",
+		"descendant-or-self", "following-sibling", "following",
+		"parent", "ancestor", "ancestor-or-self",
+		"preceding-sibling", "preceding", "namespace",
+	];
+
+	const nodeTests = [
+		"element", "attribute", "text", "node",
+		"document-node", "comment", "processing-instruction",
+		"namespace-node", "schema-element", "schema-attribute",
+		"empty-sequence", "item",
+	];
+
+	const defs: KeywordDef[] = [];
+
+	for (const kw of expressionKeywords) {
+		defs.push({ label: kw, insertText: kw });
+	}
+	for (const phrase of declarationPhrases) {
+		defs.push({ label: phrase, insertText: phrase });
+	}
+	for (const axis of axes) {
+		defs.push({ label: axis, insertText: `${axis}::` });
+	}
+	for (const nt of nodeTests) {
+		defs.push({ label: `${nt}()`, insertText: `${nt}()` });
+	}
+
+	return defs;
+}
+
+const KEYWORD_DEFS: KeywordDef[] = buildKeywordDefs();
+
+export function getKeywordCompletions(filter: string): CompletionItem[] {
+	const lowerFilter = filter.toLowerCase();
+	const items: CompletionItem[] = [];
+	for (const def of KEYWORD_DEFS) {
+		if (lowerFilter && !def.label.toLowerCase().startsWith(lowerFilter)) continue;
+		items.push({
+			label: def.label,
+			kind: CompletionItemKind.Keyword,
+			insertText: def.insertText,
+			insertTextFormat: InsertTextFormat.PlainText,
+		});
+	}
 	return items;
 }
