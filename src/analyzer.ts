@@ -262,9 +262,9 @@ function extractImports(ast: Node): ImportInfo[] {
 		const prefix = ncname ? firstTerminalValue(ncname) : null;
 		if (!prefix) continue;
 		const uris = directChildrenOf(mi, "URILiteral");
-		if (uris.length < 2) continue;
+		if (uris.length < 1) continue;
 		const namespaceUri = stripQuotes(firstTerminalValue(uris[0]) ?? "");
-		const atPath = stripQuotes(firstTerminalValue(uris[1]) ?? "");
+		const atPath = uris.length >= 2 ? stripQuotes(firstTerminalValue(uris[1]) ?? "") : undefined;
 		results.push({ prefix, namespaceUri, atPath });
 	}
 	return results;
@@ -296,7 +296,7 @@ const RE_FUNC = /declare\s+(?:%[\w:\-]+(?:\([^)]*\))?\s+)*function\s+([\w:\-]+)\
 const RE_VAR_DECL = /declare\s+(?:%[\w:\-]+(?:\([^)]*\))?\s+)*variable\s+\$([\w:\-]+)/g;
 const RE_LET = /\blet\s+\$([\w:\-]+)\s*:=/g;
 const RE_FOR = /\bfor\s+\$([\w:\-]+)\s+in\b/g;
-const RE_IMPORT = /import\s+module\s+namespace\s+([\w\-]+)\s*=\s*["']([^"']*)["']\s+at\s+["']([^"']*)["']/g;
+const RE_IMPORT = /import\s+module\s+namespace\s+([\w\-]+)\s*=\s*["']([^"']*)["'](?:\s+at\s+["']([^"']*)["'])?/g;
 
 function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	const moduleVariables: VariableSymbol[] = [];
@@ -310,7 +310,9 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	const imports: ImportInfo[] = [];
 	RE_IMPORT.lastIndex = 0;
 	while ((m = RE_IMPORT.exec(text)) !== null) {
-		imports.push({ prefix: m[1], namespaceUri: m[2], atPath: m[3] });
+		const imp: ImportInfo = { prefix: m[1], namespaceUri: m[2] };
+		if (m[3]) imp.atPath = m[3];
+		imports.push(imp);
 	}
 
 	const prefixMap = buildPrefixMap(moduleNs, imports);

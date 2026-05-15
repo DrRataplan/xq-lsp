@@ -16,11 +16,16 @@ import { getBuiltins } from './builtins.ts';
 import { getCompletions } from './completion.ts';
 import { getHover, getSignatureHelp, getDocumentSymbols, getDefinition } from './features.ts';
 import type { FileAnalysis } from './types.ts';
+import { findConfig, expandGlobs } from './config.ts';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 
 const analysisCache = new Map<string, FileAnalysis>();
+
+// Glob analyses keyed by config directory, then by module namespace URI.
+// Populated lazily on the first request for a given config root.
+const globAnalysesByConfigDir = new Map<string, Map<string, FileAnalysis>>();
 
 function analyzeDocument(doc: TextDocument): FileAnalysis {
   const analysis = analyze(doc.getText(), doc.uri);
@@ -55,13 +60,37 @@ function getImportedAnalysis(importUri: string): FileAnalysis | null {
   }
 }
 
+function getGlobAnalyses(currentUri: string): Map<string, FileAnalysis> {
+  const found = findConfig(currentUri);
+  if (!found) return new Map();
+
+  const { config, configDir } = found;
+  if (globAnalysesByConfigDir.has(configDir)) return globAnalysesByConfigDir.get(configDir)!;
+
+  const byNamespace = new Map<string, FileAnalysis>();
+  for (const filePath of expandGlobs(config.globs, configDir)) {
+    const fileUri = pathToFileURL(filePath).toString();
+    const imported = getImportedAnalysis(fileUri);
+    if (imported?.moduleNamespaceUri) byNamespace.set(imported.moduleNamespaceUri, imported);
+  }
+  globAnalysesByConfigDir.set(configDir, byNamespace);
+  return byNamespace;
+}
+
 function resolveImports(currentUri: string, analysis: FileAnalysis): Map<string, FileAnalysis> {
   const result = new Map<string, FileAnalysis>();
   result.set('builtin:fn', getBuiltins());
+  const globAnalyses = getGlobAnalyses(currentUri);
   for (const imp of analysis.imports) {
-    const uri = resolveImportUri(currentUri, imp.atPath);
-    const imported = getImportedAnalysis(uri);
-    if (imported) result.set(imp.atPath, imported);
+    if (imp.atPath) {
+      const uri = resolveImportUri(currentUri, imp.atPath);
+      const imported = getImportedAnalysis(uri);
+      if (imported) result.set(imp.atPath, imported);
+    } else {
+      // No "at" path: resolve by matching namespace URI against glob-loaded modules
+      const imported = globAnalyses.get(imp.namespaceUri);
+      if (imported) result.set(imp.namespaceUri, imported);
+    }
   }
   return result;
 }
