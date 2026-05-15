@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1",
-    "xq-lsp": "../.."
+    "xq-lsp": "^1.0.0"
   },
   "devDependencies": {
     "@vscode/vsce": "^3.0.0"

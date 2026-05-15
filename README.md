@@ -11,6 +11,11 @@ Language Server Protocol implementation for XQuery, providing autocompletion, ho
 - **Document symbols** — file outline of all declared functions and variables
 - **Diagnostics** — syntax errors as you type
 
+## Roadmap
+
+- **Finding files without 'at' imports** — so you don't have to relate them by hand but they resolve automatically
+- **Definition files for different runtimes** — so you don't have to declare them by hand
+
 Imports written as `import module namespace prefix="uri" at "./other-file.xq"` are followed automatically; symbols from imported files are included in completions.
 
 For files with syntax errors (common while editing), the server falls back to regex-based extraction so completions keep working.
@@ -69,12 +74,23 @@ Open any `.xq` file and eglot starts the server automatically. Run `M-x eglot` t
 
 A minimal VS Code extension lives in [`editors/vscode/`](./editors/vscode/).
 
+### Install from marketplace
+
+Launch VS Code Quick Open (Ctrl+P or Cmd+P), paste the following command, and press enter.
+```
+ext install elliat.xquery-lsp-vscode
+```
+
+### Install by hand
+
 ```sh
 cd editors/vscode
 npm install
 ```
 
-Open the `editors/vscode` folder in VS Code and press `F5` to launch a development host with the extension active. To install it permanently, package it with [`vsce`](https://github.com/microsoft/vscode-vsce):
+Open the `editors/vscode` folder in VS Code and press `F5` to launch a development host with the
+extension active. To install it permanently, package it with
+[`vsce`](https://github.com/microsoft/vscode-vsce):
 
 ```sh
 npx vsce package
