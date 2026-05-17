@@ -613,39 +613,39 @@ util:trim("x")`;
 		});
 	});
 
-	test("findConfig: parses single runtime string", () => {
+	test("findConfig: parses single lib string", () => {
 		withTmpDir((dir) => {
 			fs.writeFileSync(
 				path.join(dir, "lsp-config.xq"),
-				`map { "runtime": "basex" }`,
+				`map { "lib": "basex" }`,
 			);
 			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
 			const result = findConfig(fileUri);
 			assert.ok(result);
-			assert.deepEqual(result.config.runtimes, ["basex"]);
+			assert.deepEqual(result.config.lib, ["basex"]);
 		});
 	});
 
-	test("findConfig: parses multiple runtimes as a sequence", () => {
+	test("findConfig: parses multiple lib values as a sequence", () => {
 		withTmpDir((dir) => {
 			fs.writeFileSync(
 				path.join(dir, "lsp-config.xq"),
-				`map { "runtime": ("basex", "saxonhe") }`,
+				`map { "lib": ("basex", "saxonhe") }`,
 			);
 			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
 			const result = findConfig(fileUri);
 			assert.ok(result);
-			assert.deepEqual(result.config.runtimes, ["basex", "saxonhe"]);
+			assert.deepEqual(result.config.lib, ["basex", "saxonhe"]);
 		});
 	});
 
-	test("findConfig: runtimes defaults to empty when key absent", () => {
+	test("findConfig: lib defaults to empty when key absent", () => {
 		withTmpDir((dir) => {
 			fs.writeFileSync(path.join(dir, "lsp-config.xq"), `map { "glob": "**/*.xq" }`);
 			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
 			const result = findConfig(fileUri);
 			assert.ok(result);
-			assert.deepEqual(result.config.runtimes, []);
+			assert.deepEqual(result.config.lib, []);
 		});
 	});
 });
@@ -827,6 +827,26 @@ describe("runtime defs", () => {
 		const fn = analysis.functions.find((f) => formatQName(f.qname) === "saxon:version");
 		assert.ok(fn, "saxon:version not found");
 		assert.equal(fn.arity, 0);
+	});
+
+	test("fonto.xq: fonto:selection-common-ancestor appears in analysis", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "fonto.xq"), "utf-8");
+		const analysis = analyze(text, "builtin:fonto");
+		const names = analysis.functions.map((f) => f.name);
+		assert.ok(names.includes("fonto:selection-common-ancestor"), `expected fonto:selection-common-ancestor, got ${names}`);
+	});
+
+	test("fonto.xq: fonto:dita-class has arity 2", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "fonto.xq"), "utf-8");
+		const analysis = analyze(text, "builtin:fonto");
+		const fn = analysis.functions.find((f) => f.name === "fonto:dita-class");
+		assert.ok(fn, "fonto:dita-class not found");
+		assert.equal(fn.arity, 2);
+	});
+
+	test("fonto.xq: functions have @see doc links", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "fonto.xq"), "utf-8");
+		assert.ok(text.includes("@see https://documentation.fontoxml.com"), "expected @see links in fonto.xq");
 	});
 });
 

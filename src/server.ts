@@ -32,6 +32,7 @@ const runtimesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'run
 
 const RUNTIME_FILES: Record<string, string> = {
   basex: path.join(runtimesDir, 'basex.xq'),
+  fonto: path.join(runtimesDir, 'fonto.xq'),
   marklogic: path.join(runtimesDir, 'marklogic.xq'),
   saxonhe: path.join(runtimesDir, 'saxonhe.xq'),
 };
@@ -129,15 +130,15 @@ function getImportedAnalysis(importUri: string): FileAnalysis | null {
   }
 }
 
-function getGlobAnalyses(currentUri: string): { byNamespace: Map<string, FileAnalysis>; runtimes: string[] } {
+function getGlobAnalyses(currentUri: string): { byNamespace: Map<string, FileAnalysis>; lib: string[] } {
   const found = findConfig(currentUri);
-  if (!found) return { byNamespace: new Map(), runtimes: [] };
+  if (!found) return { byNamespace: new Map(), lib: [] };
 
   const { config, configDir } = found;
-  const runtimes = config.runtimes;
+  const lib = config.lib;
 
   if (globAnalysesByConfigDir.has(configDir)) {
-    return { byNamespace: globAnalysesByConfigDir.get(configDir)!, runtimes };
+    return { byNamespace: globAnalysesByConfigDir.get(configDir)!, lib };
   }
 
   const byNamespace = new Map<string, FileAnalysis>();
@@ -147,14 +148,14 @@ function getGlobAnalyses(currentUri: string): { byNamespace: Map<string, FileAna
     if (imported?.moduleNamespaceUri) byNamespace.set(imported.moduleNamespaceUri, imported);
   }
   globAnalysesByConfigDir.set(configDir, byNamespace);
-  return { byNamespace, runtimes };
+  return { byNamespace, lib };
 }
 
 function resolveImports(currentUri: string, analysis: FileAnalysis): Map<string, FileAnalysis> {
   const result = new Map<string, FileAnalysis>();
   result.set('builtin:fn', getBuiltins());
-  const { byNamespace: globAnalyses, runtimes } = getGlobAnalyses(currentUri);
-  for (const runtimeAnalysis of getRuntimeAnalyses(runtimes)) {
+  const { byNamespace: globAnalyses, lib } = getGlobAnalyses(currentUri);
+  for (const runtimeAnalysis of getRuntimeAnalyses(lib)) {
     if (runtimeAnalysis.modulePrefix) {
       result.set(`builtin:${runtimeAnalysis.modulePrefix}`, runtimeAnalysis);
     }
