@@ -1,6 +1,7 @@
 import type { Node, NonTerminal } from "xq-parser";
 import type { XQueryType, TypeDiagnostic, FileAnalysis, FunctionSymbol } from "./types.ts";
-import { findAll, isTerminal, resolvePrefix } from "./analyzer.ts";
+import { formatQName, qnameKey } from "./types.ts";
+import { findAll, isTerminal } from "./analyzer.ts";
 import { asFunctionCall, asVarRef, asTypedBinding, literalKind, isPathExpr, argExpr } from "./ast-nodes.ts";
 
 // ── Type constants ───────────────────────────────────────────────────────────
@@ -99,10 +100,13 @@ function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, 
 }
 
 function inferFunctionReturn(node: Node, analysis: FileAnalysis, allFns: FunctionSymbol[]): XQueryType {
-	const call = asFunctionCall(node);
+	const call = asFunctionCall(node, analysis);
 	if (!call) return UNKNOWN;
-	const nsUri = resolvePrefix(call.prefix, analysis);
-	const fn = allFns.find(f => f.namespaceUri === nsUri && f.localName === call.localName && f.arity === call.args.length);
+	const fn = allFns.find(f =>
+		f.qname.namespaceUri === call.qname.namespaceUri &&
+		f.qname.localName === call.qname.localName &&
+		f.arity === call.args.length
+	);
 	return fn?.returnType ? parseType(fn.returnType) : UNKNOWN;
 }
 
@@ -128,8 +132,8 @@ export function inferExprType(
 			break;
 		}
 		case 'VarRef': {
-			const ref = asVarRef(node);
-			return ref ? (varTypes.get(ref.varName) ?? UNKNOWN) : UNKNOWN;
+			const qname = asVarRef(node, analysis);
+			return qname ? (varTypes.get(qnameKey(qname)) ?? UNKNOWN) : UNKNOWN;
 		}
 		case 'FunctionCall':
 			return inferFunctionReturn(node, analysis, allFns);
@@ -153,12 +157,12 @@ export function inferExprType(
 
 // ── Variable type context ─────────────────────────────────────────────────────
 
-export function buildVarTypes(ast: Node, text: string): Map<string, XQueryType> {
+export function buildVarTypes(ast: Node, text: string, analysis: FileAnalysis): Map<string, XQueryType> {
 	const types = new Map<string, XQueryType>();
 	const nodeTypes = ['LetBinding', 'ForBinding', 'Param', 'VarDecl'];
 	for (const node of nodeTypes.flatMap(t => findAll(ast, t))) {
-		const binding = asTypedBinding(node, text);
-		if (binding?.typeStr) types.set(binding.varName, parseType(binding.typeStr));
+		const binding = asTypedBinding(node, text, analysis);
+		if (binding?.typeStr) types.set(qnameKey(binding.qname), parseType(binding.typeStr));
 	}
 	return types;
 }
@@ -183,13 +187,16 @@ export function checkTypes(
 ): TypeDiagnostic[] {
 	const errors: TypeDiagnostic[] = [];
 	const allFns = allFunctionsFlat(analysis, importedAnalyses);
-	const varTypes = buildVarTypes(ast, text);
+	const varTypes = buildVarTypes(ast, text, analysis);
 
 	for (const callNode of findAll(ast, 'FunctionCall')) {
-		const call = asFunctionCall(callNode);
+		const call = asFunctionCall(callNode, analysis);
 		if (!call) continue;
-		const nsUri = resolvePrefix(call.prefix, analysis);
-		const fn = allFns.find(f => f.namespaceUri === nsUri && f.localName === call.localName && f.arity === call.args.length);
+		const fn = allFns.find(f =>
+			f.qname.namespaceUri === call.qname.namespaceUri &&
+			f.qname.localName === call.qname.localName &&
+			f.arity === call.args.length
+		);
 		if (!fn) continue;
 
 		for (let i = 0; i < call.args.length; i++) {
@@ -205,7 +212,8 @@ export function checkTypes(
 
 			if (!isAssignable(inferredType, declaredType)) {
 				errors.push({
-					message: `Argument ${i + 1} of ${call.name}: expected ${param.type}, got ${formatType(inferredType)}`,
+					message: `Argument ${i + 1} of ${formatQName(call.qname)}: expected ${param.type}, got ${formatType(inferredType)} [XPTY0004]`,
+					code: 'XPTY0004',
 					offset: call.args[i].start,
 					length: (call.args[i].end ?? call.args[i].start + 1) - call.args[i].start,
 				});

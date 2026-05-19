@@ -9,6 +9,7 @@ import { getCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getBuiltins } from "./builtins.ts";
 import { findConfig, expandGlobs } from "./config.ts";
+import { formatQName } from "./types.ts";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
 // ── analyzer: valid XQuery via AST ──────────────────────────────────────────
@@ -33,14 +34,14 @@ local:add(1, 2)
 
 	test("analyzer: extracts functions from valid XQuery", () => {
 		const result = analyze(VALID_XQ, "file:///test.xq");
-		const names = result.functions.map((f) => f.name);
+		const names = result.functions.map((f) => formatQName(f.qname));
 		assert.ok(names.includes("local:add"), `expected local:add, got ${names}`);
 		assert.ok(names.includes("local:greet"), `expected local:greet, got ${names}`);
 	});
 
 	test("analyzer: extracts function arity and params", () => {
 		const result = analyze(VALID_XQ, "file:///test.xq");
-		const add = result.functions.find((f) => f.name === "local:add");
+		const add = result.functions.find((f) => formatQName(f.qname) === "local:add");
 		assert.ok(add, "local:add not found");
 		assert.equal(add.arity, 2);
 		assert.equal(add.params[0].name, "a");
@@ -49,22 +50,22 @@ local:add(1, 2)
 
 	test("analyzer: extracts function prefix and localName", () => {
 		const result = analyze(VALID_XQ, "file:///test.xq");
-		const add = result.functions.find((f) => f.name === "local:add");
+		const add = result.functions.find((f) => formatQName(f.qname) === "local:add");
 		assert.ok(add);
-		assert.equal(add.prefix, "local");
-		assert.equal(add.localName, "add");
+		assert.equal(add.qname.prefix, "local");
+		assert.equal(add.qname.localName, "add");
 	});
 
 	test("analyzer: extracts module-level variable", () => {
 		const result = analyze(VALID_XQ, "file:///test.xq");
-		const names = result.moduleVariables.map((v) => v.name);
+		const names = result.moduleVariables.map((v) => formatQName(v.qname));
 		assert.ok(names.includes("local:count"), `expected local:count, got ${names}`);
 		assert.ok(result.moduleVariables[0].isModuleLevel);
 	});
 
 	test("analyzer: extracts let/for bindings", () => {
 		const result = analyze(VALID_XQ, "file:///test.xq");
-		const names = result.localBindings.map((v) => v.name);
+		const names = result.localBindings.map((v) => v.qname.localName);
 		assert.ok(names.includes("sum"), `expected sum, got ${names}`);
 		assert.ok(names.includes("item"), `expected item, got ${names}`);
 		assert.ok(!result.localBindings[0].isModuleLevel);
@@ -91,26 +92,26 @@ declare function local:add($a as xs:integer, $b as xs:integer) as xs:integer {
 
 	test("analyzer: extracts doc comment description", () => {
 		const result = analyze(WITH_DOC, "file:///test.xq");
-		const fn = result.functions.find((f) => f.name === "local:add");
+		const fn = result.functions.find((f) => formatQName(f.qname) === "local:add");
 		assert.ok(fn?.doc?.description.includes("Adds two numbers"), `got: ${fn?.doc?.description}`);
 	});
 
 	test("analyzer: extracts @param descriptions", () => {
 		const result = analyze(WITH_DOC, "file:///test.xq");
-		const fn = result.functions.find((f) => f.name === "local:add");
+		const fn = result.functions.find((f) => formatQName(f.qname) === "local:add");
 		assert.equal(fn?.params[0].description, "The first operand");
 		assert.equal(fn?.params[1].description, "The second operand");
 	});
 
 	test("analyzer: extracts @return description", () => {
 		const result = analyze(WITH_DOC, "file:///test.xq");
-		const fn = result.functions.find((f) => f.name === "local:add");
+		const fn = result.functions.find((f) => formatQName(f.qname) === "local:add");
 		assert.equal(fn?.doc?.returns, "The sum");
 	});
 
 	test("analyzer: regex fallback extracts doc comments", () => {
 		const result = analyze(WITH_DOC + "\nlet $x := local:add(", "file:///test.xq");
-		const fn = result.functions.find((f) => f.name === "local:add");
+		const fn = result.functions.find((f) => formatQName(f.qname) === "local:add");
 		assert.ok(fn?.doc?.description.includes("Adds two numbers"), `got: ${fn?.doc?.description}`);
 	});
 
@@ -131,13 +132,13 @@ let $result := local:double(
 	test("analyzer: falls back to regex on invalid XQuery", () => {
 		// Should not throw
 		const result = analyze(INVALID_XQ, "file:///incomplete.xq");
-		const fnNames = result.functions.map((f) => f.name);
+		const fnNames = result.functions.map((f) => formatQName(f.qname));
 		assert.ok(fnNames.includes("local:double"), `expected local:double, got ${fnNames}`);
 	});
 
 	test("analyzer: regex fallback extracts variable declaration", () => {
 		const result = analyze(INVALID_XQ, "file:///incomplete.xq");
-		const names = result.moduleVariables.map((v) => v.name);
+		const names = result.moduleVariables.map((v) => v.qname.localName);
 		assert.ok(names.includes("count"), `expected count, got ${names}`);
 	});
 
@@ -397,6 +398,7 @@ declare function local:noop() { () };`;
 		const add = symbols.find((s) => s.name === "local:add");
 		assert.ok(add?.detail?.includes("2"), `expected arity 2, got ${add?.detail}`);
 	});
+
 });
 
 // ── builtins ──────────────────────────────────────────────────────────────────
@@ -405,25 +407,25 @@ describe("builtins", () => {
 	const builtins = getBuiltins();
 
 	test("loads fn:exists with correct arity", () => {
-		const fn = builtins.functions.find((f) => f.name === "fn:exists");
+		const fn = builtins.functions.find((f) => formatQName(f.qname) === "fn:exists");
 		assert.ok(fn, "fn:exists not found");
 		assert.equal(fn.arity, 1);
 	});
 
 	test("fn:exists has full type text for param and return", () => {
-		const fn = builtins.functions.find((f) => f.name === "fn:exists");
+		const fn = builtins.functions.find((f) => formatQName(f.qname) === "fn:exists");
 		assert.equal(fn?.params[0].type, "item()*");
 		assert.equal(fn?.returnType, "xs:boolean");
 	});
 
 	test("fn:true has arity 0", () => {
-		const fn = builtins.functions.find((f) => f.name === "fn:true");
+		const fn = builtins.functions.find((f) => formatQName(f.qname) === "fn:true");
 		assert.ok(fn, "fn:true not found");
 		assert.equal(fn.arity, 0);
 	});
 
 	test("builtins have doc comments", () => {
-		const fn = builtins.functions.find((f) => f.name === "fn:empty");
+		const fn = builtins.functions.find((f) => formatQName(f.qname) === "fn:empty");
 		assert.ok(fn?.doc?.description, "expected doc description");
 		assert.ok(fn?.params[0].description, "expected param description");
 	});

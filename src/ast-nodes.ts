@@ -1,5 +1,6 @@
 import type { Node } from "xq-parser";
-import { isTerminal, directChildOf, directChildrenOf, firstTerminalValue, sequenceTypeText } from "./analyzer.ts";
+import type { QName, FileAnalysis } from "./types.ts";
+import { isTerminal, directChildOf, directChildrenOf, firstTerminalValue, sequenceTypeText, resolvePrefix } from "./analyzer.ts";
 
 // Typed narrowing functions for xq-parser AST nodes.
 // Each returns a typed shape or null if the node is not the expected type.
@@ -7,13 +8,11 @@ import { isTerminal, directChildOf, directChildrenOf, firstTerminalValue, sequen
 // ── FunctionCall ──────────────────────────────────────────────────────────────
 
 export interface FunctionCallShape {
-	name: string;      // full qualified name, e.g. "fn:string-length"
-	prefix: string;
-	localName: string;
-	args: Node[];      // Argument nodes
+	qname: QName;
+	args: Node[];
 }
 
-export function asFunctionCall(node: Node): FunctionCallShape | null {
+export function asFunctionCall(node: Node, analysis: FileAnalysis): FunctionCallShape | null {
 	if (node.type !== 'FunctionCall') return null;
 	const fnEqname = directChildOf(node, 'FunctionEQName');
 	if (!fnEqname) return null;
@@ -22,24 +21,26 @@ export function asFunctionCall(node: Node): FunctionCallShape | null {
 	const colonIdx = name.indexOf(':');
 	const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : '';
 	const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
+	const namespaceUri = resolvePrefix(prefix, analysis);
 	const argList = directChildOf(node, 'ArgumentList');
 	const args = argList ? directChildrenOf(argList, 'Argument') : [];
-	return { name, prefix, localName, args };
+	return { qname: { prefix, localName, namespaceUri }, args };
 }
 
 // ── VarRef ────────────────────────────────────────────────────────────────────
 
-export interface VarRefShape {
-	varName: string;
-}
-
-export function asVarRef(node: Node): VarRefShape | null {
+export function asVarRef(node: Node, analysis: FileAnalysis): QName | null {
 	if (node.type !== 'VarRef') return null;
 	const varNameNode = directChildOf(node, 'VarName');
 	if (!varNameNode) return null;
-	const varName = firstTerminalValue(varNameNode);
-	if (!varName) return null;
-	return { varName };
+	const rawName = firstTerminalValue(varNameNode);
+	if (!rawName) return null;
+	const colonIdx = rawName.indexOf(':');
+	const prefix = colonIdx >= 0 ? rawName.slice(0, colonIdx) : '';
+	const localName = colonIdx >= 0 ? rawName.slice(colonIdx + 1) : rawName;
+	// Variables don't use the default function namespace — unqualified vars have empty URI
+	const namespaceUri = prefix ? resolvePrefix(prefix, analysis) : '';
+	return { prefix, localName, namespaceUri };
 }
 
 // ── Literals ──────────────────────────────────────────────────────────────────
@@ -60,12 +61,12 @@ export function literalKind(node: Node): LiteralKind | null {
 // ── Typed variable bindings ───────────────────────────────────────────────────
 
 export interface TypedBindingShape {
-	varName: string;
+	qname: QName;
 	typeStr?: string;
 }
 
 // Handles LetBinding, ForBinding, VarDecl (VarName child) and Param (EQName child).
-export function asTypedBinding(node: Node, text: string): TypedBindingShape | null {
+export function asTypedBinding(node: Node, text: string, analysis: FileAnalysis): TypedBindingShape | null {
 	let nameNode: Node | undefined;
 	switch (node.type) {
 		case 'LetBinding':
@@ -79,11 +80,15 @@ export function asTypedBinding(node: Node, text: string): TypedBindingShape | nu
 		default:
 			return null;
 	}
-	const varName = nameNode ? firstTerminalValue(nameNode) : null;
-	if (!varName) return null;
+	const rawName = nameNode ? firstTerminalValue(nameNode) : null;
+	if (!rawName) return null;
+	const colonIdx = rawName.indexOf(':');
+	const prefix = colonIdx >= 0 ? rawName.slice(0, colonIdx) : '';
+	const localName = colonIdx >= 0 ? rawName.slice(colonIdx + 1) : rawName;
+	const namespaceUri = prefix ? resolvePrefix(prefix, analysis) : '';
 	const typeDecl = directChildOf(node, 'TypeDeclaration');
 	const seqType = typeDecl ? directChildOf(typeDecl, 'SequenceType') : null;
-	return { varName, typeStr: seqType ? sequenceTypeText(text, seqType) : undefined };
+	return { qname: { prefix, localName, namespaceUri }, typeStr: seqType ? sequenceTypeText(text, seqType) : undefined };
 }
 
 // ── Path expressions ──────────────────────────────────────────────────────────

@@ -10,6 +10,7 @@ import type { TextDocument } from "vscode-languageserver-textdocument";
 import * as fs from "fs";
 import { fileURLToPath } from "url";
 import type { FileAnalysis, FunctionSymbol } from "./types.ts";
+import { formatQName } from "./types.ts";
 import { resolvePrefix } from "./analyzer.ts";
 
 // ── Shared helpers ───────────────────────────────────────────────────────────
@@ -27,7 +28,7 @@ function resolveFunction(
 	const prefix = colonIdx >= 0 ? word.slice(0, colonIdx) : "";
 	const localName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
 	const uri = resolvePrefix(prefix, currentAnalysis);
-	return fns.find((f) => f.namespaceUri === uri && f.localName === localName);
+	return fns.find((f) => f.qname.namespaceUri === uri && f.qname.localName === localName);
 }
 
 function wordAt(text: string, offset: number): { word: string; start: number; end: number } {
@@ -41,7 +42,7 @@ function wordAt(text: string, offset: number): { word: string; start: number; en
 function functionSignature(fn: FunctionSymbol): string {
 	const params = fn.params.map((p) => `$${p.name}${p.type ? " as " + p.type : ""}`).join(", ");
 	const ret = fn.returnType ? ` as ${fn.returnType}` : "";
-	return `declare function ${fn.name}(${params})${ret}`;
+	return `declare function ${formatQName(fn.qname)}(${params})${ret}`;
 }
 
 function allFunctions(current: FileAnalysis, imported: Map<string, FileAnalysis>): FunctionSymbol[] {
@@ -75,16 +76,19 @@ export function getHover(
 	// Check if hovering over a $ variable
 	const hasDollar = start > 0 && text[start - 1] === "$";
 	if (hasDollar) {
-		const varName = word;
+		const colonIdx = word.indexOf(":");
+		const varPrefix = colonIdx >= 0 ? word.slice(0, colonIdx) : "";
+		const varLocalName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
+		const varNsUri = varPrefix ? resolvePrefix(varPrefix, current) : "";
 		const allVars = [
 			...current.moduleVariables,
 			...current.localBindings,
 			...[...imported.values()].flatMap((a) => a.moduleVariables),
 		];
-		const v = allVars.find((v) => v.name === varName);
+		const v = allVars.find((v) => v.qname.namespaceUri === varNsUri && v.qname.localName === varLocalName);
 		if (v) {
 			return {
-				contents: { kind: MarkupKind.Markdown, value: `\`$${v.name}\`` },
+				contents: { kind: MarkupKind.Markdown, value: `\`$${formatQName(v.qname)}\`` },
 				range: rangeFromOffset(doc, start - 1, end),
 			};
 		}
@@ -178,7 +182,7 @@ export function getDocumentSymbols(doc: TextDocument, current: FileAnalysis): Do
 		const pos = doc.positionAt(fn.sourceOffset ?? 0);
 		const range: Range = { start: pos, end: pos };
 		symbols.push({
-			name: fn.name,
+			name: formatQName(fn.qname),
 			kind: SymbolKind.Function,
 			range,
 			selectionRange: range,
@@ -190,7 +194,7 @@ export function getDocumentSymbols(doc: TextDocument, current: FileAnalysis): Do
 		const pos = doc.positionAt(v.offset);
 		const range: Range = { start: pos, end: pos };
 		symbols.push({
-			name: `$${v.name}`,
+			name: `$${formatQName(v.qname)}`,
 			kind: SymbolKind.Variable,
 			range,
 			selectionRange: range,
@@ -216,9 +220,12 @@ export function getDefinition(
 	const hasDollar = start > 0 && text[start - 1] === "$";
 
 	if (hasDollar) {
-		// Variable definition — search current file only
+		const colonIdx = word.indexOf(":");
+		const varPrefix = colonIdx >= 0 ? word.slice(0, colonIdx) : "";
+		const varLocalName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
+		const varNsUri = varPrefix ? resolvePrefix(varPrefix, current) : "";
 		const allVars = [...current.moduleVariables, ...current.localBindings];
-		const v = allVars.find((v) => v.name === word);
+		const v = allVars.find((v) => v.qname.namespaceUri === varNsUri && v.qname.localName === varLocalName);
 		if (!v) return null;
 		const pos = doc.positionAt(v.offset);
 		return Location.create(doc.uri, { start: pos, end: pos });
@@ -230,7 +237,7 @@ export function getDefinition(
 	const wordLocalName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
 	const targetUri = resolvePrefix(wordPrefix, current);
 
-	const localFn = current.functions.find((f) => f.namespaceUri === targetUri && f.localName === wordLocalName);
+	const localFn = current.functions.find((f) => f.qname.namespaceUri === targetUri && f.qname.localName === wordLocalName);
 	if (localFn) {
 		const pos = doc.positionAt(localFn.sourceOffset ?? 0);
 		return Location.create(doc.uri, { start: pos, end: pos });
@@ -241,7 +248,7 @@ export function getDefinition(
 		const key = imp.atPath ?? imp.namespaceUri;
 		const analysis = imported.get(key);
 		if (!analysis) continue;
-		const fn = analysis.functions.find((f) => f.namespaceUri === targetUri && f.localName === wordLocalName);
+		const fn = analysis.functions.find((f) => f.qname.namespaceUri === targetUri && f.qname.localName === wordLocalName);
 		if (!fn) continue;
 		// Prefer resolving via atPath; fall back to the sourceUri recorded on the symbol
 		const uri = imp.atPath ? resolveUri(imp.atPath) : fn.sourceUri;

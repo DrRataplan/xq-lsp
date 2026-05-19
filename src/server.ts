@@ -161,6 +161,7 @@ documents.onDidChangeContent(change => {
       end: doc.positionAt(td.offset + td.length),
     },
     message: td.message,
+    code: td.code,
     source: 'xquery-lsp',
   }));
 

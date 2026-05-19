@@ -1,3 +1,17 @@
+export interface QName {
+	namespaceUri: string;
+	localName: string;
+	prefix: string; // for display only — identity is namespaceUri + localName
+}
+
+export function formatQName(q: QName): string {
+	return q.prefix ? `${q.prefix}:${q.localName}` : q.localName;
+}
+
+export function qnameKey(q: QName): string {
+	return q.namespaceUri ? `{${q.namespaceUri}}${q.localName}` : q.localName;
+}
+
 export interface ParamInfo {
 	name: string;
 	type?: string;
@@ -11,10 +25,7 @@ export interface DocComment {
 }
 
 export interface FunctionSymbol {
-	name: string; // full qualified name as declared, e.g. "local:add"
-	prefix: string; // namespace prefix as declared, e.g. "local"
-	localName: string; // local part, e.g. "add"
-	namespaceUri: string; // resolved namespace URI, e.g. "http://www.w3.org/2005/xquery-local-functions"
+	qname: QName;
 	arity: number;
 	params: ParamInfo[];
 	returnType?: string;
@@ -24,7 +35,7 @@ export interface FunctionSymbol {
 }
 
 export interface VariableSymbol {
-	name: string; // without $, e.g. "sum" or "local:count"
+	qname: QName;
 	offset: number; // char offset in source where it's defined
 	isModuleLevel: boolean;
 	sourceUri: string;
@@ -55,6 +66,7 @@ export interface XQueryType {
 
 export interface TypeDiagnostic {
 	message: string;
+	code: string; // XQuery error code, e.g. "XPTY0004"
 	offset: number; // character offset into the source
 	length: number;
 }

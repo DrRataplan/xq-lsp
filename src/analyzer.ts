@@ -1,6 +1,6 @@
 import { XQuery31Full } from "xq-parser";
 import type { Node, NonTerminal, Terminal } from "xq-parser";
-import type { FileAnalysis, FunctionSymbol, VariableSymbol, ImportInfo, ParamInfo, DocComment } from "./types.ts";
+import type { FileAnalysis, FunctionSymbol, VariableSymbol, ImportInfo, ParamInfo, DocComment, QName } from "./types.ts";
 
 // ── Well-known namespace URIs ────────────────────────────────────────────────
 
@@ -155,6 +155,22 @@ function resolveNamespaceUri(prefix: string, prefixMap: Map<string, string>): st
 	return prefixMap.get(prefix) ?? `urn:xq-lsp:undeclared:${prefix}`;
 }
 
+function makeFnQName(name: string, prefixMap: Map<string, string>, defaultFnNs: string): QName {
+	const colonIdx = name.indexOf(':');
+	const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : '';
+	const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
+	const namespaceUri = prefix ? resolveNamespaceUri(prefix, prefixMap) : defaultFnNs;
+	return { prefix, localName, namespaceUri };
+}
+
+function makeVarQName(name: string, prefixMap: Map<string, string>): QName {
+	const colonIdx = name.indexOf(':');
+	const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : '';
+	const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
+	const namespaceUri = prefix ? resolveNamespaceUri(prefix, prefixMap) : '';
+	return { prefix, localName, namespaceUri };
+}
+
 // ── Extract from valid AST ───────────────────────────────────────────────────
 
 export function sequenceTypeText(text: string, node: Node): string | undefined {
@@ -168,6 +184,7 @@ function extractFunctions(
 	comments: Terminal[],
 	text: string,
 	prefixMap: Map<string, string>,
+	defaultFnNs: string,
 ): FunctionSymbol[] {
 	const results: FunctionSymbol[] = [];
 	// Use AnnotatedDecl (starts at 'declare') so the comment lookup clears the 'declare' keyword
@@ -178,10 +195,6 @@ function extractFunctions(
 		const eqname = directChildOf(decl, "EQName");
 		const name = eqname ? firstTerminalValue(eqname) : null;
 		if (!name) continue;
-
-		const colonIdx = name.indexOf(":");
-		const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : "";
-		const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
 
 		const doc = findPrecedingDoc(comments, text, annotated.start);
 
@@ -208,10 +221,7 @@ function extractFunctions(
 		const returnType = seqType ? sequenceTypeText(text, seqType) : undefined;
 
 		results.push({
-			name,
-			prefix,
-			localName,
-			namespaceUri: resolveNamespaceUri(prefix, prefixMap),
+			qname: makeFnQName(name, prefixMap, defaultFnNs),
 			arity: params.length,
 			params,
 			returnType,
@@ -223,14 +233,14 @@ function extractFunctions(
 	return results;
 }
 
-function extractModuleVariables(ast: Node, sourceUri: string): VariableSymbol[] {
+function extractModuleVariables(ast: Node, sourceUri: string, prefixMap: Map<string, string>): VariableSymbol[] {
 	const results: VariableSymbol[] = [];
 	for (const varDecl of findAll(ast, "VarDecl")) {
 		const varName = directChildOf(varDecl, "VarName");
 		const name = varName ? firstTerminalValue(varName) : null;
 		if (!name) continue;
 		results.push({
-			name,
+			qname: makeVarQName(name, prefixMap),
 			offset: varDecl.start,
 			isModuleLevel: true,
 			sourceUri,
@@ -239,14 +249,14 @@ function extractModuleVariables(ast: Node, sourceUri: string): VariableSymbol[] 
 	return results;
 }
 
-function extractLocalBindings(ast: Node, sourceUri: string): VariableSymbol[] {
+function extractLocalBindings(ast: Node, sourceUri: string, prefixMap: Map<string, string>): VariableSymbol[] {
 	const results: VariableSymbol[] = [];
 	for (const binding of [...findAll(ast, "LetBinding"), ...findAll(ast, "ForBinding")]) {
 		const varName = directChildOf(binding, "VarName");
 		const name = varName ? firstTerminalValue(varName) : null;
 		if (!name) continue;
 		results.push({
-			name,
+			qname: makeVarQName(name, prefixMap),
 			offset: binding.start,
 			isModuleLevel: false,
 			sourceUri,
@@ -280,9 +290,9 @@ function analyzeAst(ast: Node, comments: Terminal[], text: string, sourceUri: st
 	const defaultFunctionNamespace = extractDefaultFunctionNamespace(text) ?? XMLNS_FN;
 	const prefixMap = buildPrefixMap(moduleNs, imports);
 	return {
-		functions: extractFunctions(ast, sourceUri, comments, text, prefixMap),
-		moduleVariables: extractModuleVariables(ast, sourceUri),
-		localBindings: extractLocalBindings(ast, sourceUri),
+		functions: extractFunctions(ast, sourceUri, comments, text, prefixMap, defaultFunctionNamespace),
+		moduleVariables: extractModuleVariables(ast, sourceUri, prefixMap),
+		localBindings: extractLocalBindings(ast, sourceUri, prefixMap),
 		imports,
 		defaultFunctionNamespace,
 		moduleNamespaceUri: moduleNs?.uri,
@@ -322,9 +332,6 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	RE_FUNC.lastIndex = 0;
 	while ((m = RE_FUNC.exec(text)) !== null) {
 		const name = m[1];
-		const colonIdx = name.indexOf(":");
-		const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : "";
-		const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
 		const doc = findPrecedingDocInText(text, m.index);
 		const rawParams = m[2].trim();
 		const params: ParamInfo[] = rawParams
@@ -340,10 +347,7 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 				})
 			: [];
 		functions.push({
-			name,
-			prefix,
-			localName,
-			namespaceUri: resolveNamespaceUri(prefix, prefixMap),
+			qname: makeFnQName(name, prefixMap, defaultFunctionNamespace),
 			arity: params.length,
 			params,
 			doc,
@@ -355,7 +359,7 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	RE_VAR_DECL.lastIndex = 0;
 	while ((m = RE_VAR_DECL.exec(text)) !== null) {
 		moduleVariables.push({
-			name: m[1],
+			qname: makeVarQName(m[1], prefixMap),
 			offset: m.index,
 			isModuleLevel: true,
 			sourceUri,
@@ -365,7 +369,7 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	RE_LET.lastIndex = 0;
 	while ((m = RE_LET.exec(text)) !== null) {
 		localBindings.push({
-			name: m[1],
+			qname: makeVarQName(m[1], prefixMap),
 			offset: m.index,
 			isModuleLevel: false,
 			sourceUri,
@@ -375,7 +379,7 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	RE_FOR.lastIndex = 0;
 	while ((m = RE_FOR.exec(text)) !== null) {
 		localBindings.push({
-			name: m[1],
+			qname: makeVarQName(m[1], prefixMap),
 			offset: m.index,
 			isModuleLevel: false,
 			sourceUri,
