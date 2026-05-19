@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node ./src/server.ts --stdio",
-    "test": "node --test src/test.ts",
+    "test": "node --test src/test.ts src/test-typechecker.ts",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
