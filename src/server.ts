@@ -175,9 +175,8 @@ documents.onDidChangeContent(change => {
     source: 'xquery-lsp',
   }));
 
-  // Only check for undeclared namespace prefixes when the AST parsed successfully;
-  // the regex fallback may miss import declarations and produce false positives.
-  const nsDiagRaw = hasAst ? findUndeclaredPrefixUsages(doc.getText(), analysis) : [];
+  // findUndeclaredPrefixUsages returns [] when ast is null (parse error path).
+  const nsDiagRaw = findUndeclaredPrefixUsages(ast, analysis);
   const nsDiags = nsDiagRaw.map(nd => ({
     severity: DiagnosticSeverity.Error,
     range: {
@@ -245,6 +244,8 @@ connection.onCodeAction(params => {
 
   const text = doc.getText();
   const globAnalyses = getGlobAnalyses(doc.uri);
+  const config = findConfig(doc.uri)?.config;
+  const generateLocationHints = config?.generateLocationHints ?? true;
   const actions: CodeAction[] = [];
 
   for (const diag of params.context.diagnostics) {
@@ -280,7 +281,7 @@ connection.onCodeAction(params => {
         const insertPos = findImportInsertPosition(text);
 
         let newText: string;
-        if (moduleFileUri) {
+        if (generateLocationHints && moduleFileUri) {
           const atPath = computeRelativePath(doc.uri, moduleFileUri);
           newText = `import module namespace ${prefix} = "${nsUri}" at "${atPath}";\n`;
         } else {

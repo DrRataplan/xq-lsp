@@ -1,5 +1,6 @@
+import type { Node } from 'xq-parser';
 import type { FileAnalysis } from './types.ts';
-import { resolvePrefix } from './analyzer.ts';
+import { findAll, directChildOf, firstTerminalValue, resolvePrefix } from './analyzer.ts';
 
 export type NamespaceUsageKind = 'function' | 'variable' | 'element';
 
@@ -12,118 +13,67 @@ export interface NamespaceDiagnostic {
 	usageKind: NamespaceUsageKind;
 }
 
-/** Build ranges of text inside XQuery comments and string literals to skip when scanning. */
-function buildSkipRanges(text: string): Array<{ start: number; end: number }> {
-	const ranges: Array<{ start: number; end: number }> = [];
-	let i = 0;
-	while (i < text.length) {
-		const ch = text[i];
-		if (ch === '(' && i + 1 < text.length && text[i + 1] === ':') {
-			const start = i;
-			let depth = 1;
-			i += 2;
-			while (i < text.length - 1 && depth > 0) {
-				if (text[i] === '(' && text[i + 1] === ':') { depth++; i += 2; }
-				else if (text[i] === ':' && text[i + 1] === ')') { depth--; i += 2; }
-				else i++;
-			}
-			if (depth > 0) i = text.length;
-			ranges.push({ start, end: i });
-		} else if (ch === '"' || ch === "'") {
-			const q = ch;
-			const start = i++;
-			while (i < text.length) {
-				if (text[i] === q && i + 1 < text.length && text[i + 1] === q) i += 2;
-				else if (text[i] === q) { i++; break; }
-				else i++;
-			}
-			ranges.push({ start, end: i });
-		} else {
-			i++;
-		}
-	}
-	return ranges;
-}
-
-function isInRanges(offset: number, ranges: Array<{ start: number; end: number }>): boolean {
-	for (const r of ranges) {
-		if (offset < r.start) break;
-		if (offset < r.end) return true;
-	}
-	return false;
-}
-
-/** Walk back (skipping comment/string ranges) to find the start of the current prolog statement. */
-function findStatementStart(text: string, offset: number, ranges: Array<{ start: number; end: number }>): number {
-	for (let i = offset - 1; i >= 0; i--) {
-		if (!isInRanges(i, ranges) && text[i] === ';') return i + 1;
-	}
-	return 0;
-}
-
-/**
- * Return true when the match at `offset` falls inside a prolog declaration
- * (import module, declare namespace, module namespace, etc.) so that the
- * prefix references in those declarations are not flagged.
- */
-function isInPrologDeclaration(text: string, offset: number, ranges: Array<{ start: number; end: number }>): boolean {
-	const start = findStatementStart(text, offset, ranges);
-	const stmtText = text.slice(start, offset + 10).replace(/\s+/g, ' ').trimStart();
-	return /^(import\s+module|declare\s+namespace|declare\s+default\s+(function|element|collation)|module\s+namespace|xquery\s+version)/.test(stmtText);
-}
-
-/** Determine how the prefixed name is being used from the text context before it. */
-function detectUsageKind(text: string, offset: number): NamespaceUsageKind {
-	// Scan backward past spaces to find the preceding character
-	let j = offset - 1;
-	while (j >= 0 && text[j] === ' ') j--;
-	if (j >= 0 && text[j] === '$') return 'variable';
-	if (j >= 0 && text[j] === '<') return 'element';
-	// Computed element/attribute constructor: `element ns:foo` or `attribute ns:foo`
-	const contextBefore = text.slice(Math.max(0, offset - 30), offset);
-	if (/\b(element|attribute)\s+$/.test(contextBefore)) return 'element';
-	return 'function';
-}
-
-/**
- * Scan `text` for all `prefix:localName` tokens whose prefix is not declared
- * in `analysis` and return a diagnostic for each one.
- *
- * Works on both syntactically valid and invalid XQuery.
- */
-export function findUndeclaredPrefixUsages(
-	text: string,
+function checkQNameNode(
+	node: Node | undefined,
+	kind: NamespaceUsageKind,
 	analysis: FileAnalysis,
-): NamespaceDiagnostic[] {
-	const diagnostics: NamespaceDiagnostic[] = [];
-	const skipRanges = buildSkipRanges(text);
-
-	// Match prefix:localname — require localname to start with letter/underscore
-	// so that URI schemes like http:// are not matched (// fails [a-zA-Z_])
-	const RE = /\b([a-zA-Z][\w-]*):([a-zA-Z_][\w-]*)/g;
-	let m: RegExpExecArray | null;
-
-	while ((m = RE.exec(text)) !== null) {
-		const prefix = m[1];
-		const offset = m.index;
-
-		if (isInRanges(offset, skipRanges)) continue;
-		if (isInPrologDeclaration(text, offset, skipRanges)) continue;
-
-		const uri = resolvePrefix(prefix, analysis);
-		if (!uri.startsWith('urn:xq-lsp:undeclared:')) continue;
-
-		diagnostics.push({
+	out: NamespaceDiagnostic[],
+): void {
+	if (!node) return;
+	const name = firstTerminalValue(node);
+	if (!name) return;
+	const colonIdx = name.indexOf(':');
+	if (colonIdx <= 0) return;
+	const prefix = name.slice(0, colonIdx);
+	const uri = resolvePrefix(prefix, analysis);
+	if (uri.startsWith('urn:xq-lsp:undeclared:')) {
+		out.push({
 			message: `Namespace prefix '${prefix}' is not declared`,
 			code: 'XQST0081',
-			offset,
+			offset: node.start ?? 0,
 			length: prefix.length,
 			prefix,
-			usageKind: detectUsageKind(text, offset),
+			usageKind: kind,
 		});
 	}
+}
 
-	return diagnostics;
+/**
+ * Walk the AST and report every prefixed name reference whose prefix is not
+ * declared in `analysis` (via import module namespace, declare namespace,
+ * module namespace, or a built-in prefix).
+ *
+ * Returns an empty array when `ast` is null (parse failure).
+ */
+export function findUndeclaredPrefixUsages(
+	ast: Node | null,
+	analysis: FileAnalysis,
+): NamespaceDiagnostic[] {
+	if (!ast) return [];
+	const out: NamespaceDiagnostic[] = [];
+
+	for (const node of findAll(ast, 'FunctionCall'))
+		checkQNameNode(directChildOf(node, 'FunctionEQName'), 'function', analysis, out);
+
+	for (const node of findAll(ast, 'NamedFunctionRef'))
+		checkQNameNode(directChildOf(node, 'EQName'), 'function', analysis, out);
+
+	for (const node of findAll(ast, 'VarRef'))
+		checkQNameNode(directChildOf(node, 'VarName'), 'variable', analysis, out);
+
+	// Direct element constructor: <ns:foo ...>
+	for (const node of findAll(ast, 'DirElemConstructor'))
+		checkQNameNode(directChildOf(node, 'QName'), 'element', analysis, out);
+
+	// Computed element constructor: element ns:foo { ... }
+	for (const node of findAll(ast, 'CompElemConstructor'))
+		checkQNameNode(directChildOf(node, 'EQName'), 'element', analysis, out);
+
+	// Computed attribute constructor: attribute ns:attr { ... }
+	for (const node of findAll(ast, 'CompAttrConstructor'))
+		checkQNameNode(directChildOf(node, 'EQName'), 'element', analysis, out);
+
+	return out;
 }
 
 // ── Insertion-position helpers (used by the code action handler) ─────────────
@@ -170,7 +120,6 @@ export function findDeclareNsInsertPosition(text: string): { line: number; chara
 
 	for (let i = 0; i < lines.length; i++) {
 		const trimmed = lines[i].trim();
-		// Place after existing namespace-related prolog lines
 		if (
 			/^(import\s+module\s+namespace|declare\s+namespace)/.test(trimmed) &&
 			lines[i].includes(';')
