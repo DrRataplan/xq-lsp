@@ -23,12 +23,15 @@ function resolveFunction(
 	word: string,
 	currentAnalysis: FileAnalysis,
 	fns: FunctionSymbol[],
+	arity?: number,
 ): FunctionSymbol | undefined {
 	const colonIdx = word.indexOf(":");
 	const prefix = colonIdx >= 0 ? word.slice(0, colonIdx) : "";
 	const localName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
 	const uri = resolvePrefix(prefix, currentAnalysis);
-	return fns.find((f) => f.qname.namespaceUri === uri && f.qname.localName === localName);
+	const matches = fns.filter((f) => f.qname.namespaceUri === uri && f.qname.localName === localName);
+	if (arity !== undefined) return matches.find((f) => f.arity === arity) ?? matches[0];
+	return matches[0];
 }
 
 function wordAt(text: string, offset: number): { word: string; start: number; end: number } {
@@ -145,6 +148,39 @@ function findEnclosingCall(text: string, offset: number): { name: string; active
 	return null;
 }
 
+/** Count arguments in the call enclosing `offset` by scanning forward from the opening paren. */
+function countCallArity(text: string, offset: number): number | undefined {
+	// Scan back to find the opening paren
+	let depth = 0;
+	let openParen = -1;
+	for (let i = offset - 1; i >= 0; i--) {
+		const ch = text[i];
+		if (ch === ')') { depth++; continue; }
+		if (ch === '(') {
+			if (depth > 0) { depth--; continue; }
+			openParen = i;
+			break;
+		}
+	}
+	if (openParen < 0) return undefined;
+	// Scan forward from openParen to matching close paren, count top-level commas
+	let commas = 0;
+	depth = 0;
+	for (let i = openParen + 1; i < text.length; i++) {
+		const ch = text[i];
+		if (ch === '(' || ch === '[') { depth++; continue; }
+		if (ch === ']') { depth--; continue; }
+		if (ch === ')') {
+			if (depth > 0) { depth--; continue; }
+			// Empty argument list
+			const inner = text.slice(openParen + 1, i).trim();
+			return inner ? commas + 1 : 0;
+		}
+		if (ch === ',' && depth === 0) commas++;
+	}
+	return undefined;
+}
+
 export function getSignatureHelp(
 	doc: TextDocument,
 	offset: number,
@@ -155,7 +191,8 @@ export function getSignatureHelp(
 	const call = findEnclosingCall(text, offset);
 	if (!call) return null;
 
-	const fn = resolveFunction(call.name, current, allFunctions(current, imported));
+	const arity = countCallArity(text, offset);
+	const fn = resolveFunction(call.name, current, allFunctions(current, imported), arity);
 	if (!fn) return null;
 
 	const sig: SignatureInformation = {

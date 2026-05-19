@@ -55,6 +55,7 @@ function buildParseDiagnostics(parseError: Error | null) {
     severity: DiagnosticSeverity.Error,
     range: { start: { line, character: col }, end: { line, character: col + 1 } },
     message: msg.split('\n')[0],
+    code: 'XPST0003',
     source: 'xquery-lsp',
   }];
 }

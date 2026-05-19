@@ -155,21 +155,20 @@ function resolveNamespaceUri(prefix: string, prefixMap: Map<string, string>): st
 	return prefixMap.get(prefix) ?? `urn:xq-lsp:undeclared:${prefix}`;
 }
 
-function makeFnQName(name: string, prefixMap: Map<string, string>, defaultFnNs: string): QName {
+function makeQName(name: string, prefixMap: Map<string, string>, defaultNs: string): QName {
 	const colonIdx = name.indexOf(':');
 	const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : '';
 	const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
-	const namespaceUri = prefix ? resolveNamespaceUri(prefix, prefixMap) : defaultFnNs;
+	const namespaceUri = prefix ? resolveNamespaceUri(prefix, prefixMap) : defaultNs;
 	return { prefix, localName, namespaceUri };
 }
 
-function makeVarQName(name: string, prefixMap: Map<string, string>): QName {
-	const colonIdx = name.indexOf(':');
-	const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : '';
-	const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
-	const namespaceUri = prefix ? resolveNamespaceUri(prefix, prefixMap) : '';
-	return { prefix, localName, namespaceUri };
-}
+// Functions with no prefix resolve to the default function namespace.
+// Variables with no prefix have no namespace (empty string).
+const makeFnQName = (name: string, prefixMap: Map<string, string>, defaultFnNs: string) =>
+	makeQName(name, prefixMap, defaultFnNs);
+const makeVarQName = (name: string, prefixMap: Map<string, string>) =>
+	makeQName(name, prefixMap, '');
 
 // ── Extract from valid AST ───────────────────────────────────────────────────
 
