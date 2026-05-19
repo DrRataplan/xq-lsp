@@ -10,6 +10,7 @@ XQuery language support for VS Code via the [xq-lsp](https://github.com/DrRatapl
 - **Go to definition** — jump to function or variable declarations, including across imported files
 - **Document symbols** — file outline of all declared functions and variables
 - **Diagnostics** — syntax errors highlighted as you type
+- **Formatting** — format XQuery files with Prettier via `Shift+Alt+F` (Format Document)
 
 Imports written as `import module namespace prefix="uri" at "./other-file.xq"` are followed automatically; symbols from imported files are included in completions and go-to-definition.
 
@@ -39,6 +40,21 @@ The server indexes all matched files by their declared namespace URI, so imports
 (: no "at" path needed :)
 import module namespace util="http://example.com/util";
 ```
+
+## Formatting
+
+XQuery formatting is provided by [prettier-plugin-xquery](https://github.com/prettier/prettier-plugin-xquery), bundled directly in the extension. No separate install is required.
+
+Trigger formatting with **Format Document** (`Shift+Alt+F` on Windows/Linux, `Shift+Option+F` on macOS), or enable format-on-save in your VS Code settings:
+
+```json
+"[xquery]": {
+  "editor.defaultFormatter": "elliat.xquery-lsp-vscode",
+  "editor.formatOnSave": true
+}
+```
+
+Prettier options (print width, tab width, etc.) are read from your project's [Prettier config file](https://prettier.io/docs/configuration) if one exists.
 
 ## Requirements
 

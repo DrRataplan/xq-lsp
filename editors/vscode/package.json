@@ -37,6 +37,8 @@
     "package": "vsce package"
   },
   "dependencies": {
+    "prettier": "^3.8.3",
+    "prettier-plugin-xquery": "^1.6.0",
     "vscode-languageclient": "^9.0.1",
     "xq-lsp": "^1.0.0"
   },
