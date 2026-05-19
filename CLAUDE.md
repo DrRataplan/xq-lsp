@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```sh
-node --test src/test.ts          # run all tests
-node --test --test-name-pattern="hover" src/test.ts  # run a single test by name pattern
+node --test                                  # run all tests
+node --test --test-name-pattern="hover"      # run a single test by name pattern
 npm run build                    # compile to dist/ via tsc
 npm start                        # run the LSP server on stdio (for manual testing)
 npm install -g .                 # reinstall globally after changes (required for Emacs/editor pickup)

@@ -10,27 +10,54 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { XQuery31Full } from 'xq-parser';
-import { analyze } from './analyzer.ts';
+import { analyzeWithAst } from './analyzer.ts';
 import { getBuiltins } from './builtins.ts';
 import { getCompletions } from './completion.ts';
 import { getHover, getSignatureHelp, getDocumentSymbols, getDefinition } from './features.ts';
-import type { FileAnalysis } from './types.ts';
+import type { FileAnalysis, TypeDiagnostic } from './types.ts';
+import { checkTypes } from './typechecker.ts';
 import { findConfig, expandGlobs } from './config.ts';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 
 const analysisCache = new Map<string, FileAnalysis>();
+const typeErrorCache = new Map<string, TypeDiagnostic[]>();
 
 // Glob analyses keyed by config directory, then by module namespace URI.
 // Populated lazily on the first request for a given config root.
 const globAnalysesByConfigDir = new Map<string, Map<string, FileAnalysis>>();
 
 function analyzeDocument(doc: TextDocument): FileAnalysis {
-  const analysis = analyze(doc.getText(), doc.uri);
+  const { analysis } = analyzeWithAst(doc.getText(), doc.uri);
   analysisCache.set(doc.uri, analysis);
   return analysis;
+}
+
+function analyzeDocumentFull(doc: TextDocument): {
+  analysis: FileAnalysis;
+  parseDiagnostics: ReturnType<typeof buildParseDiagnostics>;
+  hasAst: boolean;
+  ast: import('xq-parser').Node | null;
+} {
+  const { analysis, ast, parseError } = analyzeWithAst(doc.getText(), doc.uri);
+  analysisCache.set(doc.uri, analysis);
+  return { analysis, parseDiagnostics: buildParseDiagnostics(parseError), hasAst: ast !== null, ast };
+}
+
+function buildParseDiagnostics(parseError: Error | null) {
+  if (!parseError) return [];
+  const msg = parseError.message;
+  const loc = msg.match(/at line (\d+), column (\d+)/);
+  const line = loc ? parseInt(loc[1]) - 1 : 0;
+  const col = loc ? parseInt(loc[2]) - 1 : 0;
+  return [{
+    severity: DiagnosticSeverity.Error,
+    range: { start: { line, character: col }, end: { line, character: col + 1 } },
+    message: msg.split('\n')[0],
+    code: 'XPST0003',
+    source: 'xquery-lsp',
+  }];
 }
 
 function uriToPath(uri: string): string {
@@ -52,7 +79,7 @@ function getImportedAnalysis(importUri: string): FileAnalysis | null {
   if (analysisCache.has(importUri)) return analysisCache.get(importUri)!;
   try {
     const text = fs.readFileSync(uriToPath(importUri), 'utf-8');
-    const analysis = analyze(text, importUri);
+    const { analysis } = analyzeWithAst(text, importUri);
     analysisCache.set(importUri, analysis);
     return analysis;
   } catch {
@@ -95,24 +122,6 @@ function resolveImports(currentUri: string, analysis: FileAnalysis): Map<string,
   return result;
 }
 
-function parseDiagnostics(text: string, uri: string) {
-  try {
-    XQuery31Full(text);
-    return [];
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    // "at line N, column M:" in the parser's error messages
-    const loc = msg.match(/at line (\d+), column (\d+)/);
-    const line = loc ? parseInt(loc[1]) - 1 : 0;
-    const col = loc ? parseInt(loc[2]) - 1 : 0;
-    return [{
-      severity: DiagnosticSeverity.Error,
-      range: { start: { line, character: col }, end: { line, character: col + 1 } },
-      message: msg.split('\n')[0],
-      source: 'xquery-lsp',
-    }];
-  }
-}
 
 // ── LSP lifecycle ────────────────────────────────────────────────────────────
 
@@ -139,9 +148,25 @@ connection.onInitialize((params) => {
 
 documents.onDidChangeContent(change => {
   const doc = change.document;
-  analyzeDocument(doc);
-  const diagnostics = parseDiagnostics(doc.getText(), doc.uri);
-  connection.sendDiagnostics({ uri: doc.uri, diagnostics });
+  const { analysis, parseDiagnostics: parseDiags, hasAst, ast } = analyzeDocumentFull(doc);
+
+  if (hasAst && ast !== null) {
+    const imported = resolveImports(doc.uri, analysis);
+    typeErrorCache.set(doc.uri, checkTypes(ast, doc.getText(), analysis, imported));
+  }
+
+  const typeDiags = (typeErrorCache.get(doc.uri) ?? []).map(td => ({
+    severity: DiagnosticSeverity.Warning,
+    range: {
+      start: doc.positionAt(td.offset),
+      end: doc.positionAt(td.offset + td.length),
+    },
+    message: td.message,
+    code: td.code,
+    source: 'xquery-lsp',
+  }));
+
+  connection.sendDiagnostics({ uri: doc.uri, diagnostics: [...parseDiags, ...typeDiags] });
 });
 
 connection.onCompletion(params => {

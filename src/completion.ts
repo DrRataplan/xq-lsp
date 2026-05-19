@@ -1,5 +1,6 @@
 import { CompletionItem, CompletionItemKind, InsertTextFormat, MarkupKind } from "vscode-languageserver/node.js";
 import type { FileAnalysis, FunctionSymbol, VariableSymbol } from "./types.ts";
+import { formatQName } from "./types.ts";
 import { resolvePrefix } from "./analyzer.ts";
 
 export interface CompletionContext {
@@ -31,9 +32,10 @@ function parseToken(textBefore: string): TokenInfo {
 }
 
 function functionDoc(fn: FunctionSymbol): string {
+	const name = formatQName(fn.qname);
 	const paramStr = fn.params.map((p) => `$${p.name}${p.type ? " as " + p.type : ""}`).join(", ");
 	const ret = fn.returnType ? ` as ${fn.returnType}` : "";
-	const sig = `\`\`\`xquery\ndeclare function ${fn.name}(${paramStr})${ret}\n\`\`\``;
+	const sig = `\`\`\`xquery\ndeclare function ${name}(${paramStr})${ret}\n\`\`\``;
 
 	if (!fn.doc) return sig;
 
@@ -50,19 +52,21 @@ function functionDoc(fn: FunctionSymbol): string {
 }
 
 function localInsertText(fn: FunctionSymbol, snippets: boolean): string {
-	if (fn.params.length === 0) return fn.localName + "()";
+	const localName = fn.qname.localName;
+	if (fn.params.length === 0) return localName + "()";
 	const args = snippets
 		? fn.params.map((p, i) => `\${${i + 1}:\\$${p.name}}`).join(", ")
 		: fn.params.map((p) => `$${p.name}`).join(", ");
-	return `${fn.localName}(${args})`;
+	return `${localName}(${args})`;
 }
 
 function buildVariableItem(v: VariableSymbol, filter: string): CompletionItem | null {
-	if (filter && !v.name.toLowerCase().startsWith(filter.toLowerCase())) return null;
+	const label = `$${formatQName(v.qname)}`;
+	if (filter && !formatQName(v.qname).toLowerCase().startsWith(filter.toLowerCase())) return null;
 	return {
-		label: `$${v.name}`,
+		label,
 		kind: CompletionItemKind.Variable,
-		insertText: `$${v.name}`,
+		insertText: label,
 		insertTextFormat: InsertTextFormat.PlainText,
 	};
 }
@@ -107,12 +111,12 @@ export function getCompletions(
 		const allFns = [...currentAnalysis.functions, ...[...importedAnalyses.values()].flatMap((a) => a.functions)];
 
 		for (const fn of allFns) {
-			if (fn.namespaceUri !== targetUri) continue;
-			if (filter && !fn.localName.toLowerCase().includes(filter)) continue;
+			if (fn.qname.namespaceUri !== targetUri) continue;
+			if (filter && !fn.qname.localName.toLowerCase().includes(filter)) continue;
 			items.push({
-				label: fn.localName,
+				label: fn.qname.localName,
 				kind: CompletionItemKind.Function,
-				detail: `${fn.localName}#${fn.arity}`,
+				detail: `${fn.qname.localName}#${fn.arity}`,
 				documentation: { kind: MarkupKind.Markdown, value: functionDoc(fn) },
 				insertText: localInsertText(fn, snippets),
 				insertTextFormat: snippets ? InsertTextFormat.Snippet : InsertTextFormat.PlainText,
@@ -128,17 +132,18 @@ export function getCompletions(
 
 	// Functions declared in the current file (full qualified name)
 	for (const fn of currentAnalysis.functions) {
-		if (filter && !fn.name.toLowerCase().includes(filter)) continue;
+		const displayName = formatQName(fn.qname);
+		if (filter && !displayName.toLowerCase().includes(filter)) continue;
 		items.push({
-			label: fn.name,
+			label: displayName,
 			kind: CompletionItemKind.Function,
-			detail: `${fn.name}#${fn.arity}`,
+			detail: `${displayName}#${fn.arity}`,
 			documentation: { kind: MarkupKind.Markdown, value: functionDoc(fn) },
 			insertText: snippets
 				? fn.params.length === 0
-					? fn.name + "()"
-					: fn.name + "(" + fn.params.map((p, i) => `\${${i + 1}:\\$${p.name}}`).join(", ") + ")"
-				: fn.name + "(" + fn.params.map((p) => `$${p.name}`).join(", ") + ")",
+					? displayName + "()"
+					: displayName + "(" + fn.params.map((p, i) => `\${${i + 1}:\\$${p.name}}`).join(", ") + ")"
+				: displayName + "(" + fn.params.map((p) => `$${p.name}`).join(", ") + ")",
 			insertTextFormat: snippets ? InsertTextFormat.Snippet : InsertTextFormat.PlainText,
 		});
 	}
@@ -147,28 +152,29 @@ export function getCompletions(
 	// without prefix (since they can be called unqualified); others with full name.
 	for (const analysis of importedAnalyses.values()) {
 		for (const fn of analysis.functions) {
-			if (fn.namespaceUri === defaultUri) {
-				if (filter && !fn.localName.toLowerCase().includes(filter)) continue;
+			if (fn.qname.namespaceUri === defaultUri) {
+				if (filter && !fn.qname.localName.toLowerCase().includes(filter)) continue;
 				items.push({
-					label: fn.localName,
+					label: fn.qname.localName,
 					kind: CompletionItemKind.Function,
-					detail: `${fn.localName}#${fn.arity}`,
+					detail: `${fn.qname.localName}#${fn.arity}`,
 					documentation: { kind: MarkupKind.Markdown, value: functionDoc(fn) },
 					insertText: localInsertText(fn, snippets),
 					insertTextFormat: snippets ? InsertTextFormat.Snippet : InsertTextFormat.PlainText,
 				});
 			} else {
-				if (filter && !fn.name.toLowerCase().includes(filter)) continue;
+				const displayName = formatQName(fn.qname);
+				if (filter && !displayName.toLowerCase().includes(filter)) continue;
 				items.push({
-					label: fn.name,
+					label: displayName,
 					kind: CompletionItemKind.Function,
-					detail: `${fn.name}#${fn.arity}`,
+					detail: `${displayName}#${fn.arity}`,
 					documentation: { kind: MarkupKind.Markdown, value: functionDoc(fn) },
 					insertText: snippets
 						? fn.params.length === 0
-							? fn.name + "()"
-							: fn.name + "(" + fn.params.map((p, i) => `\${${i + 1}:\\$${p.name}}`).join(", ") + ")"
-						: fn.name + "(" + fn.params.map((p) => `$${p.name}`).join(", ") + ")",
+							? displayName + "()"
+							: displayName + "(" + fn.params.map((p, i) => `\${${i + 1}:\\$${p.name}}`).join(", ") + ")"
+						: displayName + "(" + fn.params.map((p) => `$${p.name}`).join(", ") + ")",
 					insertTextFormat: snippets ? InsertTextFormat.Snippet : InsertTextFormat.PlainText,
 				});
 			}
