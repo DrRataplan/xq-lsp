@@ -30,6 +30,27 @@ The server is a standard LSP over stdio. `src/server.ts` is the entry point and 
 
 **Feature handlers** (`src/completion.ts`, `src/features.ts`) take `(currentAnalysis, importedAnalyses)` and are pure functions — no server state. Completion context is determined by scanning text before the cursor for `$`, `ns:`, or plain names. Snippet format is only used when the client advertises `snippetSupport`.
 
+## Commit messages
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) because release-please reads commit messages to determine version bumps and generate changelogs. PRs are squash-merged, so **the PR title is the commit message** — make it conformant.
+
+Format: `<type>[optional scope]: <description>`
+
+| Type | Version bump | When to use |
+|------|-------------|-------------|
+| `feat` | minor | New user-visible capability |
+| `fix` | patch | Bug fix |
+| `perf` | patch | Performance improvement |
+| `docs` | — | Documentation only |
+| `refactor` | — | Code restructuring, no behavior change |
+| `test` | — | Adding or fixing tests |
+| `chore` | — | Build, deps, config, tooling |
+| `ci` | — | CI workflow changes |
+
+Breaking change: append `!` after the type, e.g. `feat!: drop Node 18 support` → major bump.
+
+The CI will reject PR titles that don't match this format.
+
 ## Key quirks
 
 - `vscode-languageserver/node.js` (with `.js` extension) is required at runtime — the package has no `exports` map, so the subpath must be explicit. TypeScript resolves it via the `paths` override in `tsconfig.json`.
