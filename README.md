@@ -34,9 +34,26 @@ The server expands the globs, analyzes each matched file, and indexes library mo
 import module namespace util="http://example.com/util";
 ```
 
+### Runtime built-ins
+
+Use the `lib` key to load built-in definitions for a specific runtime. With `lib` set, runtime functions appear in completions, hover, and go-to-definition without any explicit import in your XQuery files.
+
+| Value | Runtime |
+|-------|---------|
+| `"fonto"` | [Fonto XML editor](https://www.fontoxml.com/) — `fonto:*` functions |
+
+```xquery
+map { "glob": "src/**/*.xq", "lib": "fonto" }
+```
+
+Multiple libs use an XPath sequence:
+
+```xquery
+map { "glob": "src/**/*.xq", "lib": ("fonto", "other") }
+```
+
 ## Roadmap
 
-- **Definition files for different runtimes** — so you don't have to declare them by hand
 - **Completion of keywords** — like `function`, `declare` and `ancestor-or-self`, which saves you some keystrokes
 - **Context-depending completion** — which prevent syntactical errors
 - **Treesitter parser** — shoukld improve performance and scalability for huge files

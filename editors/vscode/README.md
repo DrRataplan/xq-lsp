@@ -41,6 +41,24 @@ The server indexes all matched files by their declared namespace URI, so imports
 import module namespace util="http://example.com/util";
 ```
 
+### Runtime built-ins
+
+Use the `lib` key to load built-in definitions for a specific runtime. With `lib` set, runtime functions appear in completions, hover, and go-to-definition without any explicit import in your XQuery files.
+
+| Value | Runtime |
+|-------|---------|
+| `"fonto"` | [Fonto XML editor](https://www.fontoxml.com/) — `fonto:*` functions |
+
+```xquery
+map { "glob": "src/**/*.xq", "lib": "fonto" }
+```
+
+Multiple libs use an XPath sequence:
+
+```xquery
+map { "glob": "src/**/*.xq", "lib": ("fonto", "other") }
+```
+
 ## Formatting
 
 XQuery formatting is provided by [prettier-plugin-xquery](https://github.com/prettier/prettier-plugin-xquery), bundled directly in the extension. No separate install is required.
