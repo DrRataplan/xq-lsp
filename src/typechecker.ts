@@ -1,6 +1,7 @@
 import type { Node, NonTerminal } from "xq-parser";
 import type { XQueryType, TypeDiagnostic, FileAnalysis, FunctionSymbol } from "./types.ts";
-import { findAll, directChildOf, directChildrenOf, firstTerminalValue, isTerminal, sequenceTypeText, resolvePrefix } from "./analyzer.ts";
+import { findAll, isTerminal, resolvePrefix } from "./analyzer.ts";
+import { asFunctionCall, asVarRef, asTypedBinding, literalKind, isPathExpr, argExpr } from "./ast-nodes.ts";
 
 // ── Type constants ───────────────────────────────────────────────────────────
 
@@ -62,7 +63,7 @@ function isAtomicSubtype(from: string, to: string): boolean {
 
 function isNodeSubtype(from: string | undefined, to: string | undefined): boolean {
 	if (!from || !to) return true;
-	if (to === 'node') return true; // node() accepts all node kinds
+	if (to === 'node') return true;
 	return from === to;
 }
 
@@ -71,22 +72,25 @@ export function isAssignable(from: XQueryType, to: XQueryType): boolean {
 	if (to.kind === 'item') return true;
 	if (from.kind === 'empty') return to.occurrence === '*' || to.occurrence === '?';
 
-	// Atomic ↔ node mismatch is always wrong
 	if (from.kind === 'atomic' && to.kind === 'node') return false;
 	if (from.kind === 'node' && to.kind === 'atomic') return false;
 
-	if (from.kind === 'atomic' && to.kind === 'atomic') {
-		return isAtomicSubtype(from.name ?? '', to.name ?? '');
-	}
-
-	if (from.kind === 'node' && to.kind === 'node') {
-		return isNodeSubtype(from.name, to.name);
-	}
+	if (from.kind === 'atomic' && to.kind === 'atomic') return isAtomicSubtype(from.name ?? '', to.name ?? '');
+	if (from.kind === 'node' && to.kind === 'node') return isNodeSubtype(from.name, to.name);
 
 	return true;
 }
 
 // ── Type inference ────────────────────────────────────────────────────────────
+
+const LITERAL_TYPE: Record<string, XQueryType> = {
+	string:  { kind: 'atomic', name: 'xs:string',  occurrence: '' },
+	integer: { kind: 'atomic', name: 'xs:integer', occurrence: '' },
+	decimal: { kind: 'atomic', name: 'xs:decimal', occurrence: '' },
+	double:  { kind: 'atomic', name: 'xs:double',  occurrence: '' },
+};
+
+const NODE_STEP: XQueryType = { kind: 'node', name: 'node', occurrence: '*' };
 
 function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, FileAnalysis>): FunctionSymbol[] {
 	const fns = [...analysis.functions];
@@ -94,24 +98,12 @@ function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, 
 	return fns;
 }
 
-function inferFunctionReturn(
-	callNode: NonTerminal,
-	analysis: FileAnalysis,
-	allFns: FunctionSymbol[],
-): XQueryType {
-	const fnEqname = directChildOf(callNode, 'FunctionEQName');
-	if (!fnEqname) return UNKNOWN;
-	const fnName = firstTerminalValue(fnEqname);
-	if (!fnName) return UNKNOWN;
-	const colonIdx = fnName.indexOf(':');
-	const prefix = colonIdx >= 0 ? fnName.slice(0, colonIdx) : '';
-	const localName = colonIdx >= 0 ? fnName.slice(colonIdx + 1) : fnName;
-	const nsUri = resolvePrefix(prefix, analysis);
-	const argList = directChildOf(callNode, 'ArgumentList');
-	const arity = argList ? directChildrenOf(argList, 'Argument').length : 0;
-	const fn = allFns.find(f => f.namespaceUri === nsUri && f.localName === localName && f.arity === arity);
-	if (!fn?.returnType) return UNKNOWN;
-	return parseType(fn.returnType);
+function inferFunctionReturn(node: Node, analysis: FileAnalysis, allFns: FunctionSymbol[]): XQueryType {
+	const call = asFunctionCall(node);
+	if (!call) return UNKNOWN;
+	const nsUri = resolvePrefix(call.prefix, analysis);
+	const fn = allFns.find(f => f.namespaceUri === nsUri && f.localName === call.localName && f.arity === call.args.length);
+	return fn?.returnType ? parseType(fn.returnType) : UNKNOWN;
 }
 
 export function inferExprType(
@@ -120,15 +112,9 @@ export function inferExprType(
 	analysis: FileAnalysis,
 	allFns: FunctionSymbol[],
 ): XQueryType {
-	if (isTerminal(node)) {
-		switch (node.type) {
-			case 'StringLiteral': return { kind: 'atomic', name: 'xs:string', occurrence: '' };
-			case 'IntegerLiteral': return { kind: 'atomic', name: 'xs:integer', occurrence: '' };
-			case 'DecimalLiteral': return { kind: 'atomic', name: 'xs:decimal', occurrence: '' };
-			case 'DoubleLiteral': return { kind: 'atomic', name: 'xs:double', occurrence: '' };
-			default: return UNKNOWN;
-		}
-	}
+	const lit = literalKind(node);
+	if (lit) return LITERAL_TYPE[lit];
+	if (isTerminal(node)) return UNKNOWN;
 
 	const nt = node as NonTerminal;
 
@@ -141,38 +127,26 @@ export function inferExprType(
 			}
 			break;
 		}
-
 		case 'VarRef': {
-			const varNameNode = nt.children.find(c => !isTerminal(c) && c.type === 'VarName');
-			if (!varNameNode) return UNKNOWN;
-			const name = firstTerminalValue(varNameNode);
-			if (!name) return UNKNOWN;
-			return varTypes.get(name) ?? UNKNOWN;
+			const ref = asVarRef(node);
+			return ref ? (varTypes.get(ref.varName) ?? UNKNOWN) : UNKNOWN;
 		}
-
 		case 'FunctionCall':
-			return inferFunctionReturn(nt, analysis, allFns);
-
+			return inferFunctionReturn(node, analysis, allFns);
 		case 'PathExpr':
-		case 'RelativePathExpr': {
-			const hasSlash = nt.children.some(c => isTerminal(c) && (c.value === '/' || c.value === '//'));
-			if (hasSlash) return { kind: 'node', name: 'node', occurrence: '*' };
+		case 'RelativePathExpr':
+			if (isPathExpr(node)) return NODE_STEP;
 			break;
-		}
-
 		case 'AxisStep':
 		case 'ForwardStep':
 		case 'ReverseStep':
 		case 'AbbrevForwardStep':
 		case 'AbbrevReverseStep':
-			return { kind: 'node', name: 'node', occurrence: '*' };
+			return NODE_STEP;
 	}
 
-	// Unwrap single-child wrapper nodes (the long chain of OrExpr, AndExpr, etc.)
 	const ntChildren = nt.children.filter(c => !isTerminal(c));
-	if (ntChildren.length === 1) {
-		return inferExprType(ntChildren[0], varTypes, analysis, allFns);
-	}
+	if (ntChildren.length === 1) return inferExprType(ntChildren[0], varTypes, analysis, allFns);
 
 	return UNKNOWN;
 }
@@ -181,40 +155,11 @@ export function inferExprType(
 
 export function buildVarTypes(ast: Node, text: string): Map<string, XQueryType> {
 	const types = new Map<string, XQueryType>();
-
-	function extractTypeDecl(container: Node): XQueryType | undefined {
-		const typeDecl = directChildOf(container, 'TypeDeclaration');
-		if (!typeDecl) return undefined;
-		const seqType = directChildOf(typeDecl, 'SequenceType');
-		if (!seqType) return undefined;
-		const typeStr = sequenceTypeText(text, seqType);
-		return typeStr ? parseType(typeStr) : undefined;
+	const nodeTypes = ['LetBinding', 'ForBinding', 'Param', 'VarDecl'];
+	for (const node of nodeTypes.flatMap(t => findAll(ast, t))) {
+		const binding = asTypedBinding(node, text);
+		if (binding?.typeStr) types.set(binding.varName, parseType(binding.typeStr));
 	}
-
-	for (const binding of [...findAll(ast, 'LetBinding'), ...findAll(ast, 'ForBinding')]) {
-		const varName = directChildOf(binding, 'VarName');
-		const name = varName ? firstTerminalValue(varName) : null;
-		if (!name) continue;
-		const t = extractTypeDecl(binding);
-		if (t) types.set(name, t);
-	}
-
-	for (const param of findAll(ast, 'Param')) {
-		const eqname = directChildOf(param, 'EQName');
-		const name = eqname ? firstTerminalValue(eqname) : null;
-		if (!name) continue;
-		const t = extractTypeDecl(param);
-		if (t) types.set(name, t);
-	}
-
-	for (const varDecl of findAll(ast, 'VarDecl')) {
-		const varName = directChildOf(varDecl, 'VarName');
-		const name = varName ? firstTerminalValue(varName) : null;
-		if (!name) continue;
-		const t = extractTypeDecl(varDecl);
-		if (t) types.set(name, t);
-	}
-
 	return types;
 }
 
@@ -241,43 +186,28 @@ export function checkTypes(
 	const varTypes = buildVarTypes(ast, text);
 
 	for (const callNode of findAll(ast, 'FunctionCall')) {
-		const nt = callNode as NonTerminal;
-		const fnEqname = directChildOf(callNode, 'FunctionEQName');
-		if (!fnEqname) continue;
-		const fnName = firstTerminalValue(fnEqname);
-		if (!fnName) continue;
-
-		const colonIdx = fnName.indexOf(':');
-		const prefix = colonIdx >= 0 ? fnName.slice(0, colonIdx) : '';
-		const localName = colonIdx >= 0 ? fnName.slice(colonIdx + 1) : fnName;
-		const nsUri = resolvePrefix(prefix, analysis);
-
-		const argList = directChildOf(nt, 'ArgumentList');
-		if (!argList) continue;
-		const args = directChildrenOf(argList, 'Argument');
-
-		const fn = allFns.find(f => f.namespaceUri === nsUri && f.localName === localName && f.arity === args.length);
+		const call = asFunctionCall(callNode);
+		if (!call) continue;
+		const nsUri = resolvePrefix(call.prefix, analysis);
+		const fn = allFns.find(f => f.namespaceUri === nsUri && f.localName === call.localName && f.arity === call.args.length);
 		if (!fn) continue;
 
-		for (let i = 0; i < args.length; i++) {
+		for (let i = 0; i < call.args.length; i++) {
 			const param = fn.params[i];
 			if (!param?.type) continue;
-
 			const declaredType = parseType(param.type);
 			if (declaredType.kind === 'unknown') continue;
 
-			const argNode = args[i];
-			const exprSingle = directChildOf(argNode, 'ExprSingle');
-			if (!exprSingle) continue;
-
-			const inferredType = inferExprType(exprSingle, varTypes, analysis, allFns);
+			const expr = argExpr(call.args[i]);
+			if (!expr) continue;
+			const inferredType = inferExprType(expr, varTypes, analysis, allFns);
 			if (inferredType.kind === 'unknown') continue;
 
 			if (!isAssignable(inferredType, declaredType)) {
 				errors.push({
-					message: `Argument ${i + 1} of ${fnName}: expected ${param.type}, got ${formatType(inferredType)}`,
-					offset: argNode.start,
-					length: (argNode.end ?? argNode.start + 1) - argNode.start,
+					message: `Argument ${i + 1} of ${call.name}: expected ${param.type}, got ${formatType(inferredType)}`,
+					offset: call.args[i].start,
+					length: (call.args[i].end ?? call.args[i].start + 1) - call.args[i].start,
 				});
 			}
 		}
