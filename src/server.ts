@@ -31,10 +31,7 @@ import type { NamespaceUsageKind } from './namespace-diagnostics.ts';
 const runtimesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'runtimes');
 
 const RUNTIME_FILES: Record<string, string> = {
-  basex: path.join(runtimesDir, 'basex.xq'),
   fonto: path.join(runtimesDir, 'fonto.xq'),
-  marklogic: path.join(runtimesDir, 'marklogic.xq'),
-  saxonhe: path.join(runtimesDir, 'saxonhe.xq'),
 };
 
 const runtimeAnalysisCache = new Map<string, FileAnalysis>();

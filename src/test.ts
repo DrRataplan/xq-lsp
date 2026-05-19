@@ -769,77 +769,17 @@ describe("insert positions", () => {
 describe("runtime defs", () => {
 	const runtimesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "runtimes");
 
-	test("basex.xq: db:open appears in analysis", () => {
-		const text = fs.readFileSync(path.join(runtimesDir, "basex.xq"), "utf-8");
-		const analysis = analyze(text, "builtin:basex");
-		const names = analysis.functions.map((f) => formatQName(f.qname));
-		assert.ok(names.includes("db:open"), `expected db:open, got ${names}`);
-	});
-
-	test("basex.xq: db:open has two overloads (arity 1 and 2)", () => {
-		const text = fs.readFileSync(path.join(runtimesDir, "basex.xq"), "utf-8");
-		const analysis = analyze(text, "builtin:basex");
-		const opens = analysis.functions.filter((f) => formatQName(f.qname) === "db:open");
-		assert.ok(opens.some((f) => f.arity === 1), "expected db:open with arity 1");
-		assert.ok(opens.some((f) => f.arity === 2), "expected db:open with arity 2");
-	});
-
-	test("basex.xq: db:list appears with arity 0", () => {
-		const text = fs.readFileSync(path.join(runtimesDir, "basex.xq"), "utf-8");
-		const analysis = analyze(text, "builtin:basex");
-		const fn = analysis.functions.find((f) => formatQName(f.qname) === "db:list");
-		assert.ok(fn, "db:list not found");
-		assert.equal(fn.arity, 0);
-	});
-
-	test("basex.xq: functions have doc comments", () => {
-		const text = fs.readFileSync(path.join(runtimesDir, "basex.xq"), "utf-8");
-		const analysis = analyze(text, "builtin:basex");
-		const fn = analysis.functions.find((f) => formatQName(f.qname) === "db:open" && f.arity === 1);
-		assert.ok(fn?.doc?.description, "expected doc comment on db:open");
-	});
-
-	test("marklogic.xq: xdmp:log appears in analysis", () => {
-		const text = fs.readFileSync(path.join(runtimesDir, "marklogic.xq"), "utf-8");
-		const analysis = analyze(text, "builtin:marklogic");
-		const names = analysis.functions.map((f) => formatQName(f.qname));
-		assert.ok(names.includes("xdmp:log"), `expected xdmp:log, got ${names}`);
-	});
-
-	test("marklogic.xq: xdmp:eval appears with arity 1", () => {
-		const text = fs.readFileSync(path.join(runtimesDir, "marklogic.xq"), "utf-8");
-		const analysis = analyze(text, "builtin:marklogic");
-		const fn = analysis.functions.find((f) => formatQName(f.qname) === "xdmp:eval");
-		assert.ok(fn, "xdmp:eval not found");
-		assert.equal(fn.arity, 1);
-	});
-
-	test("saxonhe.xq: saxon:evaluate appears in analysis", () => {
-		const text = fs.readFileSync(path.join(runtimesDir, "saxonhe.xq"), "utf-8");
-		const analysis = analyze(text, "builtin:saxonhe");
-		const names = analysis.functions.map((f) => formatQName(f.qname));
-		assert.ok(names.includes("saxon:evaluate"), `expected saxon:evaluate, got ${names}`);
-	});
-
-	test("saxonhe.xq: saxon:version has arity 0", () => {
-		const text = fs.readFileSync(path.join(runtimesDir, "saxonhe.xq"), "utf-8");
-		const analysis = analyze(text, "builtin:saxonhe");
-		const fn = analysis.functions.find((f) => formatQName(f.qname) === "saxon:version");
-		assert.ok(fn, "saxon:version not found");
-		assert.equal(fn.arity, 0);
-	});
-
 	test("fonto.xq: fonto:selection-common-ancestor appears in analysis", () => {
 		const text = fs.readFileSync(path.join(runtimesDir, "fonto.xq"), "utf-8");
 		const analysis = analyze(text, "builtin:fonto");
-		const names = analysis.functions.map((f) => f.name);
+		const names = analysis.functions.map((f) => formatQName(f.qname));
 		assert.ok(names.includes("fonto:selection-common-ancestor"), `expected fonto:selection-common-ancestor, got ${names}`);
 	});
 
 	test("fonto.xq: fonto:dita-class has arity 2", () => {
 		const text = fs.readFileSync(path.join(runtimesDir, "fonto.xq"), "utf-8");
 		const analysis = analyze(text, "builtin:fonto");
-		const fn = analysis.functions.find((f) => f.name === "fonto:dita-class");
+		const fn = analysis.functions.find((f) => formatQName(f.qname) === "fonto:dita-class");
 		assert.ok(fn, "fonto:dita-class not found");
 		assert.equal(fn.arity, 2);
 	});
