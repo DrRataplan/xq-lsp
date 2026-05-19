@@ -10,6 +10,7 @@ import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getBuiltins } from "./builtins.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import { formatQName } from "./types.ts";
+import { getRuntimeAnalyses } from "./runtimes.ts";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { findUndeclaredPrefixUsages, findImportInsertPosition, findDeclareNsInsertPosition } from "./namespace-diagnostics.ts";
 
@@ -787,6 +788,47 @@ describe("runtime defs", () => {
 	test("fonto.xq: functions have @see doc links", () => {
 		const text = fs.readFileSync(path.join(runtimesDir, "fonto.xq"), "utf-8");
 		assert.ok(text.includes("@see https://documentation.fontoxml.com"), "expected @see links in fonto.xq");
+	});
+
+	test("completion: fonto functions appear when namespace is imported", () => {
+		const src = `import module namespace fonto="http://www.fontoxml.com/functions";
+fonto:`;
+		const mainAnalysis = analyze(src, "file:///main.xq");
+		const runtimeByNamespace = new Map(
+			getRuntimeAnalyses(["fonto"])
+				.filter((a) => a.moduleNamespaceUri)
+				.map((a) => [a.moduleNamespaceUri!, a]),
+		);
+		const imported = new Map<string, ReturnType<typeof analyze>>();
+		for (const imp of mainAnalysis.imports) {
+			if (!imp.atPath) {
+				const a = runtimeByNamespace.get(imp.namespaceUri);
+				if (a) imported.set(imp.namespaceUri, a);
+			}
+		}
+		const items = getCompletions({ textBeforeCursor: "fonto:", cursorOffset: 6 }, mainAnalysis, imported);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("selection-common-ancestor"), `expected fonto functions, got ${labels}`);
+	});
+
+	test("completion: fonto functions absent without import", () => {
+		const src = `let $x := 1 return $x`;
+		const mainAnalysis = analyze(src, "file:///main.xq");
+		const runtimeByNamespace = new Map(
+			getRuntimeAnalyses(["fonto"])
+				.filter((a) => a.moduleNamespaceUri)
+				.map((a) => [a.moduleNamespaceUri!, a]),
+		);
+		const imported = new Map<string, ReturnType<typeof analyze>>();
+		for (const imp of mainAnalysis.imports) {
+			if (!imp.atPath) {
+				const a = runtimeByNamespace.get(imp.namespaceUri);
+				if (a) imported.set(imp.namespaceUri, a);
+			}
+		}
+		const items = getCompletions({ textBeforeCursor: "fonto:", cursorOffset: 6 }, mainAnalysis, imported);
+		const labels = items.map((i) => i.label);
+		assert.ok(!labels.includes("selection-common-ancestor"), `fonto functions should not appear without import`);
 	});
 });
 

@@ -25,38 +25,7 @@ import {
   findDeclareNsInsertPosition,
 } from './namespace-diagnostics.ts';
 import type { NamespaceUsageKind } from './namespace-diagnostics.ts';
-
-// ── Runtime definition files ─────────────────────────────────────────────────
-
-const runtimesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'runtimes');
-
-const RUNTIME_FILES: Record<string, string> = {
-  fonto: path.join(runtimesDir, 'fonto.xq'),
-};
-
-const runtimeAnalysisCache = new Map<string, FileAnalysis>();
-
-export function getRuntimeAnalyses(runtimes: string[]): FileAnalysis[] {
-  const results: FileAnalysis[] = [];
-  for (const runtime of runtimes) {
-    const cached = runtimeAnalysisCache.get(runtime);
-    if (cached) {
-      results.push(cached);
-      continue;
-    }
-    const filePath = RUNTIME_FILES[runtime];
-    if (!filePath) continue;
-    try {
-      const text = fs.readFileSync(filePath, 'utf-8');
-      const analysis = analyze(text, `builtin:${runtime}`);
-      runtimeAnalysisCache.set(runtime, analysis);
-      results.push(analysis);
-    } catch {
-      // ignore missing or unreadable runtime files
-    }
-  }
-  return results;
-}
+import { getRuntimeAnalyses } from './runtimes.ts';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -152,9 +121,10 @@ function resolveImports(currentUri: string, analysis: FileAnalysis): Map<string,
   const result = new Map<string, FileAnalysis>();
   result.set('builtin:fn', getBuiltins());
   const { byNamespace: globAnalyses, lib } = getGlobAnalyses(currentUri);
+  const runtimeByNamespace = new Map<string, FileAnalysis>();
   for (const runtimeAnalysis of getRuntimeAnalyses(lib)) {
-    if (runtimeAnalysis.modulePrefix) {
-      result.set(`builtin:${runtimeAnalysis.modulePrefix}`, runtimeAnalysis);
+    if (runtimeAnalysis.moduleNamespaceUri) {
+      runtimeByNamespace.set(runtimeAnalysis.moduleNamespaceUri, runtimeAnalysis);
     }
   }
   for (const imp of analysis.imports) {
@@ -163,8 +133,8 @@ function resolveImports(currentUri: string, analysis: FileAnalysis): Map<string,
       const imported = getImportedAnalysis(uri);
       if (imported) result.set(imp.atPath, imported);
     } else {
-      // No "at" path: resolve by matching namespace URI against glob-loaded modules
-      const imported = globAnalyses.get(imp.namespaceUri);
+      // No "at" path: resolve by matching namespace URI against glob-loaded modules or runtime defs
+      const imported = globAnalyses.get(imp.namespaceUri) ?? runtimeByNamespace.get(imp.namespaceUri);
       if (imported) result.set(imp.namespaceUri, imported);
     }
   }
