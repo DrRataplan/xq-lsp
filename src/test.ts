@@ -1,9 +1,14 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as path from "node:path";
+import { pathToFileURL } from "node:url";
 import { analyze } from "./analyzer.ts";
 import { getCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getBuiltins } from "./builtins.ts";
+import { findConfig, expandGlobs } from "./config.ts";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
 // ── analyzer: valid XQuery via AST ──────────────────────────────────────────
@@ -435,5 +440,152 @@ describe("builtins", () => {
 		assert.ok(labels.includes("empty"), `expected empty, got ${labels}`);
 		assert.ok(labels.includes("true"), `expected true, got ${labels}`);
 		assert.ok(labels.includes("false"), `expected false, got ${labels}`);
+	});
+});
+
+// ── imports without "at" clause ───────────────────────────────────────────────
+
+describe("imports without at clause", () => {
+	const WITHOUT_AT = `import module namespace util="http://example.com/util";
+declare function local:main() { util:trim("x") };`;
+
+	test("analyzer: AST path extracts import without at path", () => {
+		const result = analyze(WITHOUT_AT, "file:///test.xq");
+		assert.equal(result.imports.length, 1);
+		assert.equal(result.imports[0].prefix, "util");
+		assert.equal(result.imports[0].namespaceUri, "http://example.com/util");
+		assert.equal(result.imports[0].atPath, undefined);
+	});
+
+	test("analyzer: regex fallback extracts import without at path", () => {
+		// Force regex path with trailing invalid syntax
+		const result = analyze(WITHOUT_AT + "\nlet $x := util:trim(", "file:///test.xq");
+		assert.equal(result.imports.length, 1);
+		assert.equal(result.imports[0].prefix, "util");
+		assert.equal(result.imports[0].namespaceUri, "http://example.com/util");
+		assert.equal(result.imports[0].atPath, undefined);
+	});
+
+	test("analyzer: regex fallback still extracts import with at path", () => {
+		const src = `import module namespace util="http://example.com/util" at "./util.xq";
+let $x := util:trim(`;
+		const result = analyze(src, "file:///test.xq");
+		assert.equal(result.imports.length, 1);
+		assert.equal(result.imports[0].atPath, "./util.xq");
+	});
+});
+
+// ── lsp-config.xq parsing and glob expansion ─────────────────────────────────
+
+describe("lsp-config", () => {
+	function withTmpDir(fn: (dir: string) => void): void {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xq-lsp-test-"));
+		try {
+			fn(dir);
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
+	}
+
+	test("findConfig: locates lsp-config.xq in the same directory", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(path.join(dir, "lsp-config.xq"), `map { "glob": "**/*.xq" }`);
+			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
+			const result = findConfig(fileUri);
+			assert.ok(result, "expected config to be found");
+			assert.deepEqual(result.config.globs, ["**/*.xq"]);
+			assert.equal(result.configDir, dir);
+		});
+	});
+
+	test("findConfig: locates lsp-config.xq in a parent directory", () => {
+		withTmpDir((dir) => {
+			const sub = path.join(dir, "src");
+			fs.mkdirSync(sub);
+			fs.writeFileSync(path.join(dir, "lsp-config.xq"), `map { "glob": "src/**/*.xq" }`);
+			const fileUri = pathToFileURL(path.join(sub, "main.xq")).toString();
+			const result = findConfig(fileUri);
+			assert.ok(result, "expected config to be found in parent");
+			assert.deepEqual(result.config.globs, ["src/**/*.xq"]);
+		});
+	});
+
+	test("findConfig: returns null when no config file exists", () => {
+		withTmpDir((dir) => {
+			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
+			assert.equal(findConfig(fileUri), null);
+		});
+	});
+
+	test("findConfig: parses multiple globs as a sequence", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "lsp-config.xq"),
+				`map { "glob": ("src/**/*.xq", "lib/**/*.xq") }`,
+			);
+			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
+			const result = findConfig(fileUri);
+			assert.ok(result);
+			assert.deepEqual(result.config.globs, ["src/**/*.xq", "lib/**/*.xq"]);
+		});
+	});
+
+	test("expandGlobs: finds .xq files recursively via **/*.xq", () => {
+		withTmpDir((dir) => {
+			const sub = path.join(dir, "lib");
+			fs.mkdirSync(sub);
+			fs.writeFileSync(path.join(dir, "a.xq"), "");
+			fs.writeFileSync(path.join(sub, "b.xq"), "");
+			fs.writeFileSync(path.join(sub, "c.txt"), ""); // should not match
+			const files = expandGlobs(["**/*.xq"], dir);
+			const names = files.map((f) => path.basename(f)).sort();
+			assert.deepEqual(names, ["a.xq", "b.xq"]);
+		});
+	});
+
+	test("expandGlobs: non-recursive pattern matches only in specified dir", () => {
+		withTmpDir((dir) => {
+			const sub = path.join(dir, "lib");
+			fs.mkdirSync(sub);
+			fs.writeFileSync(path.join(dir, "a.xq"), "");
+			fs.writeFileSync(path.join(sub, "b.xq"), ""); // should not match
+			const files = expandGlobs(["*.xq"], dir);
+			const names = files.map((f) => path.basename(f));
+			assert.deepEqual(names, ["a.xq"]);
+		});
+	});
+
+	test("completion: glob-loaded module resolves namespace-only import", () => {
+		withTmpDir((dir) => {
+			// Write a library module to disk
+			const libSrc = `module namespace util="http://example.com/util";
+declare function util:trim($s as xs:string) as xs:string { $s };`;
+			fs.writeFileSync(path.join(dir, "util.xq"), libSrc);
+
+			// The main module imports util without an "at" path
+			const mainSrc = `import module namespace util="http://example.com/util";
+util:trim("x")`;
+			const mainAnalysis = analyze(mainSrc, pathToFileURL(path.join(dir, "main.xq")).toString());
+
+			// Simulate what server.ts does: resolve glob-loaded modules by namespace URI
+			const libAnalysis = analyze(libSrc, pathToFileURL(path.join(dir, "util.xq")).toString());
+			const globAnalyses = new Map([[libAnalysis.moduleNamespaceUri!, libAnalysis]]);
+
+			const imported = new Map<string, ReturnType<typeof analyze>>();
+			for (const imp of mainAnalysis.imports) {
+				if (!imp.atPath) {
+					const a = globAnalyses.get(imp.namespaceUri);
+					if (a) imported.set(imp.namespaceUri, a);
+				}
+			}
+
+			const items = getCompletions(
+				{ textBeforeCursor: "util:", cursorOffset: 5 },
+				mainAnalysis,
+				imported,
+			);
+			const labels = items.map((i) => i.label);
+			assert.ok(labels.includes("trim"), `expected trim via namespace-only import, got ${labels}`);
+		});
 	});
 });

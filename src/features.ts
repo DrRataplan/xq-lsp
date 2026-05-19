@@ -236,13 +236,15 @@ export function getDefinition(
 		return Location.create(doc.uri, { start: pos, end: pos });
 	}
 
-	// Search imported files: find which atPath contains the function, then navigate there
+	// Search imported files: find which import contains the function, then navigate there
 	for (const imp of current.imports) {
-		const analysis = imported.get(imp.atPath);
+		const key = imp.atPath ?? imp.namespaceUri;
+		const analysis = imported.get(key);
 		if (!analysis) continue;
 		const fn = analysis.functions.find((f) => f.namespaceUri === targetUri && f.localName === wordLocalName);
 		if (!fn) continue;
-		const uri = resolveUri(imp.atPath);
+		// Prefer resolving via atPath; fall back to the sourceUri recorded on the symbol
+		const uri = imp.atPath ? resolveUri(imp.atPath) : fn.sourceUri;
 		let pos: Position = { line: 0, character: 0 };
 		if (fn.sourceOffset !== undefined) {
 			try {

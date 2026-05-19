@@ -33,7 +33,7 @@ export interface VariableSymbol {
 export interface ImportInfo {
 	prefix: string;
 	namespaceUri: string;
-	atPath: string; // as written in source, e.g. "./other.xq"
+	atPath?: string; // as written in source, e.g. "./other.xq"; absent when the import has no "at" clause
 }
 
 export interface FileAnalysis {
