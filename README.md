@@ -11,9 +11,31 @@ Language Server Protocol implementation for XQuery, providing autocompletion, ho
 - **Document symbols** — file outline of all declared functions and variables
 - **Diagnostics** — syntax errors as you type
 
+## Configuration
+
+Place an `lsp-config.xq` file in your project root to enable glob-based import resolution. The server walks up from the current file's directory to find it.
+
+The file contains an XPath 3.1 map expression with a `glob` key:
+
+```xquery
+map { "glob": "src/**/*.xq" }
+```
+
+Multiple patterns are written as an XPath sequence:
+
+```xquery
+map { "glob": ("src/**/*.xq", "lib/**/*.xq") }
+```
+
+The server expands the globs, analyzes each matched file, and indexes library modules by their declared namespace URI. Imports written without an `at` clause are then resolved by matching the namespace URI:
+
+```xquery
+(: no "at" path needed — the server finds the file via the glob index :)
+import module namespace util="http://example.com/util";
+```
+
 ## Roadmap
 
-- **Finding files without 'at' imports** — so you don't have to relate them by hand but they resolve automatically
 - **Definition files for different runtimes** — so you don't have to declare them by hand
 - **Completion of keywords** — like `function`, `declare` and `ancestor-or-self`, which saves you some keystrokes
 - **Context-depending completion** — which prevent syntactical errors

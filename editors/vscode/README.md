@@ -19,6 +19,27 @@ For files with syntax errors (common while editing), the server falls back to re
 
 `.xq`, `.xql`, `.xqm`, `.xqy`
 
+## Configuration
+
+Place an `lsp-config.xq` file in your project root to enable glob-based import resolution. The server walks up from the current file's directory to find it.
+
+```xquery
+map { "glob": "src/**/*.xq" }
+```
+
+Multiple patterns are written as an XPath sequence:
+
+```xquery
+map { "glob": ("src/**/*.xq", "lib/**/*.xq") }
+```
+
+The server indexes all matched files by their declared namespace URI, so imports without an `at` clause resolve automatically:
+
+```xquery
+(: no "at" path needed :)
+import module namespace util="http://example.com/util";
+```
+
 ## Requirements
 
 Node.js must be installed and available on your `PATH`.
