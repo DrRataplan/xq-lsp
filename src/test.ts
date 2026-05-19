@@ -11,6 +11,7 @@ import { getBuiltins } from "./builtins.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import { formatQName } from "./types.ts";
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { findUndeclaredPrefixUsages, findImportInsertPosition, findDeclareNsInsertPosition } from "./namespace-diagnostics.ts";
 
 // ── analyzer: valid XQuery via AST ──────────────────────────────────────────
 describe("analyze", () => {
@@ -555,6 +556,110 @@ describe("lsp-config", () => {
 			const names = files.map((f) => path.basename(f));
 			assert.deepEqual(names, ["a.xq"]);
 		});
+	});
+
+	test("namespace-diagnostics: undeclared prefix in function call is reported", () => {
+		withTmpDir((_dir) => {
+			const src = `declare function local:main() { myns:compute(1) };`;
+			const analysis = analyze(src, "file:///main.xq");
+			const diags = findUndeclaredPrefixUsages(src, analysis);
+			assert.ok(diags.some(d => d.prefix === "myns"), `expected myns diagnostic, got ${JSON.stringify(diags)}`);
+			const d = diags.find(d => d.prefix === "myns")!;
+			assert.equal(d.code, "XQST0081");
+			assert.equal(d.usageKind, "function");
+		});
+	});
+
+	test("namespace-diagnostics: declared prefix produces no diagnostic", () => {
+		withTmpDir((_dir) => {
+			const src = `import module namespace myns="http://example.com/myns" at "./myns.xq";
+declare function local:main() { myns:compute(1) };`;
+			const analysis = analyze(src, "file:///main.xq");
+			const diags = findUndeclaredPrefixUsages(src, analysis);
+			assert.ok(!diags.some(d => d.prefix === "myns"), `myns should not be reported after import, got ${JSON.stringify(diags)}`);
+		});
+	});
+
+	test("namespace-diagnostics: builtin prefixes produce no diagnostic", () => {
+		withTmpDir((_dir) => {
+			const src = `declare function local:main() { fn:true(), xs:string("x"), math:sqrt(4.0) };`;
+			const analysis = analyze(src, "file:///main.xq");
+			const diags = findUndeclaredPrefixUsages(src, analysis);
+			assert.equal(diags.length, 0, `expected no diagnostics, got ${JSON.stringify(diags)}`);
+		});
+	});
+
+	test("namespace-diagnostics: prefix inside a comment is not reported", () => {
+		withTmpDir((_dir) => {
+			const src = `(: This mentions undeclared:prefix but it is in a comment :)
+declare function local:main() { 1 };`;
+			const analysis = analyze(src, "file:///main.xq");
+			const diags = findUndeclaredPrefixUsages(src, analysis);
+			assert.ok(!diags.some(d => d.prefix === "undeclared"), `prefix in comment should not be reported`);
+		});
+	});
+
+	test("namespace-diagnostics: prefix inside import statement is not reported", () => {
+		withTmpDir((_dir) => {
+			const src = `import module namespace myns="http://example.com/myns" at "./myns.xq";
+1`;
+			const analysis = analyze(src, "file:///main.xq");
+			const diags = findUndeclaredPrefixUsages(src, analysis);
+			assert.equal(diags.length, 0, `import statement prefixes should not be reported, got ${JSON.stringify(diags)}`);
+		});
+	});
+
+	test("namespace-diagnostics: element constructor detected as element kind", () => {
+		withTmpDir((_dir) => {
+			const src = `declare function local:main() { <ns:foo/> };`;
+			const analysis = analyze(src, "file:///main.xq");
+			const diags = findUndeclaredPrefixUsages(src, analysis);
+			const d = diags.find(d => d.prefix === "ns");
+			assert.ok(d, `expected diagnostic for ns, got ${JSON.stringify(diags)}`);
+			assert.equal(d.usageKind, "element");
+		});
+	});
+
+	test("namespace-diagnostics: variable reference detected as variable kind", () => {
+		withTmpDir((_dir) => {
+			const src = `declare function local:main() { $ext:someVar };`;
+			const analysis = analyze(src, "file:///main.xq");
+			const diags = findUndeclaredPrefixUsages(src, analysis);
+			const d = diags.find(d => d.prefix === "ext");
+			assert.ok(d, `expected diagnostic for ext, got ${JSON.stringify(diags)}`);
+			assert.equal(d.usageKind, "variable");
+		});
+	});
+
+	test("namespace-diagnostics: module's own prefix produces no diagnostic", () => {
+		withTmpDir((_dir) => {
+			const src = `module namespace mymod="http://example.com/mymod";
+declare function mymod:doThing() { 1 };`;
+			const analysis = analyze(src, "file:///mymod.xq");
+			const diags = findUndeclaredPrefixUsages(src, analysis);
+			assert.ok(!diags.some(d => d.prefix === "mymod"), `own module prefix should not be reported`);
+		});
+	});
+
+	test("findImportInsertPosition: after last existing import", () => {
+		const text = `import module namespace a="http://a.com" at "./a.xq";
+import module namespace b="http://b.com" at "./b.xq";
+declare function local:main() { b:fn() };`;
+		const pos = findImportInsertPosition(text);
+		assert.equal(pos.line, 2, `expected line 2, got ${pos.line}`);
+	});
+
+	test("findImportInsertPosition: before first declare when no imports exist", () => {
+		const text = `declare function local:main() { 1 };`;
+		const pos = findImportInsertPosition(text);
+		assert.equal(pos.line, 0, `expected line 0, got ${pos.line}`);
+	});
+
+	test("findDeclareNsInsertPosition: after last import when no declare namespace exists", () => {
+		const text = `import module namespace a="http://a.com" at "./a.xq";
+declare function local:main() { 1 };`;
+		const pos = findDeclareNsInsertPosition(text);
+		assert.equal(pos.line, 1, `expected line 1, got ${pos.line}`);
 	});
 
 	test("completion: glob-loaded module resolves namespace-only import", () => {
