@@ -44,4 +44,17 @@ export interface FileAnalysis {
 	defaultFunctionNamespace: string; // from 'declare default function namespace', else XMLNS_FN
 	moduleNamespaceUri?: string; // from 'module namespace prefix="uri"'
 	modulePrefix?: string; // from 'module namespace prefix="uri"'
+	usedAstPath: boolean; // true when the AST parser succeeded, false when regex fallback was used
+}
+
+export interface XQueryType {
+	kind: 'atomic' | 'node' | 'item' | 'function' | 'map' | 'array' | 'empty' | 'unknown';
+	name?: string; // e.g. "xs:string", "node", "element"
+	occurrence: '' | '?' | '*' | '+';
+}
+
+export interface TypeDiagnostic {
+	message: string;
+	offset: number; // character offset into the source
+	length: number;
 }

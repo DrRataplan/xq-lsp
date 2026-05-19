@@ -35,7 +35,7 @@ export function resolvePrefix(prefix: string, analysis: FileAnalysis): string {
 
 // ── AST helpers ─────────────────────────────────────────────────────────────
 
-function isTerminal(node: Node): node is Terminal {
+export function isTerminal(node: Node): node is Terminal {
 	return node.isTerminal;
 }
 
@@ -43,7 +43,7 @@ function asNonTerminal(node: Node): NonTerminal {
 	return node as NonTerminal;
 }
 
-function firstTerminalValue(node: Node): string | null {
+export function firstTerminalValue(node: Node): string | null {
 	if (isTerminal(node)) return node.value;
 	for (const child of asNonTerminal(node).children) {
 		const v = firstTerminalValue(child);
@@ -52,7 +52,7 @@ function firstTerminalValue(node: Node): string | null {
 	return null;
 }
 
-function findAll(node: Node, type: string, out: Node[] = []): Node[] {
+export function findAll(node: Node, type: string, out: Node[] = []): Node[] {
 	if (node.type === type) out.push(node);
 	if (!isTerminal(node)) {
 		for (const child of asNonTerminal(node).children) {
@@ -62,12 +62,12 @@ function findAll(node: Node, type: string, out: Node[] = []): Node[] {
 	return out;
 }
 
-function directChildOf(node: Node, type: string): Node | undefined {
+export function directChildOf(node: Node, type: string): Node | undefined {
 	if (isTerminal(node)) return undefined;
 	return asNonTerminal(node).children.find((c) => c.type === type);
 }
 
-function directChildrenOf(node: Node, type: string): Node[] {
+export function directChildrenOf(node: Node, type: string): Node[] {
 	if (isTerminal(node)) return [];
 	return asNonTerminal(node).children.filter((c) => c.type === type);
 }
@@ -157,7 +157,7 @@ function resolveNamespaceUri(prefix: string, prefixMap: Map<string, string>): st
 
 // ── Extract from valid AST ───────────────────────────────────────────────────
 
-function sequenceTypeText(text: string, node: Node): string | undefined {
+export function sequenceTypeText(text: string, node: Node): string | undefined {
 	if (node.start === undefined || node.end === null) return undefined;
 	return text.slice(node.start, node.end ?? undefined).trim() || undefined;
 }
@@ -287,6 +287,7 @@ function analyzeAst(ast: Node, comments: Terminal[], text: string, sourceUri: st
 		defaultFunctionNamespace,
 		moduleNamespaceUri: moduleNs?.uri,
 		modulePrefix: moduleNs?.prefix,
+		usedAstPath: true,
 	};
 }
 
@@ -389,10 +390,9 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 		defaultFunctionNamespace,
 		moduleNamespaceUri: moduleNs?.uri,
 		modulePrefix: moduleNs?.prefix,
+		usedAstPath: false,
 	};
 }
-
-// Testing
 
 export function analyze(text: string, sourceUri: string): FileAnalysis {
 	try {
@@ -400,5 +400,21 @@ export function analyze(text: string, sourceUri: string): FileAnalysis {
 		return analyzeAst(ast, comments, text, sourceUri);
 	} catch {
 		return analyzeRegex(text, sourceUri);
+	}
+}
+
+export function analyzeWithAst(
+	text: string,
+	sourceUri: string,
+): { analysis: FileAnalysis; ast: Node | null; parseError: Error | null } {
+	try {
+		const { ast, comments } = XQuery31Full(text);
+		return { analysis: analyzeAst(ast, comments, text, sourceUri), ast, parseError: null };
+	} catch (e) {
+		return {
+			analysis: analyzeRegex(text, sourceUri),
+			ast: null,
+			parseError: e instanceof Error ? e : new Error(String(e)),
+		};
 	}
 }
