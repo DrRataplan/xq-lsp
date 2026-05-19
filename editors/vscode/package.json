@@ -10,14 +10,24 @@
     "vscode": "^1.86.0"
   },
   "repository": "https://github.com/DrRataplan/xq-lsp.git",
-  "categories": ["Programming Languages"],
+  "categories": [
+    "Programming Languages"
+  ],
   "activationEvents": [],
   "contributes": {
     "languages": [
       {
         "id": "xquery",
-        "aliases": ["XQuery", "xquery"],
-        "extensions": [".xq", ".xql", ".xqm", ".xqy"],
+        "aliases": [
+          "XQuery",
+          "xquery"
+        ],
+        "extensions": [
+          ".xq",
+          ".xql",
+          ".xqm",
+          ".xqy"
+        ],
         "configuration": "./language-configuration.json"
       }
     ]
@@ -27,6 +37,8 @@
     "package": "vsce package"
   },
   "dependencies": {
+    "prettier": "^3.8.3",
+    "prettier-plugin-xquery": "^1.6.0",
     "vscode-languageclient": "^9.0.1",
     "xq-lsp": "^1.0.0"
   },
