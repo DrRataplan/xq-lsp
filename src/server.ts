@@ -269,7 +269,7 @@ connection.onCodeAction((params) => {
 		const { prefix, usageKind } = data;
 
 		// Find all glob modules whose module namespace prefix matches the used prefix.
-		for (const [nsUri, fa] of globAnalyses) {
+		for (const [nsUri, fa] of globAnalyses.byNamespace) {
 			if (fa.modulePrefix !== prefix) continue;
 
 			if (usageKind === "element") {
