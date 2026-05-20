@@ -3,8 +3,10 @@ import { StreamLanguage } from "@codemirror/language";
 import { xQuery } from "@codemirror/legacy-modes/mode/xquery";
 import { linter, lintGutter, type Diagnostic } from "@codemirror/lint";
 import { analyzeWithAst } from "../src/analyzer.ts";
+import { findUndeclaredPrefixUsages } from "../src/namespace-diagnostics.ts";
+import { checkTypes } from "../src/typechecker.ts";
 
-const DEFAULT_CODE = `(: xq-lsp playground — parse errors are annotated inline :)
+const DEFAULT_CODE = `(: xq-lsp playground — errors are annotated inline :)
 for $x in (1, 2, 3)
 return $x * 2
 `;
@@ -32,9 +34,26 @@ function getInitialCode(): string {
 }
 
 const xqueryLinter = linter((view): Diagnostic[] => {
-  const { parseError } = analyzeWithAst(view.state.doc.toString(), "playground.xq");
-  if (!parseError) return [];
-  return [{ from: 0, to: view.state.doc.length || 1, severity: "error", message: parseError.message }];
+  const code = view.state.doc.toString();
+  const { analysis, ast, parseError } = analyzeWithAst(code, "playground.xq");
+  const diagnostics: Diagnostic[] = [];
+
+  if (parseError) {
+    diagnostics.push({ from: 0, to: view.state.doc.length || 1, severity: "error", message: parseError.message });
+    return diagnostics;
+  }
+
+  for (const d of findUndeclaredPrefixUsages(ast, analysis)) {
+    diagnostics.push({ from: d.offset, to: d.offset + d.length, severity: "error", message: d.message });
+  }
+
+  if (ast) {
+    for (const d of checkTypes(ast, code, analysis, new Map())) {
+      diagnostics.push({ from: d.offset, to: d.offset + d.length, severity: "warning", message: d.message });
+    }
+  }
+
+  return diagnostics;
 });
 
 const view = new EditorView({
