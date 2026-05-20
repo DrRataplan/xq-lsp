@@ -13,6 +13,22 @@ Language Server Protocol implementation for XQuery, providing autocompletion, ho
 
 ## Configuration
 
+### Summary: Fonto development
+
+Place an `lsp-config.xq` file in the Fonto root folder (the one that holds the manifest.json) with the following content:
+
+```xquery
+map {
+	'lib': 'fonto',
+	'glob': 'packages/**/*.xqm',
+	'import': map {
+		'generateLocationHints': false()
+	}
+}
+```
+
+### General configuration
+
 Place an `lsp-config.xq` file in your project root to enable glob-based import resolution. The server walks up from the current file's directory to find it.
 
 The file contains an XPath 3.1 map expression with a `glob` key:
@@ -61,6 +77,19 @@ Multiple libs use an XPath sequence:
 
 ```xquery
 map {"glob": "src/**/*.xq", "lib": ("fonto", "other")}
+```
+
+### Location hints
+
+Some runtimes do not like location hints (`import namespace prefix="uri" at "Location hint";`), turn
+them off to prevent them from being generated:
+
+```xquery
+map {
+	'import': map {
+		'generateLocationHints': false()
+	}
+}
 ```
 
 ## Roadmap
