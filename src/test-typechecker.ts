@@ -101,6 +101,27 @@ describe("isAssignable", () => {
 		assert.equal(isAssignable(elem, node), true);
 	});
 
+	test("integer is assignable to xs:double (numeric promotion)", () => {
+		const dbl: XQueryType = { kind: "atomic", name: "xs:double", occurrence: "" };
+		assert.equal(isAssignable(int, dbl), true);
+	});
+
+	test("integer is assignable to xs:float (numeric promotion)", () => {
+		const flt: XQueryType = { kind: "atomic", name: "xs:float", occurrence: "" };
+		assert.equal(isAssignable(int, flt), true);
+	});
+
+	test("float is assignable to xs:double (numeric promotion)", () => {
+		const flt: XQueryType = { kind: "atomic", name: "xs:float", occurrence: "" };
+		const dbl: XQueryType = { kind: "atomic", name: "xs:double", occurrence: "" };
+		assert.equal(isAssignable(flt, dbl), true);
+	});
+
+	test("string is not assignable to xs:double", () => {
+		const dbl: XQueryType = { kind: "atomic", name: "xs:double", occurrence: "" };
+		assert.equal(isAssignable(str, dbl), false);
+	});
+
 	test("unknown on left: always assignable (no false positives)", () => {
 		assert.equal(isAssignable(unknown, node), true);
 	});
@@ -286,6 +307,17 @@ describe("checkTypes", () => {
 		// fn:string-length expects xs:string? — passing a node should be flagged
 		const errors = checkTypes(ast, src, analysis, new Map([["builtin:fn", builtins]]));
 		assert.equal(errors.length, 1, `expected 1 error, got ${errors.length}: ${JSON.stringify(errors)}`);
+	});
+
+	test("no error for subsequence with integer arguments (numeric promotion)", () => {
+		const src = `fn:subsequence((1,2,3), 1, 2)`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		const builtins = getBuiltins();
+		// fn:subsequence expects xs:double — integer literals must be accepted via promotion
+		const errors = checkTypes(ast, src, analysis, new Map([["builtin:fn", builtins]]));
+		assert.equal(errors.length, 0, `unexpected errors: ${JSON.stringify(errors)}`);
 	});
 });
 
