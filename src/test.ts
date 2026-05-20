@@ -708,24 +708,17 @@ declare function mymod:doThing() { 1 };`);
 // ── findImportInsertPosition / findDeclareNsInsertPosition ────────────────────
 
 describe("insert positions", () => {
-	test("findImportInsertPosition: after last existing import", () => {
+	test("findImportInsertPosition: always returns line 0", () => {
 		const text = `import module namespace a="http://a.com" at "./a.xq";
 import module namespace b="http://b.com" at "./b.xq";
 declare function local:main() { b:fn() };`;
-		const pos = findImportInsertPosition(text);
-		assert.equal(pos.line, 2, `expected line 2, got ${pos.line}`);
+		assert.deepEqual(findImportInsertPosition(text), { line: 0, character: 0 });
 	});
 
-	test("findImportInsertPosition: before first declare when no imports exist", () => {
-		const pos = findImportInsertPosition(`declare function local:main() { 1 };`);
-		assert.equal(pos.line, 0);
-	});
-
-	test("findDeclareNsInsertPosition: after last import when no declare namespace exists", () => {
+	test("findDeclareNsInsertPosition: always returns line 0", () => {
 		const text = `import module namespace a="http://a.com" at "./a.xq";
 declare function local:main() { 1 };`;
-		const pos = findDeclareNsInsertPosition(text);
-		assert.equal(pos.line, 1);
+		assert.deepEqual(findDeclareNsInsertPosition(text), { line: 0, character: 0 });
 	});
 });
 

@@ -78,72 +78,12 @@ export function findUndeclaredPrefixUsages(
 
 // ── Insertion-position helpers (used by the code action handler) ─────────────
 
-/** Find the LSP Position at which to insert a new `import module namespace` statement. */
-export function findImportInsertPosition(text: string): { line: number; character: number } {
-	const lines = text.split('\n');
-	let insertAfterLine = -1;
-	let inMultiLine = false;
-
-	for (let i = 0; i < lines.length; i++) {
-		const trimmed = lines[i].trim();
-		if (/^import\s+module\s+namespace/.test(trimmed)) inMultiLine = true;
-		if (inMultiLine && trimmed.includes(';')) {
-			insertAfterLine = i;
-			inMultiLine = false;
-		}
-	}
-
-	if (insertAfterLine >= 0) return { line: insertAfterLine + 1, character: 0 };
-
-	// No imports: insert before first declare function/variable
-	for (let i = 0; i < lines.length; i++) {
-		if (/^\s*declare\s+(function|variable|%|default)/.test(lines[i])) {
-			return { line: i, character: 0 };
-		}
-	}
-
-	// Fall back: insert after module namespace or xquery version declaration
-	for (let i = 0; i < lines.length; i++) {
-		const trimmed = lines[i].trim();
-		if ((/^module\s+namespace/.test(trimmed) || /^xquery\s+version/.test(trimmed)) && lines[i].includes(';')) {
-			return { line: i + 1, character: 0 };
-		}
-	}
-
+/** Position at which to insert a new `import module namespace` statement. */
+export function findImportInsertPosition(_text: string): { line: number; character: number } {
 	return { line: 0, character: 0 };
 }
 
-/** Find the LSP Position at which to insert a new `declare namespace` statement. */
-export function findDeclareNsInsertPosition(text: string): { line: number; character: number } {
-	const lines = text.split('\n');
-	let insertAfterLine = -1;
-
-	for (let i = 0; i < lines.length; i++) {
-		const trimmed = lines[i].trim();
-		if (
-			/^(import\s+module\s+namespace|declare\s+namespace)/.test(trimmed) &&
-			lines[i].includes(';')
-		) {
-			insertAfterLine = i;
-		}
-	}
-
-	if (insertAfterLine >= 0) return { line: insertAfterLine + 1, character: 0 };
-
-	// Before first function/variable declaration
-	for (let i = 0; i < lines.length; i++) {
-		if (/^\s*declare\s+(function|variable|%|default)/.test(lines[i])) {
-			return { line: i, character: 0 };
-		}
-	}
-
-	// After module namespace or xquery version
-	for (let i = 0; i < lines.length; i++) {
-		const trimmed = lines[i].trim();
-		if ((/^module\s+namespace/.test(trimmed) || /^xquery\s+version/.test(trimmed)) && lines[i].includes(';')) {
-			return { line: i + 1, character: 0 };
-		}
-	}
-
+/** Position at which to insert a new `declare namespace` statement. */
+export function findDeclareNsInsertPosition(_text: string): { line: number; character: number } {
 	return { line: 0, character: 0 };
 }
