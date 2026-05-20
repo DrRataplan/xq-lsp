@@ -1,4 +1,4 @@
-import type { Node } from "xq-parser";
+import type { Node, NonTerminal } from "xq-parser";
 import type { QName, FileAnalysis } from "./types.ts";
 import { isTerminal, directChildOf, directChildrenOf, findAll, firstTerminalValue, sequenceTypeText, resolvePrefix } from "./analyzer.ts";
 
@@ -81,7 +81,7 @@ export function asTypedBinding(node: Node, text: string, analysis: FileAnalysis)
 			// XQuery 3.1: VarName is a direct child
 			// XQuery 4.0: VarNameAndType is inside a sub-binding (LetValueBinding, ForItemBinding, etc.)
 			const vnt = directChildOf(node, 'VarNameAndType')
-				?? (node as import("xq-parser").NonTerminal).children
+				?? (node as NonTerminal).children
 					.filter(c => !c.isTerminal)
 					.map(c => directChildOf(c, 'VarNameAndType'))
 					.find(Boolean);
@@ -133,7 +133,7 @@ export function asTypedBinding(node: Node, text: string, analysis: FileAnalysis)
 export function isPathExpr(node: Node): boolean {
 	if (node.type !== 'PathExpr' && node.type !== 'RelativePathExpr') return false;
 	if (isTerminal(node)) return false;
-	const nt = node as import("xq-parser").NonTerminal;
+	const nt = node as NonTerminal;
 	return nt.children.some(c => isTerminal(c) && (c.value === '/' || c.value === '//'));
 }
 
