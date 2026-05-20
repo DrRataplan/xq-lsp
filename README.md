@@ -18,13 +18,13 @@ Place an `lsp-config.xq` file in your project root to enable glob-based import r
 The file contains an XPath 3.1 map expression with a `glob` key:
 
 ```xquery
-map { "glob": "src/**/*.xq" }
+map {"glob": "src/**/*.xq"}
 ```
 
 Multiple patterns are written as an XPath sequence:
 
 ```xquery
-map { "glob": ("src/**/*.xq", "lib/**/*.xq") }
+map {"glob": ("src/**/*.xq", "lib/**/*.xq")}
 ```
 
 The server expands the globs, analyzes each matched file, and indexes library modules by their declared namespace URI. Imports written without an `at` clause are then resolved by matching the namespace URI:
@@ -39,17 +39,16 @@ automatically; symbols from imported files are included in completions.
 
 For files with syntax errors (common while editing), the server falls back to regex-based extraction so completions keep working.
 
-
 ### Runtime built-ins
 
 Use the `lib` key to load built-in definitions for a specific runtime:
 
-| Value | Runtime |
-|-------|---------|
+| Value     | Runtime                                                             |
+| --------- | ------------------------------------------------------------------- |
 | `"fonto"` | [Fonto XML editor](https://www.fontoxml.com/) — `fonto:*` functions |
 
 ```xquery
-map { "glob": "src/**/*.xq", "lib": "fonto" }
+map {"glob": "src/**/*.xq", "lib": "fonto"}
 ```
 
 Then import the namespace in your XQuery files as usual — the server resolves completions, hover, and go-to-definition against the bundled definitions:
@@ -61,7 +60,7 @@ import module namespace fonto="http://www.fontoxml.com/functions";
 Multiple libs use an XPath sequence:
 
 ```xquery
-map { "glob": "src/**/*.xq", "lib": ("fonto", "other") }
+map {"glob": "src/**/*.xq", "lib": ("fonto", "other")}
 ```
 
 ## Roadmap
@@ -78,7 +77,6 @@ map { "glob": "src/**/*.xq", "lib": ("fonto", "other") }
   item. Check if there is a context item available when you use the context item expression (`.`) or
   a step expression.
 - More of the (static) errors in the spec at [The spec at section F Error Conditions](https://www.w3.org/TR/xquery-31/#id-errors), whichever are easy to implement
-
 
 ## Emacs
 
@@ -104,15 +102,15 @@ Open any `.xq` file and eglot starts the server automatically. Run `M-x eglot` t
 
 **Key bindings:**
 
-| Action | Key |
-|---|---|
-| Completion | `C-M-i` |
-| Hover / docs | `C-c C-d` |
-| Signature help | automatic in minibuffer |
-| Go to definition | `M-.` |
-| Go back | `M-,` |
-| Document symbols | `M-x imenu` |
-| Diagnostics | `M-x flymake-show-buffer-diagnostics` |
+| Action           | Key                                   |
+| ---------------- | ------------------------------------- |
+| Completion       | `C-M-i`                               |
+| Hover / docs     | `C-c C-d`                             |
+| Signature help   | automatic in minibuffer               |
+| Go to definition | `M-.`                                 |
+| Go back          | `M-,`                                 |
+| Document symbols | `M-x imenu`                           |
+| Diagnostics      | `M-x flymake-show-buffer-diagnostics` |
 
 ### With lsp-mode
 
@@ -137,6 +135,7 @@ A minimal VS Code extension lives in [`editors/vscode/`](./editors/vscode/).
 ### Install from marketplace
 
 Launch VS Code Quick Open (Ctrl+P or Cmd+P), paste the following command, and press enter.
+
 ```
 ext install elliat.xquery-lsp-vscode
 ```

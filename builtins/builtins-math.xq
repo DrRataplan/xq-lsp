@@ -1,4 +1,4 @@
-module namespace math="http://www.w3.org/2005/xpath-functions/math";
+module namespace math = "http://www.w3.org/2005/xpath-functions/math";
 
 (:~
  : Returns the mathematical constant π (approximately 3.14159265358979).

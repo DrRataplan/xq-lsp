@@ -1,4 +1,4 @@
-module namespace fonto="http://www.fontoxml.com/functions";
+module namespace fonto = "http://www.fontoxml.com/functions";
 
 (:~
  : Returns the common ancestor node of the current editor selection.
@@ -109,7 +109,12 @@ declare function fonto:curated-text-in-node($node as node(), $options as map(*))
  : @param $endOffset The offset within the end container.
  : @see https://documentation.fontoxml.com/latest/fonto-curated-text-in-range-33986dbff804
  :)
-declare function fonto:curated-text-in-range($startContainer as node(), $startOffset as xs:numeric, $endContainer as node(), $endOffset as xs:numeric) as xs:string? external;
+declare function fonto:curated-text-in-range(
+	$startContainer as node(),
+	$startOffset as xs:numeric,
+	$endContainer as node(),
+	$endOffset as xs:numeric
+) as xs:string? external;
 
 (:~
  : Returns a plain-text representation of a document range with options (e.g. dfcs for bidi text).
@@ -121,7 +126,13 @@ declare function fonto:curated-text-in-range($startContainer as node(), $startOf
  : @param $options Options map (see CuratedTextOptions).
  : @see https://documentation.fontoxml.com/latest/fonto-curated-text-in-range-33986dbff804
  :)
-declare function fonto:curated-text-in-range($startContainer as node(), $startOffset as xs:numeric, $endContainer as node(), $endOffset as xs:numeric, $options as map(*)) as xs:string? external;
+declare function fonto:curated-text-in-range(
+	$startContainer as node(),
+	$startOffset as xs:numeric,
+	$endContainer as node(),
+	$endOffset as xs:numeric,
+	$options as map(*)
+) as xs:string? external;
 
 (:~
  : Returns true if the document with the given remote document id is loaded.

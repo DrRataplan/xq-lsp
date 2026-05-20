@@ -1,4 +1,4 @@
-module namespace array="http://www.w3.org/2005/xpath-functions/array";
+module namespace array = "http://www.w3.org/2005/xpath-functions/array";
 
 (:~
  : Returns the number of members in an array.
@@ -39,6 +39,7 @@ declare function array:append($array as array(*), $appendage as item()*) as arra
  : @return The subarray from $start to the end
  :)
 declare function array:subarray($array as array(*), $start as xs:integer) as array(*) external;
+
 (:~
  : Returns a subarray of a given length starting at a given position.
  : @param $array The array
@@ -63,7 +64,11 @@ declare function array:remove($array as array(*), $positions as xs:integer*) as 
  : @param $member The value to insert
  : @return A new array with the member inserted
  :)
-declare function array:insert-before($array as array(*), $position as xs:integer, $member as item()*) as array(*) external;
+declare function array:insert-before(
+	$array as array(*),
+	$position as xs:integer,
+	$member as item()*
+) as array(*) external;
 
 (:~
  : Returns the first member of an array.
@@ -99,7 +104,7 @@ declare function array:join($arrays as array(*)*) as array(*) external;
  : @param $action Function to apply to each member
  : @return A new array of results
  :)
-declare function array:for-each($array as array(*), $action as function(item()*) as item()*) as array(*) external;
+declare function array:for-each($array as array(*), $action as function (item()*) as item()*) as array(*) external;
 
 (:~
  : Returns an array of members for which a predicate returns true.
@@ -107,7 +112,7 @@ declare function array:for-each($array as array(*), $action as function(item()*)
  : @param $function Predicate function
  : @return A new array of matching members
  :)
-declare function array:filter($array as array(*), $function as function(item()*) as xs:boolean) as array(*) external;
+declare function array:filter($array as array(*), $function as function (item()*) as xs:boolean) as array(*) external;
 
 (:~
  : Reduces an array to a single value by applying a function from the left.
@@ -116,7 +121,11 @@ declare function array:filter($array as array(*), $function as function(item()*)
  : @param $f Combining function
  : @return The accumulated result
  :)
-declare function array:fold-left($array as array(*), $zero as item()*, $f as function(item()*, item()*) as item()*) as item()* external;
+declare function array:fold-left(
+	$array as array(*),
+	$zero as item()*,
+	$f as function (item()*, item()*) as item()*
+) as item()* external;
 
 (:~
  : Reduces an array to a single value by applying a function from the right.
@@ -125,7 +134,11 @@ declare function array:fold-left($array as array(*), $zero as item()*, $f as fun
  : @param $f Combining function
  : @return The accumulated result
  :)
-declare function array:fold-right($array as array(*), $zero as item()*, $f as function(item()*, item()*) as item()*) as item()* external;
+declare function array:fold-right(
+	$array as array(*),
+	$zero as item()*,
+	$f as function (item()*, item()*) as item()*
+) as item()* external;
 
 (:~
  : Applies a function pairwise to members of two arrays.
@@ -134,7 +147,11 @@ declare function array:fold-right($array as array(*), $zero as item()*, $f as fu
  : @param $f Function to apply to each pair
  : @return A new array of results
  :)
-declare function array:for-each-pair($array1 as array(*), $array2 as array(*), $f as function(item()*, item()*) as item()*) as array(*) external;
+declare function array:for-each-pair(
+	$array1 as array(*),
+	$array2 as array(*),
+	$f as function (item()*, item()*) as item()*
+) as array(*) external;
 
 (:~
  : Sorts the members of an array.
@@ -142,15 +159,23 @@ declare function array:for-each-pair($array1 as array(*), $array2 as array(*), $
  : @return A new sorted array
  :)
 declare function array:sort($array as array(*)) as array(*) external;
-(:~ @param $array Array @param $collation Collation URI or empty :)
+
+(:~
+ : @param $array Array @param $collation Collation URI or empty
+ :)
 declare function array:sort($array as array(*), $collation as xs:string?) as array(*) external;
+
 (:~
  : @param $array Array
  : @param $collation Collation URI or empty
  : @param $key Function to extract the sort key from each member
  : @return A new sorted array
  :)
-declare function array:sort($array as array(*), $collation as xs:string?, $key as function(item()*) as xs:anyAtomicType*) as array(*) external;
+declare function array:sort(
+	$array as array(*),
+	$collation as xs:string?,
+	$key as function (item()*) as xs:anyAtomicType*
+) as array(*) external;
 
 (:~
  : Flattens nested arrays into a sequence of atomic values and non-array items.

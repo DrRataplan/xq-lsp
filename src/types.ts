@@ -65,9 +65,9 @@ export interface FileAnalysis {
 }
 
 export interface XQueryType {
-	kind: 'atomic' | 'node' | 'item' | 'function' | 'map' | 'array' | 'empty' | 'unknown';
+	kind: "atomic" | "node" | "item" | "function" | "map" | "array" | "empty" | "unknown";
 	name?: string; // e.g. "xs:string", "node", "element"
-	occurrence: '' | '?' | '*' | '+';
+	occurrence: "" | "?" | "*" | "+";
 }
 
 export interface TypeDiagnostic {

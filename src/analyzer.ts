@@ -1,6 +1,15 @@
 import { XQuery31Full } from "xq-parser";
 import type { Node, NonTerminal, Terminal } from "xq-parser";
-import type { FileAnalysis, FunctionSymbol, VariableSymbol, ImportInfo, NamespaceDecl, ParamInfo, DocComment, QName } from "./types.ts";
+import type {
+	FileAnalysis,
+	FunctionSymbol,
+	VariableSymbol,
+	ImportInfo,
+	NamespaceDecl,
+	ParamInfo,
+	DocComment,
+	QName,
+} from "./types.ts";
 
 // ── Well-known namespace URIs ────────────────────────────────────────────────
 
@@ -160,8 +169,8 @@ function resolveNamespaceUri(prefix: string, prefixMap: Map<string, string>): st
 }
 
 function makeQName(name: string, prefixMap: Map<string, string>, defaultNs: string): QName {
-	const colonIdx = name.indexOf(':');
-	const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : '';
+	const colonIdx = name.indexOf(":");
+	const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : "";
 	const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
 	const namespaceUri = prefix ? resolveNamespaceUri(prefix, prefixMap) : defaultNs;
 	return { prefix, localName, namespaceUri };
@@ -171,8 +180,7 @@ function makeQName(name: string, prefixMap: Map<string, string>, defaultNs: stri
 // Variables with no prefix have no namespace (empty string).
 const makeFnQName = (name: string, prefixMap: Map<string, string>, defaultFnNs: string) =>
 	makeQName(name, prefixMap, defaultFnNs);
-const makeVarQName = (name: string, prefixMap: Map<string, string>) =>
-	makeQName(name, prefixMap, '');
+const makeVarQName = (name: string, prefixMap: Map<string, string>) => makeQName(name, prefixMap, "");
 
 // ── Extract from valid AST ───────────────────────────────────────────────────
 

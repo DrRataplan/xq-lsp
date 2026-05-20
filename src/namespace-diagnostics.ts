@@ -1,14 +1,14 @@
-import type { Node } from 'xq-parser';
-import type { FileAnalysis } from './types.ts';
-import { findAll, directChildOf, firstTerminalValue, resolvePrefix } from './analyzer.ts';
+import type { Node } from "xq-parser";
+import type { FileAnalysis } from "./types.ts";
+import { findAll, directChildOf, firstTerminalValue, resolvePrefix } from "./analyzer.ts";
 
-export type NamespaceUsageKind = 'function' | 'variable' | 'element';
+export type NamespaceUsageKind = "function" | "variable" | "element";
 
 export interface NamespaceDiagnostic {
 	message: string;
-	code: 'XQST0081';
-	offset: number;  // offset of the prefix start in source
-	length: number;  // length of the prefix (not including the colon)
+	code: "XQST0081";
+	offset: number; // offset of the prefix start in source
+	length: number; // length of the prefix (not including the colon)
 	prefix: string;
 	usageKind: NamespaceUsageKind;
 }
@@ -22,14 +22,14 @@ function checkQNameNode(
 	if (!node) return;
 	const name = firstTerminalValue(node);
 	if (!name) return;
-	const colonIdx = name.indexOf(':');
+	const colonIdx = name.indexOf(":");
 	if (colonIdx <= 0) return;
 	const prefix = name.slice(0, colonIdx);
 	const uri = resolvePrefix(prefix, analysis);
-	if (uri.startsWith('urn:xq-lsp:undeclared:')) {
+	if (uri.startsWith("urn:xq-lsp:undeclared:")) {
 		out.push({
 			message: `Namespace prefix '${prefix}' is not declared`,
-			code: 'XQST0081',
+			code: "XQST0081",
 			offset: node.start ?? 0,
 			length: prefix.length,
 			prefix,
@@ -45,33 +45,30 @@ function checkQNameNode(
  *
  * Returns an empty array when `ast` is null (parse failure).
  */
-export function findUndeclaredPrefixUsages(
-	ast: Node | null,
-	analysis: FileAnalysis,
-): NamespaceDiagnostic[] {
+export function findUndeclaredPrefixUsages(ast: Node | null, analysis: FileAnalysis): NamespaceDiagnostic[] {
 	if (!ast) return [];
 	const out: NamespaceDiagnostic[] = [];
 
-	for (const node of findAll(ast, 'FunctionCall'))
-		checkQNameNode(directChildOf(node, 'FunctionEQName'), 'function', analysis, out);
+	for (const node of findAll(ast, "FunctionCall"))
+		checkQNameNode(directChildOf(node, "FunctionEQName"), "function", analysis, out);
 
-	for (const node of findAll(ast, 'NamedFunctionRef'))
-		checkQNameNode(directChildOf(node, 'EQName'), 'function', analysis, out);
+	for (const node of findAll(ast, "NamedFunctionRef"))
+		checkQNameNode(directChildOf(node, "EQName"), "function", analysis, out);
 
-	for (const node of findAll(ast, 'VarRef'))
-		checkQNameNode(directChildOf(node, 'VarName'), 'variable', analysis, out);
+	for (const node of findAll(ast, "VarRef"))
+		checkQNameNode(directChildOf(node, "VarName"), "variable", analysis, out);
 
 	// Direct element constructor: <ns:foo ...>
-	for (const node of findAll(ast, 'DirElemConstructor'))
-		checkQNameNode(directChildOf(node, 'QName'), 'element', analysis, out);
+	for (const node of findAll(ast, "DirElemConstructor"))
+		checkQNameNode(directChildOf(node, "QName"), "element", analysis, out);
 
 	// Computed element constructor: element ns:foo { ... }
-	for (const node of findAll(ast, 'CompElemConstructor'))
-		checkQNameNode(directChildOf(node, 'EQName'), 'element', analysis, out);
+	for (const node of findAll(ast, "CompElemConstructor"))
+		checkQNameNode(directChildOf(node, "EQName"), "element", analysis, out);
 
 	// Computed attribute constructor: attribute ns:attr { ... }
-	for (const node of findAll(ast, 'CompAttrConstructor'))
-		checkQNameNode(directChildOf(node, 'EQName'), 'element', analysis, out);
+	for (const node of findAll(ast, "CompAttrConstructor"))
+		checkQNameNode(directChildOf(node, "EQName"), "element", analysis, out);
 
 	return out;
 }
@@ -85,11 +82,11 @@ export function findUndeclaredPrefixUsages(
  * xquery-prettier.
  */
 function firstPrologLine(text: string): number {
-	const lines = text.split('\n');
+	const lines = text.split("\n");
 	for (let i = 0; i < lines.length; i++) {
 		const t = lines[i].trim();
 		if (/^xquery\b/.test(t) || /^module\s+namespace\b/.test(t)) continue;
-		if (t === '' || t.startsWith('(:')) continue; // leading whitespace / comments
+		if (t === "" || t.startsWith("(:")) continue; // leading whitespace / comments
 		return i;
 	}
 	return 0;

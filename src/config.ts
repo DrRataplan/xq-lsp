@@ -22,7 +22,7 @@ function parseConfig(text: string): { globs: string[]; generateLocationHints: bo
 		const globs = evaluateXPathToStrings(`(${trimmed})?glob`, null, null, {});
 		// Check for opt-out: import?generateLocationHints defaults to true when absent.
 		const hints = evaluateXPathToStrings(`string((${trimmed})?import?generateLocationHints)`, null, null, {});
-		const generateLocationHints = hints.length === 0 || hints[0] !== 'false';
+		const generateLocationHints = hints.length === 0 || hints[0] !== "false";
 		return { globs, generateLocationHints };
 	} catch {
 		return { globs: [], generateLocationHints: true };
@@ -67,7 +67,5 @@ export function findConfig(fromUri: string): { config: LspConfig; configDir: str
 }
 
 export function expandGlobs(globs: string[], baseDir: string): string[] {
-	return globs.flatMap((pattern) =>
-		fs.globSync(pattern, { cwd: baseDir }).map((f) => path.resolve(baseDir, f)),
-	);
+	return globs.flatMap((pattern) => fs.globSync(pattern, { cwd: baseDir }).map((f) => path.resolve(baseDir, f)));
 }

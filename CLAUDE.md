@@ -21,6 +21,7 @@ The server is a standard LSP over stdio. `src/server.ts` is the entry point and 
 **Two-phase parsing** is the central design: `src/analyzer.ts` first tries `XQuery31Full()` from `xq-parser`. If it throws (file is mid-edit and syntactically invalid), it falls back to regex extraction. Both paths produce the same `FileAnalysis` shape (`src/types.ts`).
 
 **`FileAnalysis`** (`src/types.ts`) — the shared data structure passed everywhere:
+
 - `functions` — declared functions with name, prefix, localName, arity, params, returnType, sourceOffset
 - `moduleVariables` — `declare variable` declarations
 - `localBindings` — `let`/`for` bindings (scope-approximated: visible from their offset onward)
@@ -36,16 +37,16 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/) b
 
 Format: `<type>[optional scope]: <description>`
 
-| Type | Version bump | When to use |
-|------|-------------|-------------|
-| `feat` | minor | New user-visible capability |
-| `fix` | patch | Bug fix |
-| `perf` | patch | Performance improvement |
-| `docs` | — | Documentation only |
-| `refactor` | — | Code restructuring, no behavior change |
-| `test` | — | Adding or fixing tests |
-| `chore` | — | Build, deps, config, tooling |
-| `ci` | — | CI workflow changes |
+| Type       | Version bump | When to use                            |
+| ---------- | ------------ | -------------------------------------- |
+| `feat`     | minor        | New user-visible capability            |
+| `fix`      | patch        | Bug fix                                |
+| `perf`     | patch        | Performance improvement                |
+| `docs`     | —            | Documentation only                     |
+| `refactor` | —            | Code restructuring, no behavior change |
+| `test`     | —            | Adding or fixing tests                 |
+| `chore`    | —            | Build, deps, config, tooling           |
+| `ci`       | —            | CI workflow changes                    |
 
 Breaking change: append `!` after the type, e.g. `feat!: drop Node 18 support` → major bump.
 

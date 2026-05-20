@@ -1,48 +1,48 @@
 {
-  "name": "xquery-lsp-vscode",
-  "displayName": "XQuery Language Server",
-  "description": "XQuery language support via xq-lsp",
-  "version": "0.1.1",
-  "publisher": "elliat",
-  "license": "MIT",
-  "type": "module",
-  "engines": {
-    "vscode": "^1.86.0"
-  },
-  "repository": "https://github.com/DrRataplan/xq-lsp.git",
-  "categories": [
-    "Programming Languages"
-  ],
-  "activationEvents": [],
-  "contributes": {
-    "languages": [
-      {
-        "id": "xquery",
-        "aliases": [
-          "XQuery",
-          "xquery"
-        ],
-        "extensions": [
-          ".xq",
-          ".xql",
-          ".xqm",
-          ".xqy"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ]
-  },
-  "main": "./extension.js",
-  "scripts": {
-    "package": "vsce package"
-  },
-  "dependencies": {
-    "prettier": "^3.8.3",
-    "prettier-plugin-xquery": "^1.6.0",
-    "vscode-languageclient": "^9.0.1",
-    "xq-lsp": "^1.0.0"
-  },
-  "devDependencies": {
-    "@vscode/vsce": "^3.0.0"
-  }
+	"name": "xquery-lsp-vscode",
+	"displayName": "XQuery Language Server",
+	"description": "XQuery language support via xq-lsp",
+	"version": "0.1.1",
+	"publisher": "elliat",
+	"license": "MIT",
+	"type": "module",
+	"engines": {
+		"vscode": "^1.86.0"
+	},
+	"repository": "https://github.com/DrRataplan/xq-lsp.git",
+	"categories": [
+		"Programming Languages"
+	],
+	"activationEvents": [],
+	"contributes": {
+		"languages": [
+			{
+				"id": "xquery",
+				"aliases": [
+					"XQuery",
+					"xquery"
+				],
+				"extensions": [
+					".xq",
+					".xql",
+					".xqm",
+					".xqy"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		]
+	},
+	"main": "./extension.js",
+	"scripts": {
+		"package": "vsce package"
+	},
+	"dependencies": {
+		"prettier": "^3.8.3",
+		"prettier-plugin-xquery": "^1.6.0",
+		"vscode-languageclient": "^9.0.1",
+		"xq-lsp": "^1.0.0"
+	},
+	"devDependencies": {
+		"@vscode/vsce": "^3.0.0"
+	}
 }

@@ -155,9 +155,15 @@ function countCallArity(text: string, offset: number): number | undefined {
 	let openParen = -1;
 	for (let i = offset - 1; i >= 0; i--) {
 		const ch = text[i];
-		if (ch === ')') { depth++; continue; }
-		if (ch === '(') {
-			if (depth > 0) { depth--; continue; }
+		if (ch === ")") {
+			depth++;
+			continue;
+		}
+		if (ch === "(") {
+			if (depth > 0) {
+				depth--;
+				continue;
+			}
 			openParen = i;
 			break;
 		}
@@ -168,15 +174,24 @@ function countCallArity(text: string, offset: number): number | undefined {
 	depth = 0;
 	for (let i = openParen + 1; i < text.length; i++) {
 		const ch = text[i];
-		if (ch === '(' || ch === '[') { depth++; continue; }
-		if (ch === ']') { depth--; continue; }
-		if (ch === ')') {
-			if (depth > 0) { depth--; continue; }
+		if (ch === "(" || ch === "[") {
+			depth++;
+			continue;
+		}
+		if (ch === "]") {
+			depth--;
+			continue;
+		}
+		if (ch === ")") {
+			if (depth > 0) {
+				depth--;
+				continue;
+			}
 			// Empty argument list
 			const inner = text.slice(openParen + 1, i).trim();
 			return inner ? commas + 1 : 0;
 		}
-		if (ch === ',' && depth === 0) commas++;
+		if (ch === "," && depth === 0) commas++;
 	}
 	return undefined;
 }
@@ -274,7 +289,9 @@ export function getDefinition(
 	const wordLocalName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
 	const targetUri = resolvePrefix(wordPrefix, current);
 
-	const localFn = current.functions.find((f) => f.qname.namespaceUri === targetUri && f.qname.localName === wordLocalName);
+	const localFn = current.functions.find(
+		(f) => f.qname.namespaceUri === targetUri && f.qname.localName === wordLocalName,
+	);
 	if (localFn) {
 		const pos = doc.positionAt(localFn.sourceOffset ?? 0);
 		return Location.create(doc.uri, { start: pos, end: pos });
@@ -285,7 +302,9 @@ export function getDefinition(
 		const key = imp.atPath ?? imp.namespaceUri;
 		const analysis = imported.get(key);
 		if (!analysis) continue;
-		const fn = analysis.functions.find((f) => f.qname.namespaceUri === targetUri && f.qname.localName === wordLocalName);
+		const fn = analysis.functions.find(
+			(f) => f.qname.namespaceUri === targetUri && f.qname.localName === wordLocalName,
+		);
 		if (!fn) continue;
 		// Prefer resolving via atPath; fall back to the sourceUri recorded on the symbol
 		const uri = imp.atPath ? resolveUri(imp.atPath) : fn.sourceUri;

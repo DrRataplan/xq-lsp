@@ -12,7 +12,11 @@ import { findConfig, expandGlobs } from "./config.ts";
 import { formatQName } from "./types.ts";
 import { getRuntimeAnalyses } from "./runtimes.ts";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { findUndeclaredPrefixUsages, findImportInsertPosition, findDeclareNsInsertPosition } from "./namespace-diagnostics.ts";
+import {
+	findUndeclaredPrefixUsages,
+	findImportInsertPosition,
+	findDeclareNsInsertPosition,
+} from "./namespace-diagnostics.ts";
 
 // ── analyzer: valid XQuery via AST ──────────────────────────────────────────
 describe("analyze", () => {
@@ -263,51 +267,51 @@ return $myVar
 	});
 });
 
-	// ── default function namespace ───────────────────────────────────────────────
+// ── default function namespace ───────────────────────────────────────────────
 
-	test("completion: fn: builtins appear without prefix in plain-name mode", () => {
-		const empty = analyze("1", "file:///test.xq");
-		const builtins = getBuiltins();
-		const items = getCompletions(
-			{ textBeforeCursor: "exi", cursorOffset: 3 },
-			empty,
-			new Map([["builtin:fn", builtins]]),
-		);
-		const labels = items.map((i) => i.label);
-		assert.ok(labels.includes("exists"), `expected exists without prefix, got ${labels}`);
-		assert.ok(!labels.some(l => l.startsWith("fn:")), `fn: prefix should not appear, got ${labels}`);
-	});
+test("completion: fn: builtins appear without prefix in plain-name mode", () => {
+	const empty = analyze("1", "file:///test.xq");
+	const builtins = getBuiltins();
+	const items = getCompletions(
+		{ textBeforeCursor: "exi", cursorOffset: 3 },
+		empty,
+		new Map([["builtin:fn", builtins]]),
+	);
+	const labels = items.map((i) => i.label);
+	assert.ok(labels.includes("exists"), `expected exists without prefix, got ${labels}`);
+	assert.ok(!labels.some((l) => l.startsWith("fn:")), `fn: prefix should not appear, got ${labels}`);
+});
 
-	test("completion: alias prefix resolves to same namespace as declared prefix", () => {
-		const libAnalysis = analyze(
-			`module namespace math="http://example.com/math";
+test("completion: alias prefix resolves to same namespace as declared prefix", () => {
+	const libAnalysis = analyze(
+		`module namespace math="http://example.com/math";
 declare function math:sin($x) { $x };`,
-			"file:///math.xq",
-		);
-		const mainAnalysis = analyze(
-			`import module namespace m="http://example.com/math" at "./math.xq";
+		"file:///math.xq",
+	);
+	const mainAnalysis = analyze(
+		`import module namespace m="http://example.com/math" at "./math.xq";
 1`,
-			"file:///main.xq",
-		);
-		const items = getCompletions(
-			{ textBeforeCursor: "m:", cursorOffset: 2 },
-			mainAnalysis,
-			new Map([["./math.xq", libAnalysis]]),
-		);
-		const labels = items.map((i) => i.label);
-		assert.ok(labels.includes("sin"), `expected sin via aliased prefix m:, got ${labels}`);
-	});
+		"file:///main.xq",
+	);
+	const items = getCompletions(
+		{ textBeforeCursor: "m:", cursorOffset: 2 },
+		mainAnalysis,
+		new Map([["./math.xq", libAnalysis]]),
+	);
+	const labels = items.map((i) => i.label);
+	assert.ok(labels.includes("sin"), `expected sin via aliased prefix m:, got ${labels}`);
+});
 
-	test("hover: unprefixed builtin name resolves via default function namespace", () => {
-		const src = `fn:true()`;
-		const doc = makeDoc(src);
-		const analysis = analyze(src, "file:///test.xq");
-		const builtins = getBuiltins();
-		const hover = getHover(doc, src.indexOf("true"), analysis, new Map([["builtin:fn", builtins]]));
-		assert.ok(hover, "expected hover");
-		const value = typeof hover.contents === "object" && "value" in hover.contents ? hover.contents.value : "";
-		assert.ok(value.includes("fn:true"), `expected fn:true in hover, got: ${value}`);
-	});
+test("hover: unprefixed builtin name resolves via default function namespace", () => {
+	const src = `fn:true()`;
+	const doc = makeDoc(src);
+	const analysis = analyze(src, "file:///test.xq");
+	const builtins = getBuiltins();
+	const hover = getHover(doc, src.indexOf("true"), analysis, new Map([["builtin:fn", builtins]]));
+	assert.ok(hover, "expected hover");
+	const value = typeof hover.contents === "object" && "value" in hover.contents ? hover.contents.value : "";
+	assert.ok(value.includes("fn:true"), `expected fn:true in hover, got: ${value}`);
+});
 
 // ── helpers for feature tests ────────────────────────────────────────────────
 
@@ -400,7 +404,6 @@ declare function local:noop() { () };`;
 		const add = symbols.find((s) => s.name === "local:add");
 		assert.ok(add?.detail?.includes("2"), `expected arity 2, got ${add?.detail}`);
 	});
-
 });
 
 // ── builtins ──────────────────────────────────────────────────────────────────
@@ -523,10 +526,7 @@ describe("lsp-config", () => {
 
 	test("findConfig: parses multiple globs as a sequence", () => {
 		withTmpDir((dir) => {
-			fs.writeFileSync(
-				path.join(dir, "lsp-config.xq"),
-				`map { "glob": ("src/**/*.xq", "lib/**/*.xq") }`,
-			);
+			fs.writeFileSync(path.join(dir, "lsp-config.xq"), `map { "glob": ("src/**/*.xq", "lib/**/*.xq") }`);
 			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
 			const result = findConfig(fileUri);
 			assert.ok(result);
@@ -583,11 +583,7 @@ util:trim("x")`;
 				}
 			}
 
-			const items = getCompletions(
-				{ textBeforeCursor: "util:", cursorOffset: 5 },
-				mainAnalysis,
-				imported,
-			);
+			const items = getCompletions({ textBeforeCursor: "util:", cursorOffset: 5 }, mainAnalysis, imported);
 			const labels = items.map((i) => i.label);
 			assert.ok(labels.includes("trim"), `expected trim via namespace-only import, got ${labels}`);
 		});
@@ -616,10 +612,7 @@ util:trim("x")`;
 
 	test("findConfig: parses single lib string", () => {
 		withTmpDir((dir) => {
-			fs.writeFileSync(
-				path.join(dir, "lsp-config.xq"),
-				`map { "lib": "basex" }`,
-			);
+			fs.writeFileSync(path.join(dir, "lsp-config.xq"), `map { "lib": "basex" }`);
 			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
 			const result = findConfig(fileUri);
 			assert.ok(result);
@@ -629,10 +622,7 @@ util:trim("x")`;
 
 	test("findConfig: parses multiple lib values as a sequence", () => {
 		withTmpDir((dir) => {
-			fs.writeFileSync(
-				path.join(dir, "lsp-config.xq"),
-				`map { "lib": ("basex", "saxonhe") }`,
-			);
+			fs.writeFileSync(path.join(dir, "lsp-config.xq"), `map { "lib": ("basex", "saxonhe") }`);
 			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
 			const result = findConfig(fileUri);
 			assert.ok(result);
@@ -661,7 +651,7 @@ describe("namespace-diagnostics", () => {
 
 	test("undeclared prefix in function call is reported", () => {
 		const ds = diags(`myns:compute(1)`);
-		const d = ds.find(d => d.prefix === "myns");
+		const d = ds.find((d) => d.prefix === "myns");
 		assert.ok(d, `expected myns diagnostic, got ${JSON.stringify(ds)}`);
 		assert.equal(d!.code, "XQST0081");
 		assert.equal(d!.usageKind, "function");
@@ -670,12 +660,15 @@ describe("namespace-diagnostics", () => {
 	test("prefix declared via import module namespace produces no diagnostic", () => {
 		const ds = diags(`import module namespace myns="http://example.com/myns" at "./myns.xq";
 myns:compute(1)`);
-		assert.ok(!ds.some(d => d.prefix === "myns"), `myns should not be reported, got ${JSON.stringify(ds)}`);
+		assert.ok(!ds.some((d) => d.prefix === "myns"), `myns should not be reported, got ${JSON.stringify(ds)}`);
 	});
 
 	test("prefix declared via declare namespace produces no diagnostic", () => {
 		const ds = diags(`declare namespace ns = "http://example.com/ns"; <ns:foo/>`);
-		assert.ok(!ds.some(d => d.prefix === "ns"), `ns should not be reported after declare namespace, got ${JSON.stringify(ds)}`);
+		assert.ok(
+			!ds.some((d) => d.prefix === "ns"),
+			`ns should not be reported after declare namespace, got ${JSON.stringify(ds)}`,
+		);
 	});
 
 	test("builtin prefixes produce no diagnostic", () => {
@@ -685,7 +678,7 @@ myns:compute(1)`);
 
 	test("prefix inside a comment is not reported", () => {
 		const ds = diags(`(: undeclared:prefix in a comment :) 1`);
-		assert.ok(!ds.some(d => d.prefix === "undeclared"), `prefix in comment should not be reported`);
+		assert.ok(!ds.some((d) => d.prefix === "undeclared"), `prefix in comment should not be reported`);
 	});
 
 	test("prefix inside import declaration is not reported", () => {
@@ -695,35 +688,35 @@ myns:compute(1)`);
 
 	test("direct element constructor detected as element kind", () => {
 		const ds = diags(`<ns:foo/>`);
-		const d = ds.find(d => d.prefix === "ns");
+		const d = ds.find((d) => d.prefix === "ns");
 		assert.ok(d, `expected diagnostic for ns, got ${JSON.stringify(ds)}`);
 		assert.equal(d!.usageKind, "element");
 	});
 
 	test("computed element constructor detected as element kind", () => {
 		const ds = diags(`element ns:foo {}`);
-		const d = ds.find(d => d.prefix === "ns");
+		const d = ds.find((d) => d.prefix === "ns");
 		assert.ok(d, `expected diagnostic for ns in computed element, got ${JSON.stringify(ds)}`);
 		assert.equal(d!.usageKind, "element");
 	});
 
 	test("computed attribute constructor detected as element kind", () => {
 		const ds = diags(`attribute ns:attr { "x" }`);
-		const d = ds.find(d => d.prefix === "ns");
+		const d = ds.find((d) => d.prefix === "ns");
 		assert.ok(d, `expected diagnostic for ns in computed attribute, got ${JSON.stringify(ds)}`);
 		assert.equal(d!.usageKind, "element");
 	});
 
 	test("named function reference detected as function kind", () => {
 		const ds = diags(`ns:func#2`);
-		const d = ds.find(d => d.prefix === "ns");
+		const d = ds.find((d) => d.prefix === "ns");
 		assert.ok(d, `expected diagnostic for ns in named function ref, got ${JSON.stringify(ds)}`);
 		assert.equal(d!.usageKind, "function");
 	});
 
 	test("variable reference detected as variable kind", () => {
 		const ds = diags(`$ext:someVar`);
-		const d = ds.find(d => d.prefix === "ext");
+		const d = ds.find((d) => d.prefix === "ext");
 		assert.ok(d, `expected diagnostic for ext, got ${JSON.stringify(ds)}`);
 		assert.equal(d!.usageKind, "variable");
 	});
@@ -731,13 +724,21 @@ myns:compute(1)`);
 	test("module's own prefix produces no diagnostic", () => {
 		const ds = diags(`module namespace mymod="http://example.com/mymod";
 declare function mymod:doThing() { 1 };`);
-		assert.ok(!ds.some(d => d.prefix === "mymod"), `own module prefix should not be reported`);
+		assert.ok(!ds.some((d) => d.prefix === "mymod"), `own module prefix should not be reported`);
 	});
 
 	test("returns empty array for null ast (parse error)", () => {
 		const { ast } = analyzeWithAst("declare function local:broken(", "file:///broken.xq");
 		assert.equal(ast, null);
-		const ds = findUndeclaredPrefixUsages(null, { functions: [], moduleVariables: [], localBindings: [], imports: [], namespaceDecls: [], defaultFunctionNamespace: "http://www.w3.org/2005/xpath-functions", usedAstPath: false });
+		const ds = findUndeclaredPrefixUsages(null, {
+			functions: [],
+			moduleVariables: [],
+			localBindings: [],
+			imports: [],
+			namespaceDecls: [],
+			defaultFunctionNamespace: "http://www.w3.org/2005/xpath-functions",
+			usedAstPath: false,
+		});
 		assert.equal(ds.length, 0);
 	});
 });
@@ -746,7 +747,10 @@ declare function mymod:doThing() { 1 };`);
 
 describe("insert positions", () => {
 	test("findImportInsertPosition: line 0 when no version/module decl", () => {
-		assert.deepEqual(findImportInsertPosition(`import module namespace a="http://a.com" at "./a.xq"; a:f()`), { line: 0, character: 0 });
+		assert.deepEqual(findImportInsertPosition(`import module namespace a="http://a.com" at "./a.xq"; a:f()`), {
+			line: 0,
+			character: 0,
+		});
 	});
 
 	test("findImportInsertPosition: skips xquery version decl", () => {
@@ -774,7 +778,10 @@ describe("runtime defs", () => {
 		const text = fs.readFileSync(path.join(runtimesDir, "fonto.xq"), "utf-8");
 		const analysis = analyze(text, "builtin:fonto");
 		const names = analysis.functions.map((f) => formatQName(f.qname));
-		assert.ok(names.includes("fonto:selection-common-ancestor"), `expected fonto:selection-common-ancestor, got ${names}`);
+		assert.ok(
+			names.includes("fonto:selection-common-ancestor"),
+			`expected fonto:selection-common-ancestor, got ${names}`,
+		);
 	});
 
 	test("fonto.xq: fonto:dita-class has arity 2", () => {
@@ -831,4 +838,3 @@ fonto:`;
 		assert.ok(!labels.includes("selection-common-ancestor"), `fonto functions should not appear without import`);
 	});
 });
-

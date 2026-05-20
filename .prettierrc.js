@@ -7,6 +7,7 @@ const config = {
 	useTabs: true,
 	printWidth: 120,
 	tabWidth: 4,
+	plugins: ["prettier-plugin-xquery"],
 };
 
 export default config;

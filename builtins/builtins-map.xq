@@ -1,4 +1,4 @@
-module namespace map="http://www.w3.org/2005/xpath-functions/map";
+module namespace map = "http://www.w3.org/2005/xpath-functions/map";
 
 (:~
  : Returns a map that combines the entries of a sequence of maps.
@@ -6,6 +6,7 @@ module namespace map="http://www.w3.org/2005/xpath-functions/map";
  : @return A map containing all entries
  :)
 declare function map:merge($maps as map(*)*) as map(*) external;
+
 (:~
  : Merges maps with options controlling duplicate key handling.
  : @param $maps The maps to merge
@@ -83,4 +84,7 @@ declare function map:remove($map as map(*), $keys as xs:anyAtomicType*) as map(*
  : @param $action Function taking (key, value) and returning items
  : @return Concatenated results
  :)
-declare function map:for-each($map as map(*), $action as function(xs:anyAtomicType, item()*) as item()*) as item()* external;
+declare function map:for-each(
+	$map as map(*),
+	$action as function (xs:anyAtomicType, item()*) as item()*
+) as item()* external;

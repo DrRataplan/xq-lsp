@@ -1,121 +1,121 @@
 name: CI / Release
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - run: npm ci
-      - run: npm test
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+            - run: npm ci
+            - run: npm test
 
-  release-please:
-    if: github.event_name == 'push'
-    needs: test
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    outputs:
-      npm-released: ${{ steps.rp.outputs['.--release_created'] }}
-      vscode-released: ${{ steps.rp.outputs['editors/vscode--release_created'] }}
-    steps:
-      - uses: googleapis/release-please-action@v4
-        id: rp
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+    release-please:
+        if: github.event_name == 'push'
+        needs: test
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            pull-requests: write
+        outputs:
+            npm-released: ${{ steps.rp.outputs['.--release_created'] }}
+            vscode-released: ${{ steps.rp.outputs['editors/vscode--release_created'] }}
+        steps:
+            - uses: googleapis/release-please-action@v4
+              id: rp
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
 
-  publish-npm:
-    needs: release-please
-    if: needs.release-please.outputs.npm-released == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write  # required for npm OIDC trusted publishing (no NPM_TOKEN needed)
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
-      - run: npm ci
-      - run: npm publish --provenance --access public
+    publish-npm:
+        needs: release-please
+        if: needs.release-please.outputs.npm-released == 'true'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write # required for npm OIDC trusted publishing (no NPM_TOKEN needed)
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+                  registry-url: "https://registry.npmjs.org"
+            - run: npm ci
+            - run: npm publish --provenance --access public
 
-  bump-vscode-xqlsp:
-    needs: [release-please, publish-npm]
-    if: needs.publish-npm.result == 'success' && needs.release-please.outputs.vscode-released != 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - run: npm ci
-      - run: npm pack
-      - name: Install vscode extension deps with updated xq-lsp
-        working-directory: editors/vscode
-        run: |
-          npm ci
-          npm install ../../xq-lsp-*.tgz
-      - name: Bump patch version
-        id: version
-        working-directory: editors/vscode
-        run: |
-          npm version patch --no-git-tag-version
-          echo "new=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-      - name: Sync release-please manifest
-        run: |
-          node -e "
-            const fs = require('fs');
-            const m = JSON.parse(fs.readFileSync('.release-please-manifest.json', 'utf8'));
-            m['editors/vscode'] = process.argv[1];
-            fs.writeFileSync('.release-please-manifest.json', JSON.stringify(m, null, 2) + '\n');
-          " "${{ steps.version.outputs.new }}"
-      - name: Publish to VS Code Marketplace
-        working-directory: editors/vscode
-        run: npx vsce publish
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-      - name: Commit, tag, and push
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add editors/vscode/package.json editors/vscode/package-lock.json .release-please-manifest.json
-          git commit -m "chore(vscode): release ${{ steps.version.outputs.new }} with updated xq-lsp"
-          git tag "vscode-v${{ steps.version.outputs.new }}"
-          git push origin main --follow-tags
+    bump-vscode-xqlsp:
+        needs: [release-please, publish-npm]
+        if: needs.publish-npm.result == 'success' && needs.release-please.outputs.vscode-released != 'true'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: main
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+            - run: npm ci
+            - run: npm pack
+            - name: Install vscode extension deps with updated xq-lsp
+              working-directory: editors/vscode
+              run: |
+                  npm ci
+                  npm install ../../xq-lsp-*.tgz
+            - name: Bump patch version
+              id: version
+              working-directory: editors/vscode
+              run: |
+                  npm version patch --no-git-tag-version
+                  echo "new=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+            - name: Sync release-please manifest
+              run: |
+                  node -e "
+                    const fs = require('fs');
+                    const m = JSON.parse(fs.readFileSync('.release-please-manifest.json', 'utf8'));
+                    m['editors/vscode'] = process.argv[1];
+                    fs.writeFileSync('.release-please-manifest.json', JSON.stringify(m, null, 2) + '\n');
+                  " "${{ steps.version.outputs.new }}"
+            - name: Publish to VS Code Marketplace
+              working-directory: editors/vscode
+              run: npx vsce publish
+              env:
+                  VSCE_PAT: ${{ secrets.VSCE_PAT }}
+            - name: Commit, tag, and push
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add editors/vscode/package.json editors/vscode/package-lock.json .release-please-manifest.json
+                  git commit -m "chore(vscode): release ${{ steps.version.outputs.new }} with updated xq-lsp"
+                  git tag "vscode-v${{ steps.version.outputs.new }}"
+                  git push origin main --follow-tags
 
-  publish-vscode:
-    needs: release-please
-    if: needs.release-please.outputs.vscode-released == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - run: npm ci
-      - run: npm pack
-      - name: Install VSCode extension dependencies
-        working-directory: editors/vscode
-        run: npm ci
-      - name: Override xq-lsp with local build
-        working-directory: editors/vscode
-        run: npm install ../../xq-lsp-*.tgz
-      - name: Publish to VS Code Marketplace
-        working-directory: editors/vscode
-        run: npx vsce publish
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+    publish-vscode:
+        needs: release-please
+        if: needs.release-please.outputs.vscode-released == 'true'
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+            - run: npm ci
+            - run: npm pack
+            - name: Install VSCode extension dependencies
+              working-directory: editors/vscode
+              run: npm ci
+            - name: Override xq-lsp with local build
+              working-directory: editors/vscode
+              run: npm install ../../xq-lsp-*.tgz
+            - name: Publish to VS Code Marketplace
+              working-directory: editors/vscode
+              run: npx vsce publish
+              env:
+                  VSCE_PAT: ${{ secrets.VSCE_PAT }}

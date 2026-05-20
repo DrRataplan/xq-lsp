@@ -16,7 +16,5 @@
 	"paths": {
 		"vscode-languageserver/node.js": ["./node_modules/vscode-languageserver/node.d.ts"]
 	},
-	"include": [
-		"./src/*"
-	]
+	"include": ["./src/*"]
 }

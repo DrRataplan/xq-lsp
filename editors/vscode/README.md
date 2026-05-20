@@ -25,13 +25,13 @@ For files with syntax errors (common while editing), the server falls back to re
 Place an `lsp-config.xq` file in your project root to enable glob-based import resolution. The server walks up from the current file's directory to find it.
 
 ```xquery
-map { "glob": "src/**/*.xq" }
+map {"glob": "src/**/*.xq"}
 ```
 
 Multiple patterns are written as an XPath sequence:
 
 ```xquery
-map { "glob": ("src/**/*.xq", "lib/**/*.xq") }
+map {"glob": ("src/**/*.xq", "lib/**/*.xq")}
 ```
 
 The server indexes all matched files by their declared namespace URI, so imports without an `at` clause resolve automatically:
@@ -45,12 +45,12 @@ import module namespace util="http://example.com/util";
 
 Use the `lib` key to load built-in definitions for a specific runtime:
 
-| Value | Runtime |
-|-------|---------|
+| Value     | Runtime                                                             |
+| --------- | ------------------------------------------------------------------- |
 | `"fonto"` | [Fonto XML editor](https://www.fontoxml.com/) — `fonto:*` functions |
 
 ```xquery
-map { "glob": "src/**/*.xq", "lib": "fonto" }
+map {"glob": "src/**/*.xq", "lib": "fonto"}
 ```
 
 Then import the namespace in your XQuery files as usual — the server resolves completions, hover, and go-to-definition against the bundled definitions:
@@ -62,7 +62,7 @@ import module namespace fonto="http://www.fontoxml.com/functions";
 Multiple libs use an XPath sequence:
 
 ```xquery
-map { "glob": "src/**/*.xq", "lib": ("fonto", "other") }
+map {"glob": "src/**/*.xq", "lib": ("fonto", "other")}
 ```
 
 ## Formatting

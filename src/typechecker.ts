@@ -6,39 +6,53 @@ import { asFunctionCall, asVarRef, asTypedBinding, literalKind, isPathExpr, argE
 
 // ── Type constants ───────────────────────────────────────────────────────────
 
-const UNKNOWN: XQueryType = { kind: 'unknown', occurrence: '' };
+const UNKNOWN: XQueryType = { kind: "unknown", occurrence: "" };
 
 // ── Type parsing ─────────────────────────────────────────────────────────────
 
 const NODE_KIND_PREFIXES = [
-	'node(', 'element(', 'attribute(', 'text(', 'comment(',
-	'document-node(', 'processing-instruction(', 'schema-element(', 'schema-attribute(',
+	"node(",
+	"element(",
+	"attribute(",
+	"text(",
+	"comment(",
+	"document-node(",
+	"processing-instruction(",
+	"schema-element(",
+	"schema-attribute(",
 ];
 
 export function parseType(typeStr: string): XQueryType {
 	const trimmed = typeStr.trim();
 	if (!trimmed) return UNKNOWN;
 
-	let occurrence: XQueryType['occurrence'] = '';
+	let occurrence: XQueryType["occurrence"] = "";
 	let base = trimmed;
 	const last = trimmed[trimmed.length - 1];
-	if (last === '*') { occurrence = '*'; base = trimmed.slice(0, -1).trim(); }
-	else if (last === '+') { occurrence = '+'; base = trimmed.slice(0, -1).trim(); }
-	else if (last === '?') { occurrence = '?'; base = trimmed.slice(0, -1).trim(); }
-
-	if (base === 'item()') return { kind: 'item', occurrence };
-	if (base === 'empty-sequence()') return { kind: 'empty', occurrence: '' };
-
-	if (NODE_KIND_PREFIXES.some(p => base === p.slice(0, -1) + ')' || base.startsWith(p))) {
-		const name = base.replace(/\(.*/, '');
-		return { kind: 'node', name, occurrence };
+	if (last === "*") {
+		occurrence = "*";
+		base = trimmed.slice(0, -1).trim();
+	} else if (last === "+") {
+		occurrence = "+";
+		base = trimmed.slice(0, -1).trim();
+	} else if (last === "?") {
+		occurrence = "?";
+		base = trimmed.slice(0, -1).trim();
 	}
 
-	if (base.startsWith('map(')) return { kind: 'map', occurrence };
-	if (base.startsWith('array(')) return { kind: 'array', occurrence };
-	if (base.startsWith('function(')) return { kind: 'function', occurrence };
+	if (base === "item()") return { kind: "item", occurrence };
+	if (base === "empty-sequence()") return { kind: "empty", occurrence: "" };
 
-	if (base.includes(':')) return { kind: 'atomic', name: base, occurrence };
+	if (NODE_KIND_PREFIXES.some((p) => base === p.slice(0, -1) + ")" || base.startsWith(p))) {
+		const name = base.replace(/\(.*/, "");
+		return { kind: "node", name, occurrence };
+	}
+
+	if (base.startsWith("map(")) return { kind: "map", occurrence };
+	if (base.startsWith("array(")) return { kind: "array", occurrence };
+	if (base.startsWith("function(")) return { kind: "function", occurrence };
+
+	if (base.includes(":")) return { kind: "atomic", name: base, occurrence };
 
 	return UNKNOWN;
 }
@@ -46,14 +60,26 @@ export function parseType(typeStr: string): XQueryType {
 // ── Type compatibility ────────────────────────────────────────────────────────
 
 const ATOMIC_SUBTYPES: Record<string, string[]> = {
-	'xs:anyAtomicType': [
-		'xs:string', 'xs:boolean', 'xs:integer', 'xs:decimal', 'xs:float', 'xs:double',
-		'xs:duration', 'xs:dateTime', 'xs:date', 'xs:time', 'xs:anyURI', 'xs:QName',
-		'xs:NOTATION', 'xs:hexBinary', 'xs:base64Binary',
+	"xs:anyAtomicType": [
+		"xs:string",
+		"xs:boolean",
+		"xs:integer",
+		"xs:decimal",
+		"xs:float",
+		"xs:double",
+		"xs:duration",
+		"xs:dateTime",
+		"xs:date",
+		"xs:time",
+		"xs:anyURI",
+		"xs:QName",
+		"xs:NOTATION",
+		"xs:hexBinary",
+		"xs:base64Binary",
 	],
-	'xs:numeric': ['xs:integer', 'xs:decimal', 'xs:float', 'xs:double'],
-	'xs:decimal': ['xs:integer'],
-	'xs:string': ['xs:normalizedString', 'xs:token', 'xs:language', 'xs:Name', 'xs:NCName', 'xs:NMTOKEN'],
+	"xs:numeric": ["xs:integer", "xs:decimal", "xs:float", "xs:double"],
+	"xs:decimal": ["xs:integer"],
+	"xs:string": ["xs:normalizedString", "xs:token", "xs:language", "xs:Name", "xs:NCName", "xs:NMTOKEN"],
 };
 
 function isAtomicSubtype(from: string, to: string): boolean {
@@ -64,20 +90,20 @@ function isAtomicSubtype(from: string, to: string): boolean {
 
 function isNodeSubtype(from: string | undefined, to: string | undefined): boolean {
 	if (!from || !to) return true;
-	if (to === 'node') return true;
+	if (to === "node") return true;
 	return from === to;
 }
 
 export function isAssignable(from: XQueryType, to: XQueryType): boolean {
-	if (from.kind === 'unknown' || to.kind === 'unknown') return true;
-	if (to.kind === 'item') return true;
-	if (from.kind === 'empty') return to.occurrence === '*' || to.occurrence === '?';
+	if (from.kind === "unknown" || to.kind === "unknown") return true;
+	if (to.kind === "item") return true;
+	if (from.kind === "empty") return to.occurrence === "*" || to.occurrence === "?";
 
-	if (from.kind === 'atomic' && to.kind === 'node') return false;
-	if (from.kind === 'node' && to.kind === 'atomic') return false;
+	if (from.kind === "atomic" && to.kind === "node") return false;
+	if (from.kind === "node" && to.kind === "atomic") return false;
 
-	if (from.kind === 'atomic' && to.kind === 'atomic') return isAtomicSubtype(from.name ?? '', to.name ?? '');
-	if (from.kind === 'node' && to.kind === 'node') return isNodeSubtype(from.name, to.name);
+	if (from.kind === "atomic" && to.kind === "atomic") return isAtomicSubtype(from.name ?? "", to.name ?? "");
+	if (from.kind === "node" && to.kind === "node") return isNodeSubtype(from.name, to.name);
 
 	return true;
 }
@@ -85,13 +111,13 @@ export function isAssignable(from: XQueryType, to: XQueryType): boolean {
 // ── Type inference ────────────────────────────────────────────────────────────
 
 const LITERAL_TYPE: Record<string, XQueryType> = {
-	string:  { kind: 'atomic', name: 'xs:string',  occurrence: '' },
-	integer: { kind: 'atomic', name: 'xs:integer', occurrence: '' },
-	decimal: { kind: 'atomic', name: 'xs:decimal', occurrence: '' },
-	double:  { kind: 'atomic', name: 'xs:double',  occurrence: '' },
+	string: { kind: "atomic", name: "xs:string", occurrence: "" },
+	integer: { kind: "atomic", name: "xs:integer", occurrence: "" },
+	decimal: { kind: "atomic", name: "xs:decimal", occurrence: "" },
+	double: { kind: "atomic", name: "xs:double", occurrence: "" },
 };
 
-const NODE_STEP: XQueryType = { kind: 'node', name: 'node', occurrence: '*' };
+const NODE_STEP: XQueryType = { kind: "node", name: "node", occurrence: "*" };
 
 function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, FileAnalysis>): FunctionSymbol[] {
 	const fns = [...analysis.functions];
@@ -102,10 +128,11 @@ function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, 
 function inferFunctionReturn(node: Node, analysis: FileAnalysis, allFns: FunctionSymbol[]): XQueryType {
 	const call = asFunctionCall(node, analysis);
 	if (!call) return UNKNOWN;
-	const fn = allFns.find(f =>
-		f.qname.namespaceUri === call.qname.namespaceUri &&
-		f.qname.localName === call.qname.localName &&
-		f.arity === call.args.length
+	const fn = allFns.find(
+		(f) =>
+			f.qname.namespaceUri === call.qname.namespaceUri &&
+			f.qname.localName === call.qname.localName &&
+			f.arity === call.args.length,
 	);
 	return fn?.returnType ? parseType(fn.returnType) : UNKNOWN;
 }
@@ -123,33 +150,33 @@ export function inferExprType(
 	const nt = node as NonTerminal;
 
 	switch (node.type) {
-		case 'Literal':
-		case 'NumericLiteral': {
+		case "Literal":
+		case "NumericLiteral": {
 			for (const c of nt.children) {
 				const t = inferExprType(c, varTypes, analysis, allFns);
-				if (t.kind !== 'unknown') return t;
+				if (t.kind !== "unknown") return t;
 			}
 			break;
 		}
-		case 'VarRef': {
+		case "VarRef": {
 			const qname = asVarRef(node, analysis);
 			return qname ? (varTypes.get(qnameKey(qname)) ?? UNKNOWN) : UNKNOWN;
 		}
-		case 'FunctionCall':
+		case "FunctionCall":
 			return inferFunctionReturn(node, analysis, allFns);
-		case 'PathExpr':
-		case 'RelativePathExpr':
+		case "PathExpr":
+		case "RelativePathExpr":
 			if (isPathExpr(node)) return NODE_STEP;
 			break;
-		case 'AxisStep':
-		case 'ForwardStep':
-		case 'ReverseStep':
-		case 'AbbrevForwardStep':
-		case 'AbbrevReverseStep':
+		case "AxisStep":
+		case "ForwardStep":
+		case "ReverseStep":
+		case "AbbrevForwardStep":
+		case "AbbrevReverseStep":
 			return NODE_STEP;
 	}
 
-	const ntChildren = nt.children.filter(c => !isTerminal(c));
+	const ntChildren = nt.children.filter((c) => !isTerminal(c));
 	if (ntChildren.length === 1) return inferExprType(ntChildren[0], varTypes, analysis, allFns);
 
 	return UNKNOWN;
@@ -159,8 +186,8 @@ export function inferExprType(
 
 export function buildVarTypes(ast: Node, text: string, analysis: FileAnalysis): Map<string, XQueryType> {
 	const types = new Map<string, XQueryType>();
-	const nodeTypes = ['LetBinding', 'ForBinding', 'Param', 'VarDecl'];
-	for (const node of nodeTypes.flatMap(t => findAll(ast, t))) {
+	const nodeTypes = ["LetBinding", "ForBinding", "Param", "VarDecl"];
+	for (const node of nodeTypes.flatMap((t) => findAll(ast, t))) {
 		const binding = asTypedBinding(node, text, analysis);
 		if (binding?.typeStr) types.set(qnameKey(binding.qname), parseType(binding.typeStr));
 	}
@@ -170,10 +197,10 @@ export function buildVarTypes(ast: Node, text: string, analysis: FileAnalysis): 
 // ── Type name formatting ──────────────────────────────────────────────────────
 
 export function formatType(t: XQueryType): string {
-	if (t.kind === 'unknown') return 'unknown';
-	if (t.kind === 'empty') return 'empty-sequence()';
-	if (t.kind === 'item') return `item()${t.occurrence}`;
-	if (t.kind === 'node') return `${t.name ?? 'node'}()${t.occurrence}`;
+	if (t.kind === "unknown") return "unknown";
+	if (t.kind === "empty") return "empty-sequence()";
+	if (t.kind === "item") return `item()${t.occurrence}`;
+	if (t.kind === "node") return `${t.name ?? "node"}()${t.occurrence}`;
 	return `${t.name ?? t.kind}${t.occurrence}`;
 }
 
@@ -189,13 +216,14 @@ export function checkTypes(
 	const allFns = allFunctionsFlat(analysis, importedAnalyses);
 	const varTypes = buildVarTypes(ast, text, analysis);
 
-	for (const callNode of findAll(ast, 'FunctionCall')) {
+	for (const callNode of findAll(ast, "FunctionCall")) {
 		const call = asFunctionCall(callNode, analysis);
 		if (!call) continue;
-		const fn = allFns.find(f =>
-			f.qname.namespaceUri === call.qname.namespaceUri &&
-			f.qname.localName === call.qname.localName &&
-			f.arity === call.args.length
+		const fn = allFns.find(
+			(f) =>
+				f.qname.namespaceUri === call.qname.namespaceUri &&
+				f.qname.localName === call.qname.localName &&
+				f.arity === call.args.length,
 		);
 		if (!fn) continue;
 
@@ -203,17 +231,17 @@ export function checkTypes(
 			const param = fn.params[i];
 			if (!param?.type) continue;
 			const declaredType = parseType(param.type);
-			if (declaredType.kind === 'unknown') continue;
+			if (declaredType.kind === "unknown") continue;
 
 			const expr = argExpr(call.args[i]);
 			if (!expr) continue;
 			const inferredType = inferExprType(expr, varTypes, analysis, allFns);
-			if (inferredType.kind === 'unknown') continue;
+			if (inferredType.kind === "unknown") continue;
 
 			if (!isAssignable(inferredType, declaredType)) {
 				errors.push({
 					message: `Argument ${i + 1} of ${formatQName(call.qname)}: expected ${param.type}, got ${formatType(inferredType)} [XPTY0004]`,
-					code: 'XPTY0004',
+					code: "XPTY0004",
 					offset: call.args[i].start,
 					length: (call.args[i].end ?? call.args[i].start + 1) - call.args[i].start,
 				});
