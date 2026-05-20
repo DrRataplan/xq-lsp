@@ -159,7 +159,7 @@ export function inferExprType(
 
 export function buildVarTypes(ast: Node, text: string, analysis: FileAnalysis): Map<string, XQueryType> {
 	const types = new Map<string, XQueryType>();
-	const nodeTypes = ['LetBinding', 'ForBinding', 'Param', 'VarDecl'];
+	const nodeTypes = ['LetBinding', 'ForBinding', 'Param', 'ParamWithDefault', 'VarDecl'];
 	for (const node of nodeTypes.flatMap(t => findAll(ast, t))) {
 		const binding = asTypedBinding(node, text, analysis);
 		if (binding?.typeStr) types.set(qnameKey(binding.qname), parseType(binding.typeStr));
