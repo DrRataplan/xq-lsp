@@ -4,7 +4,8 @@
     ".": {
       "release-type": "node",
       "package-name": "xq-lsp",
-      "component": "lsp"
+      "component": "lsp",
+      "exclude-paths": ["editors/"]
     },
     "editors/vscode": {
       "release-type": "node",
