@@ -1,6 +1,6 @@
 import { XQuery31Full } from "xq-parser";
 import type { Node, NonTerminal, Terminal } from "xq-parser";
-import type { FileAnalysis, FunctionSymbol, VariableSymbol, ImportInfo, ParamInfo, DocComment, QName } from "./types.ts";
+import type { FileAnalysis, FunctionSymbol, VariableSymbol, ImportInfo, NamespaceDecl, ParamInfo, DocComment, QName } from "./types.ts";
 
 // ── Well-known namespace URIs ────────────────────────────────────────────────
 
@@ -30,6 +30,8 @@ export function resolvePrefix(prefix: string, analysis: FileAnalysis): string {
 	const imp = analysis.imports.find((i) => i.prefix === prefix);
 	if (imp) return imp.namespaceUri;
 	if (prefix === analysis.modulePrefix && analysis.moduleNamespaceUri) return analysis.moduleNamespaceUri;
+	const nsDecl = analysis.namespaceDecls.find((nd) => nd.prefix === prefix);
+	if (nsDecl) return nsDecl.namespaceUri;
 	return BUILTIN_PREFIXES[prefix] ?? `urn:xq-lsp:undeclared:${prefix}`;
 }
 
@@ -144,10 +146,12 @@ function extractDefaultFunctionNamespace(text: string): string | undefined {
 function buildPrefixMap(
 	moduleNs: { prefix: string; uri: string } | undefined,
 	imports: ImportInfo[],
+	namespaceDecls: NamespaceDecl[],
 ): Map<string, string> {
 	const map = new Map(Object.entries(BUILTIN_PREFIXES));
 	if (moduleNs) map.set(moduleNs.prefix, moduleNs.uri);
 	for (const imp of imports) map.set(imp.prefix, imp.namespaceUri);
+	for (const nd of namespaceDecls) map.set(nd.prefix, nd.namespaceUri);
 	return map;
 }
 
@@ -264,6 +268,20 @@ function extractLocalBindings(ast: Node, sourceUri: string, prefixMap: Map<strin
 	return results;
 }
 
+function extractNamespaceDecls(ast: Node): NamespaceDecl[] {
+	const results: NamespaceDecl[] = [];
+	for (const nd of findAll(ast, "NamespaceDecl")) {
+		const ncname = directChildOf(nd, "NCName");
+		const prefix = ncname ? firstTerminalValue(ncname) : null;
+		if (!prefix) continue;
+		const uriNode = directChildOf(nd, "URILiteral");
+		const namespaceUri = uriNode ? stripQuotes(firstTerminalValue(uriNode) ?? "") : null;
+		if (!namespaceUri) continue;
+		results.push({ prefix, namespaceUri });
+	}
+	return results;
+}
+
 function extractImports(ast: Node): ImportInfo[] {
 	const results: ImportInfo[] = [];
 	for (const mi of findAll(ast, "ModuleImport")) {
@@ -285,14 +303,16 @@ function stripQuotes(s: string): string {
 
 function analyzeAst(ast: Node, comments: Terminal[], text: string, sourceUri: string): FileAnalysis {
 	const imports = extractImports(ast);
+	const namespaceDecls = extractNamespaceDecls(ast);
 	const moduleNs = extractModuleNamespace(text);
 	const defaultFunctionNamespace = extractDefaultFunctionNamespace(text) ?? XMLNS_FN;
-	const prefixMap = buildPrefixMap(moduleNs, imports);
+	const prefixMap = buildPrefixMap(moduleNs, imports, namespaceDecls);
 	return {
 		functions: extractFunctions(ast, sourceUri, comments, text, prefixMap, defaultFunctionNamespace),
 		moduleVariables: extractModuleVariables(ast, sourceUri, prefixMap),
 		localBindings: extractLocalBindings(ast, sourceUri, prefixMap),
 		imports,
+		namespaceDecls,
 		defaultFunctionNamespace,
 		moduleNamespaceUri: moduleNs?.uri,
 		modulePrefix: moduleNs?.prefix,
@@ -307,6 +327,7 @@ const RE_VAR_DECL = /declare\s+(?:%[\w:\-]+(?:\([^)]*\))?\s+)*variable\s+\$([\w:
 const RE_LET = /\blet\s+\$([\w:\-]+)\s*:=/g;
 const RE_FOR = /\bfor\s+\$([\w:\-]+)\s+in\b/g;
 const RE_IMPORT = /import\s+module\s+namespace\s+([\w\-]+)\s*=\s*["']([^"']*)["'](?:\s+at\s+["']([^"']*)["'])?/g;
+const RE_NS_DECL = /declare\s+namespace\s+([\w\-]+)\s*=\s*["']([^"']*)["']/g;
 
 function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	const moduleVariables: VariableSymbol[] = [];
@@ -325,7 +346,13 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 		imports.push(imp);
 	}
 
-	const prefixMap = buildPrefixMap(moduleNs, imports);
+	const namespaceDecls: NamespaceDecl[] = [];
+	RE_NS_DECL.lastIndex = 0;
+	while ((m = RE_NS_DECL.exec(text)) !== null) {
+		namespaceDecls.push({ prefix: m[1], namespaceUri: m[2] });
+	}
+
+	const prefixMap = buildPrefixMap(moduleNs, imports, namespaceDecls);
 
 	const functions: FunctionSymbol[] = [];
 	RE_FUNC.lastIndex = 0;
@@ -390,6 +417,7 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 		moduleVariables,
 		localBindings,
 		imports,
+		namespaceDecls,
 		defaultFunctionNamespace,
 		moduleNamespaceUri: moduleNs?.uri,
 		modulePrefix: moduleNs?.prefix,

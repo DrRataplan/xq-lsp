@@ -47,11 +47,17 @@ export interface ImportInfo {
 	atPath?: string; // as written in source, e.g. "./other.xq"; absent when the import has no "at" clause
 }
 
+export interface NamespaceDecl {
+	prefix: string;
+	namespaceUri: string;
+}
+
 export interface FileAnalysis {
 	functions: FunctionSymbol[];
 	moduleVariables: VariableSymbol[]; // declare variable
 	localBindings: VariableSymbol[]; // let/for bindings
 	imports: ImportInfo[];
+	namespaceDecls: NamespaceDecl[]; // from 'declare namespace prefix="uri"' statements
 	defaultFunctionNamespace: string; // from 'declare default function namespace', else XMLNS_FN
 	moduleNamespaceUri?: string; // from 'module namespace prefix="uri"'
 	modulePrefix?: string; // from 'module namespace prefix="uri"'

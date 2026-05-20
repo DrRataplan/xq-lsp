@@ -5,6 +5,8 @@ import {
   ProposedFeatures,
   TextDocumentSyncKind,
   DiagnosticSeverity,
+  CodeAction,
+  CodeActionKind,
 } from 'vscode-languageserver/node.js';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import * as path from 'path';
@@ -17,6 +19,12 @@ import { getHover, getSignatureHelp, getDocumentSymbols, getDefinition } from '.
 import type { FileAnalysis, TypeDiagnostic } from './types.ts';
 import { checkTypes } from './typechecker.ts';
 import { findConfig, expandGlobs } from './config.ts';
+import {
+  findUndeclaredPrefixUsages,
+  findImportInsertPosition,
+  findDeclareNsInsertPosition,
+} from './namespace-diagnostics.ts';
+import type { NamespaceUsageKind } from './namespace-diagnostics.ts';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -143,6 +151,7 @@ connection.onInitialize((params) => {
     },
     documentSymbolProvider: true,
     definitionProvider: true,
+    codeActionProvider: { codeActionKinds: [CodeActionKind.QuickFix] },
   },
 }});
 
@@ -166,7 +175,21 @@ documents.onDidChangeContent(change => {
     source: 'xquery-lsp',
   }));
 
-  connection.sendDiagnostics({ uri: doc.uri, diagnostics: [...parseDiags, ...typeDiags] });
+  // findUndeclaredPrefixUsages returns [] when ast is null (parse error path).
+  const nsDiagRaw = findUndeclaredPrefixUsages(ast, analysis);
+  const nsDiags = nsDiagRaw.map(nd => ({
+    severity: DiagnosticSeverity.Error,
+    range: {
+      start: doc.positionAt(nd.offset),
+      end: doc.positionAt(nd.offset + nd.length),
+    },
+    message: nd.message,
+    code: nd.code,
+    source: 'xquery-lsp',
+    data: { prefix: nd.prefix, usageKind: nd.usageKind } as { prefix: string; usageKind: NamespaceUsageKind },
+  }));
+
+  connection.sendDiagnostics({ uri: doc.uri, diagnostics: [...parseDiags, ...typeDiags, ...nsDiags] });
 });
 
 connection.onCompletion(params => {
@@ -214,6 +237,85 @@ connection.onDefinition(params => {
     atPath => resolveImportUri(doc.uri, atPath),
   );
 });
+
+connection.onCodeAction(params => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) return [];
+
+  const text = doc.getText();
+  const globAnalyses = getGlobAnalyses(doc.uri);
+  const config = findConfig(doc.uri)?.config;
+  const generateLocationHints = config?.generateLocationHints ?? true;
+  const actions: CodeAction[] = [];
+
+  for (const diag of params.context.diagnostics) {
+    if (diag.code !== 'XQST0081') continue;
+    const data = diag.data as { prefix: string; usageKind: NamespaceUsageKind } | undefined;
+    if (!data?.prefix) continue;
+
+    const { prefix, usageKind } = data;
+
+    // Find all glob modules whose module namespace prefix matches the used prefix.
+    for (const [nsUri, fa] of globAnalyses) {
+      if (fa.modulePrefix !== prefix) continue;
+
+      if (usageKind === 'element') {
+        // Elements only need a namespace declaration, not a module import.
+        const insertPos = findDeclareNsInsertPosition(text);
+        actions.push({
+          title: `Declare namespace ${prefix} = "${nsUri}"`,
+          kind: CodeActionKind.QuickFix,
+          diagnostics: [diag],
+          edit: {
+            changes: {
+              [doc.uri]: [{
+                range: { start: insertPos, end: insertPos },
+                newText: `declare namespace ${prefix} = "${nsUri}";\n`,
+              }],
+            },
+          },
+        });
+      } else {
+        // Function/variable usage — import the module.
+        const moduleFileUri = fa.functions[0]?.sourceUri ?? fa.moduleVariables[0]?.sourceUri;
+        const insertPos = findImportInsertPosition(text);
+
+        let newText: string;
+        if (generateLocationHints && moduleFileUri) {
+          const atPath = computeRelativePath(doc.uri, moduleFileUri);
+          newText = `import module namespace ${prefix} = "${nsUri}" at "${atPath}";\n`;
+        } else {
+          newText = `import module namespace ${prefix} = "${nsUri}";\n`;
+        }
+
+        actions.push({
+          title: `Import module namespace ${prefix} = "${nsUri}"`,
+          kind: CodeActionKind.QuickFix,
+          diagnostics: [diag],
+          edit: {
+            changes: {
+              [doc.uri]: [{
+                range: { start: insertPos, end: insertPos },
+                newText,
+              }],
+            },
+          },
+        });
+      }
+    }
+  }
+
+  return actions;
+});
+
+function computeRelativePath(fromUri: string, toUri: string): string {
+  const fromPath = uriToPath(fromUri);
+  const toPath = uriToPath(toUri);
+  const fromDir = path.dirname(fromPath);
+  let rel = path.relative(fromDir, toPath).replace(/\\/g, '/');
+  if (!rel.startsWith('.')) rel = './' + rel;
+  return rel;
+}
 
 documents.listen(connection);
 connection.listen();

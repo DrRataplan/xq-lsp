@@ -26,6 +26,7 @@ export function getBuiltins(): FileAnalysis {
 			moduleVariables: [],
 			localBindings: [],
 			imports: [],
+			namespaceDecls: [],
 			defaultFunctionNamespace: XMLNS_FN,
 			usedAstPath: false,
 		};

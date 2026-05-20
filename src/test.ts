@@ -11,6 +11,7 @@ import { getBuiltins } from "./builtins.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import { formatQName } from "./types.ts";
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { findUndeclaredPrefixUsages, findImportInsertPosition, findDeclareNsInsertPosition } from "./namespace-diagnostics.ts";
 
 // ── analyzer: valid XQuery via AST ──────────────────────────────────────────
 describe("analyze", () => {
@@ -589,6 +590,141 @@ util:trim("x")`;
 			const labels = items.map((i) => i.label);
 			assert.ok(labels.includes("trim"), `expected trim via namespace-only import, got ${labels}`);
 		});
+	});
+
+	test("lsp-config: generateLocationHints defaults to true when key absent", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(path.join(dir, "lsp-config.xq"), `map { "glob": "**/*.xq" }`);
+			const result = findConfig(pathToFileURL(path.join(dir, "main.xq")).toString());
+			assert.ok(result);
+			assert.equal(result.config.generateLocationHints, true);
+		});
+	});
+
+	test("lsp-config: generateLocationHints can be set to false", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "lsp-config.xq"),
+				`map { "glob": "**/*.xq", "import": map { "generateLocationHints": false() } }`,
+			);
+			const result = findConfig(pathToFileURL(path.join(dir, "main.xq")).toString());
+			assert.ok(result);
+			assert.equal(result.config.generateLocationHints, false);
+		});
+	});
+});
+
+// ── namespace diagnostics ─────────────────────────────────────────────────────
+
+describe("namespace-diagnostics", () => {
+	function diags(src: string) {
+		const { analysis, ast } = analyzeWithAst(src, "file:///main.xq");
+		return findUndeclaredPrefixUsages(ast, analysis);
+	}
+
+	test("undeclared prefix in function call is reported", () => {
+		const ds = diags(`myns:compute(1)`);
+		const d = ds.find(d => d.prefix === "myns");
+		assert.ok(d, `expected myns diagnostic, got ${JSON.stringify(ds)}`);
+		assert.equal(d!.code, "XQST0081");
+		assert.equal(d!.usageKind, "function");
+	});
+
+	test("prefix declared via import module namespace produces no diagnostic", () => {
+		const ds = diags(`import module namespace myns="http://example.com/myns" at "./myns.xq";
+myns:compute(1)`);
+		assert.ok(!ds.some(d => d.prefix === "myns"), `myns should not be reported, got ${JSON.stringify(ds)}`);
+	});
+
+	test("prefix declared via declare namespace produces no diagnostic", () => {
+		const ds = diags(`declare namespace ns = "http://example.com/ns"; <ns:foo/>`);
+		assert.ok(!ds.some(d => d.prefix === "ns"), `ns should not be reported after declare namespace, got ${JSON.stringify(ds)}`);
+	});
+
+	test("builtin prefixes produce no diagnostic", () => {
+		const ds = diags(`(fn:true(), xs:string("x"), math:sqrt(4.0))`);
+		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
+	});
+
+	test("prefix inside a comment is not reported", () => {
+		const ds = diags(`(: undeclared:prefix in a comment :) 1`);
+		assert.ok(!ds.some(d => d.prefix === "undeclared"), `prefix in comment should not be reported`);
+	});
+
+	test("prefix inside import declaration is not reported", () => {
+		const ds = diags(`import module namespace myns="http://example.com/myns" at "./myns.xq"; 1`);
+		assert.equal(ds.length, 0, `import statement prefixes should not be reported, got ${JSON.stringify(ds)}`);
+	});
+
+	test("direct element constructor detected as element kind", () => {
+		const ds = diags(`<ns:foo/>`);
+		const d = ds.find(d => d.prefix === "ns");
+		assert.ok(d, `expected diagnostic for ns, got ${JSON.stringify(ds)}`);
+		assert.equal(d!.usageKind, "element");
+	});
+
+	test("computed element constructor detected as element kind", () => {
+		const ds = diags(`element ns:foo {}`);
+		const d = ds.find(d => d.prefix === "ns");
+		assert.ok(d, `expected diagnostic for ns in computed element, got ${JSON.stringify(ds)}`);
+		assert.equal(d!.usageKind, "element");
+	});
+
+	test("computed attribute constructor detected as element kind", () => {
+		const ds = diags(`attribute ns:attr { "x" }`);
+		const d = ds.find(d => d.prefix === "ns");
+		assert.ok(d, `expected diagnostic for ns in computed attribute, got ${JSON.stringify(ds)}`);
+		assert.equal(d!.usageKind, "element");
+	});
+
+	test("named function reference detected as function kind", () => {
+		const ds = diags(`ns:func#2`);
+		const d = ds.find(d => d.prefix === "ns");
+		assert.ok(d, `expected diagnostic for ns in named function ref, got ${JSON.stringify(ds)}`);
+		assert.equal(d!.usageKind, "function");
+	});
+
+	test("variable reference detected as variable kind", () => {
+		const ds = diags(`$ext:someVar`);
+		const d = ds.find(d => d.prefix === "ext");
+		assert.ok(d, `expected diagnostic for ext, got ${JSON.stringify(ds)}`);
+		assert.equal(d!.usageKind, "variable");
+	});
+
+	test("module's own prefix produces no diagnostic", () => {
+		const ds = diags(`module namespace mymod="http://example.com/mymod";
+declare function mymod:doThing() { 1 };`);
+		assert.ok(!ds.some(d => d.prefix === "mymod"), `own module prefix should not be reported`);
+	});
+
+	test("returns empty array for null ast (parse error)", () => {
+		const { ast } = analyzeWithAst("declare function local:broken(", "file:///broken.xq");
+		assert.equal(ast, null);
+		const ds = findUndeclaredPrefixUsages(null, { functions: [], moduleVariables: [], localBindings: [], imports: [], namespaceDecls: [], defaultFunctionNamespace: "http://www.w3.org/2005/xpath-functions", usedAstPath: false });
+		assert.equal(ds.length, 0);
+	});
+});
+
+// ── findImportInsertPosition / findDeclareNsInsertPosition ────────────────────
+
+describe("insert positions", () => {
+	test("findImportInsertPosition: line 0 when no version/module decl", () => {
+		assert.deepEqual(findImportInsertPosition(`import module namespace a="http://a.com" at "./a.xq"; a:f()`), { line: 0, character: 0 });
+	});
+
+	test("findImportInsertPosition: skips xquery version decl", () => {
+		const text = `xquery version "3.1";\nimport module namespace a="http://a.com" at "./a.xq";\na:f()`;
+		assert.deepEqual(findImportInsertPosition(text), { line: 1, character: 0 });
+	});
+
+	test("findImportInsertPosition: skips module namespace decl in library module", () => {
+		const text = `module namespace m="http://m.com";\ndeclare function m:f() { 1 };`;
+		assert.deepEqual(findImportInsertPosition(text), { line: 1, character: 0 });
+	});
+
+	test("findDeclareNsInsertPosition: skips xquery version decl", () => {
+		const text = `xquery version "3.1";\ndeclare function local:f() { 1 };`;
+		assert.deepEqual(findDeclareNsInsertPosition(text), { line: 1, character: 0 });
 	});
 });
 
