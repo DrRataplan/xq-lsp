@@ -10,6 +10,7 @@
     "@codemirror/legacy-modes": "^6.5.0",
     "@codemirror/lint": "^6.8.4",
     "codemirror": "^6.0.1",
+    "fontoxpath": "^3.34.0",
     "xq-parser": "^0.4.0"
   },
   "devDependencies": {
