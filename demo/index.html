@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>xq-lsp playground</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; }
+      header {
+        padding: 10px 16px;
+        background: #1e1e2e;
+        color: #cdd6f4;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+      header h1 { font-size: 15px; font-weight: 600; }
+      #share-btn {
+        margin-left: auto;
+        background: #89b4fa;
+        color: #1e1e2e;
+        border: none;
+        padding: 4px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      #share-btn:hover { background: #74c7ec; }
+      #editor { flex: 1; overflow: hidden; }
+      .cm-editor { height: 100%; }
+      .cm-scroller { height: 100%; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>xq-lsp playground</h1>
+      <button id="share-btn">Copy link</button>
+    </header>
+    <div id="editor"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
