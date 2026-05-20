@@ -22,6 +22,21 @@ For files with syntax errors (common while editing), the server falls back to re
 
 ## Configuration
 
+### Summary: Fonto development
+
+Place an `lsp-config.xq` file in the Fonto root folder (the one that holds the manifest.json) with the following content:
+
+```xquery
+map {
+	'lib': 'fonto',
+	'glob': 'packages/**/*.xqm',
+	'import': map {
+		'generateLocationHints': false()
+	}
+}
+```
+### General configuration
+
 Place an `lsp-config.xq` file in your project root to enable glob-based import resolution. The server walks up from the current file's directory to find it.
 
 ```xquery
