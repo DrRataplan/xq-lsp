@@ -262,6 +262,105 @@ return $myVar
 	});
 });
 
+// ── analyzer: XQuery 4.0 ────────────────────────────────────────────────────
+
+describe("analyze XQuery 4.0", () => {
+	const XQ4 = `xquery version "4.0";
+import module namespace util="http://example.com/util" at "./util.xq";
+declare variable $local:count as xs:integer := 42;
+declare function local:double($n as xs:integer) as xs:integer {
+  $n * 2
+};
+declare %private function local:secret($x) {
+  $x
+};
+for $i in (1, 2, 3)
+let $j := $i + 1
+return local:double($j)
+`;
+
+	test("analyzer: XQuery 4.0 extracts functions", () => {
+		const result = analyze(XQ4, "file:///test.xq");
+		const names = result.functions.map((f) => formatQName(f.qname));
+		assert.ok(names.includes("local:double"), `expected local:double, got ${names}`);
+		assert.ok(names.includes("local:secret"), `expected local:secret, got ${names}`);
+	});
+
+	test("analyzer: XQuery 4.0 extracts function arity and params", () => {
+		const result = analyze(XQ4, "file:///test.xq");
+		const fn = result.functions.find((f) => formatQName(f.qname) === "local:double");
+		assert.ok(fn, "local:double not found");
+		assert.equal(fn.arity, 1);
+		assert.equal(fn.params[0].name, "n");
+		assert.equal(fn.params[0].type, "xs:integer");
+	});
+
+	test("analyzer: XQuery 4.0 extracts return type", () => {
+		const result = analyze(XQ4, "file:///test.xq");
+		const fn = result.functions.find((f) => formatQName(f.qname) === "local:double");
+		assert.equal(fn?.returnType, "xs:integer");
+	});
+
+	test("analyzer: XQuery 4.0 extracts function with no param type", () => {
+		const result = analyze(XQ4, "file:///test.xq");
+		const fn = result.functions.find((f) => formatQName(f.qname) === "local:secret");
+		assert.ok(fn, "local:secret not found");
+		assert.equal(fn.arity, 1);
+		assert.equal(fn.params[0].name, "x");
+		assert.equal(fn.params[0].type, undefined);
+	});
+
+	test("analyzer: XQuery 4.0 extracts module-level variable", () => {
+		const result = analyze(XQ4, "file:///test.xq");
+		const names = result.moduleVariables.map((v) => formatQName(v.qname));
+		assert.ok(names.includes("local:count"), `expected local:count, got ${names}`);
+		assert.ok(result.moduleVariables[0].isModuleLevel);
+	});
+
+	test("analyzer: XQuery 4.0 extracts for/let bindings", () => {
+		const result = analyze(XQ4, "file:///test.xq");
+		const names = result.localBindings.map((v) => v.qname.localName);
+		assert.ok(names.includes("i"), `expected i, got ${names}`);
+		assert.ok(names.includes("j"), `expected j, got ${names}`);
+		assert.ok(!result.localBindings[0].isModuleLevel);
+	});
+
+	test("analyzer: XQuery 4.0 extracts imports", () => {
+		const result = analyze(XQ4, "file:///test.xq");
+		assert.equal(result.imports.length, 1);
+		assert.equal(result.imports[0].prefix, "util");
+		assert.equal(result.imports[0].atPath, "./util.xq");
+	});
+
+	test("analyzer: XQuery 4.0 extracts function prefix and localName", () => {
+		const result = analyze(XQ4, "file:///test.xq");
+		const fn = result.functions.find((f) => formatQName(f.qname) === "local:double");
+		assert.ok(fn);
+		assert.equal(fn.qname.prefix, "local");
+		assert.equal(fn.qname.localName, "double");
+	});
+
+	const XQ4_WITH_DOC = `xquery version "4.0";
+(:~
+ : Multiplies a number by two.
+ : @param $n The input number
+ : @return Double the input
+ :)
+declare function local:double($n as xs:integer) as xs:integer {
+  $n * 2
+};
+1
+`;
+
+	test("analyzer: XQuery 4.0 extracts doc comment on function", () => {
+		const result = analyze(XQ4_WITH_DOC, "file:///test.xq");
+		const fn = result.functions.find((f) => formatQName(f.qname) === "local:double");
+		assert.ok(fn?.doc?.description.includes("Multiplies"), `got: ${fn?.doc?.description}`);
+		assert.equal(fn?.params[0].description, "The input number");
+		assert.equal(fn?.doc?.returns, "Double the input");
+	});
+});
+
 	// ── default function namespace ───────────────────────────────────────────────
 
 	test("completion: fn: builtins appear without prefix in plain-name mode", () => {

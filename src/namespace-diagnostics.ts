@@ -52,26 +52,28 @@ export function findUndeclaredPrefixUsages(
 	if (!ast) return [];
 	const out: NamespaceDiagnostic[] = [];
 
+	// XQuery 3.1 uses FunctionEQName; XQuery 4.0 uses UnreservedFunctionEQName
 	for (const node of findAll(ast, 'FunctionCall'))
-		checkQNameNode(directChildOf(node, 'FunctionEQName'), 'function', analysis, out);
+		checkQNameNode(directChildOf(node, 'FunctionEQName') ?? directChildOf(node, 'UnreservedFunctionEQName'), 'function', analysis, out);
 
+	// XQuery 3.1 uses EQName; XQuery 4.0 uses UnreservedFunctionEQName
 	for (const node of findAll(ast, 'NamedFunctionRef'))
-		checkQNameNode(directChildOf(node, 'EQName'), 'function', analysis, out);
+		checkQNameNode(directChildOf(node, 'EQName') ?? directChildOf(node, 'UnreservedFunctionEQName'), 'function', analysis, out);
 
+	// XQuery 3.1 uses VarName; XQuery 4.0 uses EQName
 	for (const node of findAll(ast, 'VarRef'))
-		checkQNameNode(directChildOf(node, 'VarName'), 'variable', analysis, out);
+		checkQNameNode(directChildOf(node, 'VarName') ?? directChildOf(node, 'EQName'), 'variable', analysis, out);
 
 	// Direct element constructor: <ns:foo ...>
 	for (const node of findAll(ast, 'DirElemConstructor'))
 		checkQNameNode(directChildOf(node, 'QName'), 'element', analysis, out);
 
-	// Computed element constructor: element ns:foo { ... }
+	// Computed element/attribute constructor: XQuery 3.1 uses EQName; XQuery 4.0 uses CompNodeName
 	for (const node of findAll(ast, 'CompElemConstructor'))
-		checkQNameNode(directChildOf(node, 'EQName'), 'element', analysis, out);
+		checkQNameNode(directChildOf(node, 'EQName') ?? directChildOf(node, 'CompNodeName'), 'element', analysis, out);
 
-	// Computed attribute constructor: attribute ns:attr { ... }
 	for (const node of findAll(ast, 'CompAttrConstructor'))
-		checkQNameNode(directChildOf(node, 'EQName'), 'element', analysis, out);
+		checkQNameNode(directChildOf(node, 'EQName') ?? directChildOf(node, 'CompNodeName'), 'element', analysis, out);
 
 	return out;
 }

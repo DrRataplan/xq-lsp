@@ -1,4 +1,4 @@
-import { XQuery31Full } from "xq-parser";
+import { XQuery31Full, XQuery4Full } from "xq-parser";
 import type { Node, NonTerminal, Terminal } from "xq-parser";
 import type { FileAnalysis, FunctionSymbol, VariableSymbol, ImportInfo, NamespaceDecl, ParamInfo, DocComment, QName } from "./types.ts";
 
@@ -181,6 +181,79 @@ export function sequenceTypeText(text: string, node: Node): string | undefined {
 	return text.slice(node.start, node.end ?? undefined).trim() || undefined;
 }
 
+function extractFunctionFromDecl(
+	decl: Node,
+	startOffset: number,
+	sourceUri: string,
+	comments: Terminal[],
+	text: string,
+	prefixMap: Map<string, string>,
+	defaultFnNs: string,
+): FunctionSymbol | null {
+	// XQuery 3.1: name in EQName; XQuery 4.0: name in UnreservedFunctionEQName
+	const nameNode = directChildOf(decl, "EQName") ?? directChildOf(decl, "UnreservedFunctionEQName");
+	const name = nameNode ? firstTerminalValue(nameNode) : null;
+	if (!name) return null;
+
+	const doc = findPrecedingDoc(comments, text, startOffset);
+
+	const params: ParamInfo[] = [];
+
+	// XQuery 3.1: ParamList -> Param -> EQName + TypeDeclaration
+	const paramList31 = directChildOf(decl, "ParamList");
+	if (paramList31) {
+		for (const param of findAll(paramList31, "Param")) {
+			const paramEqname = directChildOf(param, "EQName");
+			const paramName = paramEqname ? firstTerminalValue(paramEqname) : null;
+			if (!paramName) continue;
+			const typeDecl = directChildOf(param, "TypeDeclaration");
+			const seqTypeNode = typeDecl && directChildOf(typeDecl, "SequenceType");
+			params.push({
+				name: paramName,
+				type: seqTypeNode ? sequenceTypeText(text, seqTypeNode) : undefined,
+				description: doc?.params[paramName],
+			});
+		}
+	}
+
+	// XQuery 4.0: ParamListWithDefaults -> ParamWithDefault -> VarNameAndType -> EQName + TypeDeclaration
+	const paramList40 = directChildOf(decl, "ParamListWithDefaults");
+	if (paramList40) {
+		for (const param of directChildrenOf(paramList40, "ParamWithDefault")) {
+			const vnt = directChildOf(param, "VarNameAndType");
+			if (!vnt) continue;
+			const paramEqname = directChildOf(vnt, "EQName");
+			const paramName = paramEqname ? firstTerminalValue(paramEqname) : null;
+			if (!paramName) continue;
+			const typeDecl = directChildOf(vnt, "TypeDeclaration");
+			const seqTypeNode = typeDecl && directChildOf(typeDecl, "SequenceType");
+			params.push({
+				name: paramName,
+				type: seqTypeNode ? sequenceTypeText(text, seqTypeNode) : undefined,
+				description: doc?.params[paramName],
+			});
+		}
+	}
+
+	// Return type:
+	// XQuery 3.1: SequenceType is a direct child of FunctionDecl
+	// XQuery 4.0: TypeDeclaration is a direct child of FunctionDecl, containing SequenceType
+	const directSeq = directChildOf(decl, "SequenceType");
+	const retTypeDecl = directChildOf(decl, "TypeDeclaration");
+	const seqType = directSeq ?? (retTypeDecl ? directChildOf(retTypeDecl, "SequenceType") : undefined);
+	const returnType = seqType ? sequenceTypeText(text, seqType) : undefined;
+
+	return {
+		qname: makeFnQName(name, prefixMap, defaultFnNs),
+		arity: params.length,
+		params,
+		returnType,
+		doc,
+		sourceUri,
+		sourceOffset: startOffset,
+	};
+}
+
 function extractFunctions(
 	ast: Node,
 	sourceUri: string,
@@ -190,57 +263,43 @@ function extractFunctions(
 	defaultFnNs: string,
 ): FunctionSymbol[] {
 	const results: FunctionSymbol[] = [];
-	// Use AnnotatedDecl (starts at 'declare') so the comment lookup clears the 'declare' keyword
+
+	// XQuery 3.1: FunctionDecl is wrapped in AnnotatedDecl; use annotated.start for offset/doc lookup
 	for (const annotated of findAll(ast, "AnnotatedDecl")) {
 		const decl = directChildOf(annotated, "FunctionDecl");
 		if (!decl) continue;
-
-		const eqname = directChildOf(decl, "EQName");
-		const name = eqname ? firstTerminalValue(eqname) : null;
-		if (!name) continue;
-
-		const doc = findPrecedingDoc(comments, text, annotated.start);
-
-		const params: ParamInfo[] = [];
-		const paramList = directChildOf(decl, "ParamList");
-		if (paramList) {
-			for (const param of findAll(paramList, "Param")) {
-				const paramEqname = directChildOf(param, "EQName");
-				const paramName = paramEqname ? firstTerminalValue(paramEqname) : null;
-				if (!paramName) continue;
-				const typeDecl = directChildOf(param, "TypeDeclaration");
-				const seqTypeNode = typeDecl && directChildOf(typeDecl, "SequenceType");
-				const paramType = seqTypeNode ? sequenceTypeText(text, seqTypeNode) : undefined;
-				params.push({
-					name: paramName,
-					type: paramType,
-					description: doc?.params[paramName],
-				});
-			}
-		}
-
-		// Return type: 'as' followed by SequenceType (direct child of FunctionDecl)
-		const seqType = directChildOf(decl, "SequenceType");
-		const returnType = seqType ? sequenceTypeText(text, seqType) : undefined;
-
-		results.push({
-			qname: makeFnQName(name, prefixMap, defaultFnNs),
-			arity: params.length,
-			params,
-			returnType,
-			doc,
-			sourceUri,
-			sourceOffset: annotated.start,
-		});
+		const sym = extractFunctionFromDecl(decl, annotated.start, sourceUri, comments, text, prefixMap, defaultFnNs);
+		if (sym) results.push(sym);
 	}
+
+	// XQuery 4.0: FunctionDecl is a direct Prolog child (no AnnotatedDecl wrapper)
+	// Identified by having UnreservedFunctionEQName rather than EQName for the function name
+	for (const decl of findAll(ast, "FunctionDecl")) {
+		if (!directChildOf(decl, "UnreservedFunctionEQName")) continue;
+		const sym = extractFunctionFromDecl(decl, decl.start, sourceUri, comments, text, prefixMap, defaultFnNs);
+		if (sym) results.push(sym);
+	}
+
 	return results;
+}
+
+function varNameFromNode(node: Node): string | null {
+	// XQuery 3.1: direct VarName child
+	const varName = directChildOf(node, "VarName");
+	if (varName) return firstTerminalValue(varName);
+	// XQuery 4.0: VarNameAndType -> EQName (may be a direct child or nested via sub-binding types)
+	const vnt = directChildOf(node, "VarNameAndType") ?? findAll(node, "VarNameAndType")[0];
+	if (vnt) {
+		const eqname = directChildOf(vnt, "EQName");
+		return eqname ? firstTerminalValue(eqname) : null;
+	}
+	return null;
 }
 
 function extractModuleVariables(ast: Node, sourceUri: string, prefixMap: Map<string, string>): VariableSymbol[] {
 	const results: VariableSymbol[] = [];
 	for (const varDecl of findAll(ast, "VarDecl")) {
-		const varName = directChildOf(varDecl, "VarName");
-		const name = varName ? firstTerminalValue(varName) : null;
+		const name = varNameFromNode(varDecl);
 		if (!name) continue;
 		results.push({
 			qname: makeVarQName(name, prefixMap),
@@ -255,8 +314,7 @@ function extractModuleVariables(ast: Node, sourceUri: string, prefixMap: Map<str
 function extractLocalBindings(ast: Node, sourceUri: string, prefixMap: Map<string, string>): VariableSymbol[] {
 	const results: VariableSymbol[] = [];
 	for (const binding of [...findAll(ast, "LetBinding"), ...findAll(ast, "ForBinding")]) {
-		const varName = directChildOf(binding, "VarName");
-		const name = varName ? firstTerminalValue(varName) : null;
+		const name = varNameFromNode(binding);
 		if (!name) continue;
 		results.push({
 			qname: makeVarQName(name, prefixMap),
@@ -427,25 +485,29 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 
 export function analyze(text: string, sourceUri: string): FileAnalysis {
 	try {
+		const { ast, comments } = XQuery4Full(text);
+		return analyzeAst(ast, comments, text, sourceUri);
+	} catch { /* fall through */ }
+	try {
 		const { ast, comments } = XQuery31Full(text);
 		return analyzeAst(ast, comments, text, sourceUri);
-	} catch {
-		return analyzeRegex(text, sourceUri);
-	}
+	} catch { /* fall through */ }
+	return analyzeRegex(text, sourceUri);
 }
 
 export function analyzeWithAst(
 	text: string,
 	sourceUri: string,
 ): { analysis: FileAnalysis; ast: Node | null; parseError: Error | null } {
-	try {
-		const { ast, comments } = XQuery31Full(text);
-		return { analysis: analyzeAst(ast, comments, text, sourceUri), ast, parseError: null };
-	} catch (e) {
-		return {
-			analysis: analyzeRegex(text, sourceUri),
-			ast: null,
-			parseError: e instanceof Error ? e : new Error(String(e)),
-		};
+	for (const parse of [XQuery4Full, XQuery31Full]) {
+		try {
+			const { ast, comments } = parse(text);
+			return { analysis: analyzeAst(ast, comments, text, sourceUri), ast, parseError: null };
+		} catch { /* try next */ }
 	}
+	return {
+		analysis: analyzeRegex(text, sourceUri),
+		ast: null,
+		parseError: new Error("parse failed"),
+	};
 }
