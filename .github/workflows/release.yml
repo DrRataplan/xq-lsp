@@ -49,6 +49,31 @@ jobs:
       - run: npm ci
       - run: npm publish --provenance --access public
 
+  bump-vscode-xqlsp:
+    needs: [release-please, publish-npm]
+    if: needs.publish-npm.result == 'success' && needs.release-please.outputs.vscode-released != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Update bundled xq-lsp in vscode extension
+        working-directory: editors/vscode
+        run: npm update xq-lsp
+      - name: Commit lockfile bump if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add editors/vscode/package-lock.json
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(vscode): bump bundled xq-lsp to latest release"
+          git push
+
   publish-vscode:
     needs: release-please
     if: needs.release-please.outputs.vscode-released == 'true'
