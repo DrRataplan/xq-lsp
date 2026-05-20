@@ -3,13 +3,14 @@ import assert from "node:assert/strict";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { analyze, analyzeWithAst } from "./analyzer.ts";
 import { getCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getBuiltins } from "./builtins.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import { formatQName } from "./types.ts";
+import { getRuntimeAnalyses } from "./runtimes.ts";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { findUndeclaredPrefixUsages, findImportInsertPosition, findDeclareNsInsertPosition } from "./namespace-diagnostics.ts";
 
@@ -612,6 +613,42 @@ util:trim("x")`;
 			assert.equal(result.config.generateLocationHints, false);
 		});
 	});
+
+	test("findConfig: parses single lib string", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "lsp-config.xq"),
+				`map { "lib": "basex" }`,
+			);
+			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
+			const result = findConfig(fileUri);
+			assert.ok(result);
+			assert.deepEqual(result.config.lib, ["basex"]);
+		});
+	});
+
+	test("findConfig: parses multiple lib values as a sequence", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "lsp-config.xq"),
+				`map { "lib": ("basex", "saxonhe") }`,
+			);
+			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
+			const result = findConfig(fileUri);
+			assert.ok(result);
+			assert.deepEqual(result.config.lib, ["basex", "saxonhe"]);
+		});
+	});
+
+	test("findConfig: lib defaults to empty when key absent", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(path.join(dir, "lsp-config.xq"), `map { "glob": "**/*.xq" }`);
+			const fileUri = pathToFileURL(path.join(dir, "main.xq")).toString();
+			const result = findConfig(fileUri);
+			assert.ok(result);
+			assert.deepEqual(result.config.lib, []);
+		});
+	});
 });
 
 // ── namespace diagnostics ─────────────────────────────────────────────────────
@@ -725,6 +762,73 @@ describe("insert positions", () => {
 	test("findDeclareNsInsertPosition: skips xquery version decl", () => {
 		const text = `xquery version "3.1";\ndeclare function local:f() { 1 };`;
 		assert.deepEqual(findDeclareNsInsertPosition(text), { line: 1, character: 0 });
+	});
+});
+
+// ── runtime defs ──────────────────────────────────────────────────────────────
+
+describe("runtime defs", () => {
+	const runtimesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "runtimes");
+
+	test("fonto.xq: fonto:selection-common-ancestor appears in analysis", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "fonto.xq"), "utf-8");
+		const analysis = analyze(text, "builtin:fonto");
+		const names = analysis.functions.map((f) => formatQName(f.qname));
+		assert.ok(names.includes("fonto:selection-common-ancestor"), `expected fonto:selection-common-ancestor, got ${names}`);
+	});
+
+	test("fonto.xq: fonto:dita-class has arity 2", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "fonto.xq"), "utf-8");
+		const analysis = analyze(text, "builtin:fonto");
+		const fn = analysis.functions.find((f) => formatQName(f.qname) === "fonto:dita-class");
+		assert.ok(fn, "fonto:dita-class not found");
+		assert.equal(fn.arity, 2);
+	});
+
+	test("fonto.xq: functions have @see doc links", () => {
+		const text = fs.readFileSync(path.join(runtimesDir, "fonto.xq"), "utf-8");
+		assert.ok(text.includes("@see https://documentation.fontoxml.com"), "expected @see links in fonto.xq");
+	});
+
+	test("completion: fonto functions appear when namespace is imported", () => {
+		const src = `import module namespace fonto="http://www.fontoxml.com/functions";
+fonto:`;
+		const mainAnalysis = analyze(src, "file:///main.xq");
+		const runtimeByNamespace = new Map(
+			getRuntimeAnalyses(["fonto"])
+				.filter((a) => a.moduleNamespaceUri)
+				.map((a) => [a.moduleNamespaceUri!, a]),
+		);
+		const imported = new Map<string, ReturnType<typeof analyze>>();
+		for (const imp of mainAnalysis.imports) {
+			if (!imp.atPath) {
+				const a = runtimeByNamespace.get(imp.namespaceUri);
+				if (a) imported.set(imp.namespaceUri, a);
+			}
+		}
+		const items = getCompletions({ textBeforeCursor: "fonto:", cursorOffset: 6 }, mainAnalysis, imported);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("selection-common-ancestor"), `expected fonto functions, got ${labels}`);
+	});
+
+	test("completion: fonto functions absent without import", () => {
+		const src = `let $x := 1 return $x`;
+		const mainAnalysis = analyze(src, "file:///main.xq");
+		const runtimeByNamespace = new Map(
+			getRuntimeAnalyses(["fonto"])
+				.filter((a) => a.moduleNamespaceUri)
+				.map((a) => [a.moduleNamespaceUri!, a]),
+		);
+		const imported = new Map<string, ReturnType<typeof analyze>>();
+		for (const imp of mainAnalysis.imports) {
+			if (!imp.atPath) {
+				const a = runtimeByNamespace.get(imp.namespaceUri);
+				if (a) imported.set(imp.namespaceUri, a);
+			}
+		}
+		const items = getCompletions({ textBeforeCursor: "fonto:", cursorOffset: 6 }, mainAnalysis, imported);
+		const labels = items.map((i) => i.label);
+		assert.ok(!labels.includes("selection-common-ancestor"), `fonto functions should not appear without import`);
 	});
 });
 

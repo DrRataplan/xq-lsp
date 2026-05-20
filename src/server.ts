@@ -25,6 +25,7 @@ import {
   findDeclareNsInsertPosition,
 } from './namespace-diagnostics.ts';
 import type { NamespaceUsageKind } from './namespace-diagnostics.ts';
+import { getRuntimeAnalyses } from './runtimes.ts';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -95,12 +96,16 @@ function getImportedAnalysis(importUri: string): FileAnalysis | null {
   }
 }
 
-function getGlobAnalyses(currentUri: string): Map<string, FileAnalysis> {
+function getGlobAnalyses(currentUri: string): { byNamespace: Map<string, FileAnalysis>; lib: string[] } {
   const found = findConfig(currentUri);
-  if (!found) return new Map();
+  if (!found) return { byNamespace: new Map(), lib: [] };
 
   const { config, configDir } = found;
-  if (globAnalysesByConfigDir.has(configDir)) return globAnalysesByConfigDir.get(configDir)!;
+  const lib = config.lib;
+
+  if (globAnalysesByConfigDir.has(configDir)) {
+    return { byNamespace: globAnalysesByConfigDir.get(configDir)!, lib };
+  }
 
   const byNamespace = new Map<string, FileAnalysis>();
   for (const filePath of expandGlobs(config.globs, configDir)) {
@@ -109,21 +114,27 @@ function getGlobAnalyses(currentUri: string): Map<string, FileAnalysis> {
     if (imported?.moduleNamespaceUri) byNamespace.set(imported.moduleNamespaceUri, imported);
   }
   globAnalysesByConfigDir.set(configDir, byNamespace);
-  return byNamespace;
+  return { byNamespace, lib };
 }
 
 function resolveImports(currentUri: string, analysis: FileAnalysis): Map<string, FileAnalysis> {
   const result = new Map<string, FileAnalysis>();
   result.set('builtin:fn', getBuiltins());
-  const globAnalyses = getGlobAnalyses(currentUri);
+  const { byNamespace: globAnalyses, lib } = getGlobAnalyses(currentUri);
+  const runtimeByNamespace = new Map<string, FileAnalysis>();
+  for (const runtimeAnalysis of getRuntimeAnalyses(lib)) {
+    if (runtimeAnalysis.moduleNamespaceUri) {
+      runtimeByNamespace.set(runtimeAnalysis.moduleNamespaceUri, runtimeAnalysis);
+    }
+  }
   for (const imp of analysis.imports) {
     if (imp.atPath) {
       const uri = resolveImportUri(currentUri, imp.atPath);
       const imported = getImportedAnalysis(uri);
       if (imported) result.set(imp.atPath, imported);
     } else {
-      // No "at" path: resolve by matching namespace URI against glob-loaded modules
-      const imported = globAnalyses.get(imp.namespaceUri);
+      // No "at" path: resolve by matching namespace URI against glob-loaded modules or runtime defs
+      const imported = globAnalyses.get(imp.namespaceUri) ?? runtimeByNamespace.get(imp.namespaceUri);
       if (imported) result.set(imp.namespaceUri, imported);
     }
   }

@@ -41,6 +41,30 @@ The server indexes all matched files by their declared namespace URI, so imports
 import module namespace util="http://example.com/util";
 ```
 
+### Runtime built-ins
+
+Use the `lib` key to load built-in definitions for a specific runtime:
+
+| Value | Runtime |
+|-------|---------|
+| `"fonto"` | [Fonto XML editor](https://www.fontoxml.com/) — `fonto:*` functions |
+
+```xquery
+map { "glob": "src/**/*.xq", "lib": "fonto" }
+```
+
+Then import the namespace in your XQuery files as usual — the server resolves completions, hover, and go-to-definition against the bundled definitions:
+
+```xquery
+import module namespace fonto="http://www.fontoxml.com/functions";
+```
+
+Multiple libs use an XPath sequence:
+
+```xquery
+map { "glob": "src/**/*.xq", "lib": ("fonto", "other") }
+```
+
 ## Formatting
 
 XQuery formatting is provided by [prettier-plugin-xquery](https://github.com/prettier/prettier-plugin-xquery), bundled directly in the extension. No separate install is required.

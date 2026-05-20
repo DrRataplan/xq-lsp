@@ -8,9 +8,10 @@ export interface LspConfig {
 	globs: string[];
 	/** When false, auto-import code actions omit the `at "path"` location hint. Default: true. */
 	generateLocationHints: boolean;
+	lib: string[];
 }
 
-function parseConfig(text: string): LspConfig {
+function parseConfig(text: string): { globs: string[]; generateLocationHints: boolean } {
 	// Evaluate the config as an XPath 3.1 expression.
 	// The config file should contain a map expression, e.g.:
 	//   map { "glob": "src/**/*.xq" }
@@ -28,6 +29,18 @@ function parseConfig(text: string): LspConfig {
 	}
 }
 
+function parseLib(text: string): string[] {
+	// Evaluate the config and look up the "lib" key.
+	// Can be a single string or a sequence:
+	//   map { "lib": "fonto" }
+	//   map { "lib": ("fonto", "basex") }
+	try {
+		return evaluateXPathToStrings(`(${text.trim()})?lib`, null, null, {});
+	} catch {
+		return [];
+	}
+}
+
 export function findConfig(fromUri: string): { config: LspConfig; configDir: string } | null {
 	let dir: string;
 	try {
@@ -40,7 +53,8 @@ export function findConfig(fromUri: string): { config: LspConfig; configDir: str
 		const configPath = path.join(dir, "lsp-config.xq");
 		try {
 			const text = fs.readFileSync(configPath, "utf-8");
-			return { config: parseConfig(text), configDir: dir };
+			const parsed = parseConfig(text);
+			return { config: { ...parsed, lib: parseLib(text) }, configDir: dir };
 		} catch {
 			/* not found here, try parent */
 		}
