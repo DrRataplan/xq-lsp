@@ -7,6 +7,7 @@ import { analyzeWithAst, resolvePrefix } from "../src/analyzer.ts";
 import { findUndeclaredPrefixUsages } from "../src/namespace-diagnostics.ts";
 import { checkTypes } from "../src/typechecker.ts";
 import { formatQName, type FileAnalysis, type FunctionSymbol } from "../src/types.ts";
+import fontoxpath from "fontoxpath";
 
 const DEFAULT_CODE = `(: xq-lsp playground — errors are annotated inline :)
 for $x in (1, 2, 3)
@@ -33,6 +34,22 @@ function decode(s: string): string {
 function getInitialCode(): string {
   const encoded = new URLSearchParams(location.search).get("code");
   return encoded ? decode(encoded) : DEFAULT_CODE;
+}
+
+function getInitialConfig(): string {
+  const encoded = new URLSearchParams(location.search).get("config");
+  return encoded ? decode(encoded) : "";
+}
+
+function validateConfig(text: string): string | null {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  try {
+    fontoxpath.evaluateXPathToStrings(`(${trimmed})?glob`, null, null, {});
+    return null;
+  } catch (e) {
+    return e instanceof Error ? e.message : String(e);
+  }
 }
 
 function wordAt(text: string, offset: number): { word: string; start: number; end: number } {
@@ -135,6 +152,29 @@ document.getElementById("share-btn")!.addEventListener("click", () => {
   btn.textContent = "Copied!";
   setTimeout(() => (btn.textContent = "Copy link"), 1500);
 });
+
+// ── Config panel ─────────────────────────────────────────────────────────────
+
+const configEl = document.getElementById("config-editor") as HTMLTextAreaElement;
+const configErrorEl = document.getElementById("config-error")!;
+
+configEl.value = getInitialConfig();
+
+function applyConfig() {
+  const err = validateConfig(configEl.value);
+  configEl.classList.toggle("invalid", err !== null);
+  configErrorEl.textContent = err ?? "";
+  const url = new URL(location.href);
+  if (configEl.value.trim()) {
+    url.searchParams.set("config", encode(configEl.value));
+  } else {
+    url.searchParams.delete("config");
+  }
+  history.replaceState(null, "", url);
+}
+
+applyConfig();
+configEl.addEventListener("input", applyConfig);
 
 // Keep TS happy — view is used via side-effects only
 void view;
