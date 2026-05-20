@@ -34,6 +34,12 @@ The server expands the globs, analyzes each matched file, and indexes library mo
 import module namespace util="http://example.com/util";
 ```
 
+Imports written as `import module namespace prefix="uri" at "./other-file.xq"` are followed
+automatically; symbols from imported files are included in completions.
+
+For files with syntax errors (common while editing), the server falls back to regex-based extraction so completions keep working.
+
+
 ### Runtime built-ins
 
 Use the `lib` key to load built-in definitions for a specific runtime:
@@ -60,14 +66,19 @@ map { "glob": "src/**/*.xq", "lib": ("fonto", "other") }
 
 ## Roadmap
 
-- **Completion of keywords** — like `function`, `declare` and `ancestor-or-self`, which saves you some keystrokes
+- **Completion of keywords** — like `function`, `declare` and `ancestor-or-self`, which saves you
+  some keystrokes
 - **Context-depending completion** — which prevent syntactical errors
-- **Treesitter parser** — shoukld improve performance and scalability for huge files
+- **Treesitter parser** — should improve performance and scalability for huge files
 - **XQuery 4** — the parser already supports this. Just make it work
+- **Arity checks** — report when one calls `fn:document('too', 'many', 'arguments')`
+- **Register or discover known prefix/namespace combinations** — if you have the `tei` namespace
+  declared in another file, you might mean that when you type `tei:TEI` in another file
+- **Context items** — doing `declare function xx () { bla };` is an error: there is no context
+  item. Check if there is a context item available when you use the context item expression (`.`) or
+  a step expression.
+- More of the (static) errors in the spec at [The spec at section F Error Conditions](https://www.w3.org/TR/xquery-31/#id-errors), whichever are easy to implement
 
-Imports written as `import module namespace prefix="uri" at "./other-file.xq"` are followed automatically; symbols from imported files are included in completions.
-
-For files with syntax errors (common while editing), the server falls back to regex-based extraction so completions keep working.
 
 ## Emacs
 
