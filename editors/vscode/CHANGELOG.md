@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/DrRataplan/xq-lsp/compare/vscode-v0.1.1...vscode-v0.2.0) (2026-05-20)
+
+
+### Features
+
+* add Fonto runtime definitions ([#5](https://github.com/DrRataplan/xq-lsp/issues/5)) ([e0af427](https://github.com/DrRataplan/xq-lsp/commit/e0af427641e4cb64374d7befcaa13c19c33dba6f))
+* **vscode:** bundle prettier-plugin-xquery for built-in XQuery formatting ([#11](https://github.com/DrRataplan/xq-lsp/issues/11)) ([2863876](https://github.com/DrRataplan/xq-lsp/commit/28638762443135b117766a8dce40207e91efca10))
+
 ## [0.1.1](https://github.com/DrRataplan/xq-lsp/compare/vscode-v0.1.0...vscode-v0.1.1) (2026-05-19)
 
 ### Bug Fixes
