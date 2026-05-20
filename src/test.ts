@@ -708,17 +708,23 @@ declare function mymod:doThing() { 1 };`);
 // ── findImportInsertPosition / findDeclareNsInsertPosition ────────────────────
 
 describe("insert positions", () => {
-	test("findImportInsertPosition: always returns line 0", () => {
-		const text = `import module namespace a="http://a.com" at "./a.xq";
-import module namespace b="http://b.com" at "./b.xq";
-declare function local:main() { b:fn() };`;
-		assert.deepEqual(findImportInsertPosition(text), { line: 0, character: 0 });
+	test("findImportInsertPosition: line 0 when no version/module decl", () => {
+		assert.deepEqual(findImportInsertPosition(`import module namespace a="http://a.com" at "./a.xq"; a:f()`), { line: 0, character: 0 });
 	});
 
-	test("findDeclareNsInsertPosition: always returns line 0", () => {
-		const text = `import module namespace a="http://a.com" at "./a.xq";
-declare function local:main() { 1 };`;
-		assert.deepEqual(findDeclareNsInsertPosition(text), { line: 0, character: 0 });
+	test("findImportInsertPosition: skips xquery version decl", () => {
+		const text = `xquery version "3.1";\nimport module namespace a="http://a.com" at "./a.xq";\na:f()`;
+		assert.deepEqual(findImportInsertPosition(text), { line: 1, character: 0 });
+	});
+
+	test("findImportInsertPosition: skips module namespace decl in library module", () => {
+		const text = `module namespace m="http://m.com";\ndeclare function m:f() { 1 };`;
+		assert.deepEqual(findImportInsertPosition(text), { line: 1, character: 0 });
+	});
+
+	test("findDeclareNsInsertPosition: skips xquery version decl", () => {
+		const text = `xquery version "3.1";\ndeclare function local:f() { 1 };`;
+		assert.deepEqual(findDeclareNsInsertPosition(text), { line: 1, character: 0 });
 	});
 });
 

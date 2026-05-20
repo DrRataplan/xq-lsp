@@ -78,12 +78,29 @@ export function findUndeclaredPrefixUsages(
 
 // ── Insertion-position helpers (used by the code action handler) ─────────────
 
+/**
+ * Find the first line in the prolog that is safe to insert a new statement
+ * before — i.e. after any leading VersionDecl and ModuleDecl, which the
+ * grammar requires to come first.  Everything else can be reordered by
+ * xquery-prettier.
+ */
+function firstPrologLine(text: string): number {
+	const lines = text.split('\n');
+	for (let i = 0; i < lines.length; i++) {
+		const t = lines[i].trim();
+		if (/^xquery\b/.test(t) || /^module\s+namespace\b/.test(t)) continue;
+		if (t === '' || t.startsWith('(:')) continue; // leading whitespace / comments
+		return i;
+	}
+	return 0;
+}
+
 /** Position at which to insert a new `import module namespace` statement. */
-export function findImportInsertPosition(_text: string): { line: number; character: number } {
-	return { line: 0, character: 0 };
+export function findImportInsertPosition(text: string): { line: number; character: number } {
+	return { line: firstPrologLine(text), character: 0 };
 }
 
 /** Position at which to insert a new `declare namespace` statement. */
-export function findDeclareNsInsertPosition(_text: string): { line: number; character: number } {
-	return { line: 0, character: 0 };
+export function findDeclareNsInsertPosition(text: string): { line: number; character: number } {
+	return { line: firstPrologLine(text), character: 0 };
 }
