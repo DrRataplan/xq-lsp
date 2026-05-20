@@ -3,7 +3,11 @@ import { hoverTooltip } from "@codemirror/view";
 import { StreamLanguage } from "@codemirror/language";
 import { xQuery } from "@codemirror/legacy-modes/mode/xquery";
 import { linter, lintGutter, type Diagnostic } from "@codemirror/lint";
-import { analyzeWithAst, resolvePrefix } from "../src/analyzer.ts";
+import { analyzeWithAst, analyze, resolvePrefix, XMLNS_FN } from "../src/analyzer.ts";
+import builtinsFn from "../builtins/builtins-fn.xq?raw";
+import builtinsMath from "../builtins/builtins-math.xq?raw";
+import builtinsMap from "../builtins/builtins-map.xq?raw";
+import builtinsArray from "../builtins/builtins-array.xq?raw";
 import { findUndeclaredPrefixUsages } from "../src/namespace-diagnostics.ts";
 import { checkTypes } from "../src/typechecker.ts";
 import { formatQName, type FileAnalysis, type FunctionSymbol } from "../src/types.ts";
@@ -52,6 +56,25 @@ function validateConfig(text: string): string | null {
   }
 }
 
+let _builtins: ReturnType<typeof analyze> | null = null;
+function getBuiltins() {
+  if (!_builtins) {
+    const analyses = [builtinsFn, builtinsMath, builtinsMap, builtinsArray].map((src, i) =>
+      analyze(src, `builtin:${i}`),
+    );
+    _builtins = {
+      functions: analyses.flatMap((a) => a.functions),
+      moduleVariables: [],
+      localBindings: [],
+      imports: [],
+      namespaceDecls: [],
+      defaultFunctionNamespace: XMLNS_FN,
+      usedAstPath: false,
+    };
+  }
+  return _builtins;
+}
+
 function wordAt(text: string, offset: number): { word: string; start: number; end: number } {
   let start = offset;
   let end = offset;
@@ -71,7 +94,8 @@ function resolveHoverFn(word: string, analysis: FileAnalysis): FunctionSymbol | 
   const prefix = colonIdx >= 0 ? word.slice(0, colonIdx) : "";
   const localName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
   const uri = resolvePrefix(prefix, analysis);
-  return analysis.functions.find((f) => f.qname.namespaceUri === uri && f.qname.localName === localName);
+  const allFns = [...analysis.functions, ...getBuiltins().functions];
+  return allFns.find((f) => f.qname.namespaceUri === uri && f.qname.localName === localName);
 }
 
 const xqueryHover = hoverTooltip((view, pos) => {
