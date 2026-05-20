@@ -26,7 +26,7 @@ jobs:
             contents: write
             pull-requests: write
         outputs:
-            npm-released: ${{ steps.rp.outputs['.--release_created'] }}
+            npm-released: ${{ steps.rp.outputs['release_created'] }}
             vscode-released: ${{ steps.rp.outputs['editors/vscode--release_created'] }}
         steps:
             - uses: googleapis/release-please-action@v4
@@ -49,6 +49,8 @@ jobs:
                   registry-url: "https://registry.npmjs.org"
             - run: npm ci
             - run: npm publish --provenance --access public
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     bump-vscode-xqlsp:
         needs: [release-please, publish-npm]
