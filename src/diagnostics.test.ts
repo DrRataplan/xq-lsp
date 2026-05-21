@@ -860,17 +860,17 @@ describe("unused-diagnostics", () => {
 		return checkUnused(ast, analysis);
 	}
 
-	test("declared function that is called produces no diagnostic", () => {
+	test("%private function that is called produces no diagnostic", () => {
 		const ds = unusedDiags(`
-declare function local:greet($name) { "Hello " || $name };
+declare %private function local:greet($name) { "Hello " || $name };
 local:greet("World")
 `);
 		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
 	});
 
-	test("declared function never called produces xq-lsp:unused-function diagnostic", () => {
+	test("%private function never called produces xq-lsp:unused-function diagnostic", () => {
 		const ds = unusedDiags(`
-declare function local:unused($x) { $x };
+declare %private function local:unused($x) { $x };
 1
 `);
 		const d = ds.find((d) => d.code === "xq-lsp:unused-function");
@@ -878,12 +878,28 @@ declare function local:unused($x) { $x };
 		assert.ok(d!.message.includes("unused"), `expected 'unused' in message, got: ${d!.message}`);
 	});
 
-	test("function name starting with _ produces no diagnostic even if never called", () => {
+	test("function with no annotation never called produces no diagnostic (public by default)", () => {
 		const ds = unusedDiags(`
-declare function local:_helper($x) { $x };
+declare function local:pub($x) { $x };
 1
 `);
-		assert.equal(ds.length, 0, `expected no diagnostics for _-prefixed function, got ${JSON.stringify(ds)}`);
+		assert.equal(ds.length, 0, `unannotated function should not be flagged, got ${JSON.stringify(ds)}`);
+	});
+
+	test("%public function never called produces no diagnostic", () => {
+		const ds = unusedDiags(`
+declare %public function local:pub($x) { $x };
+1
+`);
+		assert.equal(ds.length, 0, `%public function should not be flagged, got ${JSON.stringify(ds)}`);
+	});
+
+	test("%private function name starting with _ produces no diagnostic even if never called", () => {
+		const ds = unusedDiags(`
+declare %private function local:_helper($x) { $x };
+1
+`);
+		assert.equal(ds.length, 0, `expected no diagnostics for _-prefixed %private function, got ${JSON.stringify(ds)}`);
 	});
 
 	test("module-level variable declared and referenced produces no diagnostic", () => {

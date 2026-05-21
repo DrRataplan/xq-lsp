@@ -1,7 +1,7 @@
 import type { Node } from "xq-parser";
 import type { FileAnalysis } from "./types.ts";
 import { qnameKey } from "./types.ts";
-import { findAll, directChildOf, firstTerminalValue, resolvePrefix } from "./analyzer.ts";
+import { findAll, directChildOf, directChildrenOf, firstTerminalValue, resolvePrefix } from "./analyzer.ts";
 import { asFunctionCall, asVarRef } from "./ast-nodes.ts";
 
 export interface UnusedDiagnostic {
@@ -11,10 +11,25 @@ export interface UnusedDiagnostic {
 	length: number;
 }
 
+/** True when the AnnotatedDecl carries a %private annotation. */
+function isPrivateAnnotated(annotated: Node): boolean {
+	for (const ann of directChildrenOf(annotated, "Annotation")) {
+		const eqname = directChildOf(ann, "EQName");
+		const name = eqname ? firstTerminalValue(eqname) : null;
+		if (!name) continue;
+		const localName = name.includes(":") ? name.slice(name.indexOf(":") + 1) : name;
+		if (localName === "private") return true;
+	}
+	return false;
+}
+
 /**
  * Walk the AST and report declared functions and module-level variables that
  * are never referenced within the file.
  *
+ * For functions, only `%private` declarations are reported — functions without
+ * an explicit visibility annotation (or marked `%public`) may be called by
+ * external modules that import this one.
  * Names starting with `_` are skipped by convention (intentionally unused).
  * Only works when a valid AST is available.
  */
@@ -56,6 +71,10 @@ export function checkUnused(ast: Node, analysis: FileAnalysis): UnusedDiagnostic
 	for (const annotated of findAll(ast, "AnnotatedDecl")) {
 		const decl = directChildOf(annotated, "FunctionDecl");
 		if (!decl) continue;
+
+		// Only %private functions are local to the module; public ones may be
+		// called by other modules that import this one.
+		if (!isPrivateAnnotated(annotated)) continue;
 
 		const eqname = directChildOf(decl, "EQName");
 		if (!eqname) continue;
