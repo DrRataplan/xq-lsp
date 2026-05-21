@@ -83,6 +83,27 @@ export function directChildrenOf(node: Node, type: string): Node[] {
 	return asNonTerminal(node).children.filter((c) => c.type === type);
 }
 
+/**
+ * Walk the AST from root to the deepest node(s) that contain `offset`,
+ * returning the ancestor chain [root, ..., deepest].
+ * Empty nodes (start === end) are skipped so they don't shadow real content.
+ */
+export function nodeStackAtOffset(node: Node, offset: number): Node[] {
+	if (node.start === undefined || node.end === null) return [];
+	if (offset < node.start || offset > node.end) return [];
+	const result: Node[] = [node];
+	if (!isTerminal(node)) {
+		for (const child of asNonTerminal(node).children) {
+			if (child.start === undefined || child.end === null || child.start === child.end) continue;
+			if (child.start <= offset && offset <= child.end) {
+				result.push(...nodeStackAtOffset(child, offset));
+				break;
+			}
+		}
+	}
+	return result;
+}
+
 // ── Doc comment parsing ──────────────────────────────────────────────────────
 
 function parseDocComment(raw: string): DocComment {
@@ -325,6 +346,7 @@ function analyzeAst(ast: Node, comments: Terminal[], text: string, sourceUri: st
 		moduleNamespaceUri: moduleNs?.uri,
 		modulePrefix: moduleNs?.prefix,
 		usedAstPath: true,
+		ast,
 	};
 }
 
