@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.1.0...lsp-v1.1.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* hover now resolves function overload by arity ([#25](https://github.com/DrRataplan/xq-lsp/issues/25)) ([5b82368](https://github.com/DrRataplan/xq-lsp/commit/5b82368503bfaba0b83a649519c9543743d3f0f8))
+* scope-aware type checking for function params and bindings ([#24](https://github.com/DrRataplan/xq-lsp/issues/24)) ([6bfd4e6](https://github.com/DrRataplan/xq-lsp/commit/6bfd4e6ec6c2e2a6e537a93e658e9ade2086c89a))
+
 ## [1.1.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.0.1...lsp-v1.1.0) (2026-05-20)
 
 
