@@ -9,9 +9,17 @@ import type { Hover, SignatureHelp, DocumentSymbol, Range, Position } from "vsco
 import type { TextDocument } from "vscode-languageserver-textdocument";
 import * as fs from "fs";
 import { fileURLToPath } from "url";
+import type { Node } from "xq-parser";
 import type { FileAnalysis, FunctionSymbol } from "./types.ts";
 import { formatQName } from "./types.ts";
-import { resolvePrefix } from "./analyzer.ts";
+import {
+	resolvePrefix,
+	nodeStackAtOffset,
+	directChildOf,
+	directChildrenOf,
+	firstTerminalValue,
+	isTerminal,
+} from "./analyzer.ts";
 
 // ── Shared helpers ───────────────────────────────────────────────────────────
 
@@ -64,6 +72,35 @@ function rangeFromOffset(doc: TextDocument, start: number, end: number): Range {
 	return { start: doc.positionAt(start), end: doc.positionAt(end) };
 }
 
+// ── AST-based call context ───────────────────────────────────────────────────
+
+/**
+ * Walk the node stack at `offset` looking for the innermost FunctionCall that
+ * contains `offset` (either in its name or its argument list).
+ * Returns the function's lexical name, total arity, and active parameter index.
+ */
+function callContextFromAst(
+	ast: Node,
+	offset: number,
+): { name: string; arity: number; activeParam: number } | null {
+	const stack = nodeStackAtOffset(ast, offset);
+	for (let i = stack.length - 1; i >= 0; i--) {
+		if (stack[i].type !== "FunctionCall") continue;
+		const fc = stack[i];
+		const argList = directChildOf(fc, "ArgumentList");
+		if (!argList || isTerminal(argList)) continue;
+		const fnEqName = directChildOf(fc, "FunctionEQName");
+		const name = fnEqName ? firstTerminalValue(fnEqName) : null;
+		if (!name) continue;
+		const args = directChildrenOf(argList, "Argument");
+		const arity = args.length;
+		// Active param = number of args whose span ends at or before the cursor
+		const activeParam = args.filter((a) => a.end !== null && a.end <= offset).length;
+		return { name, arity, activeParam };
+	}
+	return null;
+}
+
 // ── Hover ────────────────────────────────────────────────────────────────────
 
 export function getHover(
@@ -98,10 +135,9 @@ export function getHover(
 		return null;
 	}
 
-	// Check if hovering over a function name
-	let callStart = end;
-	while (callStart < text.length && /\s/.test(text[callStart])) callStart++;
-	const arity = text[callStart] === "(" ? countCallArity(text, callStart + 1) : undefined;
+	// Check if hovering over a function name — use AST for arity when available
+	const ctx = current.ast ? callContextFromAst(current.ast, offset) : null;
+	const arity = ctx?.arity;
 	const fn = resolveFunction(word, current, allFunctions(current, imported), arity);
 	if (fn) {
 		return {
@@ -206,11 +242,26 @@ export function getSignatureHelp(
 	imported: Map<string, FileAnalysis>,
 ): SignatureHelp | null {
 	const text = doc.getText();
-	const call = findEnclosingCall(text, offset);
-	if (!call) return null;
 
-	const arity = countCallArity(text, offset);
-	const fn = resolveFunction(call.name, current, allFunctions(current, imported), arity);
+	let callName: string;
+	let activeParam: number;
+	let arity: number | undefined;
+
+	if (current.ast) {
+		const ctx = callContextFromAst(current.ast, offset);
+		if (!ctx) return null;
+		callName = ctx.name;
+		activeParam = ctx.activeParam;
+		arity = ctx.arity;
+	} else {
+		const call = findEnclosingCall(text, offset);
+		if (!call) return null;
+		callName = call.name;
+		activeParam = call.activeParam;
+		arity = countCallArity(text, offset);
+	}
+
+	const fn = resolveFunction(callName, current, allFunctions(current, imported), arity);
 	if (!fn) return null;
 
 	const sig: SignatureInformation = {
@@ -224,7 +275,7 @@ export function getSignatureHelp(
 	return {
 		signatures: [sig],
 		activeSignature: 0,
-		activeParameter: Math.min(call.activeParam, fn.params.length - 1),
+		activeParameter: Math.min(activeParam, fn.params.length - 1),
 	};
 }
 
