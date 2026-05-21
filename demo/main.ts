@@ -11,7 +11,7 @@ import builtinsArray from "../builtins/builtins-array.xq?raw";
 import { findUndeclaredPrefixUsages } from "../src/namespace-diagnostics.ts";
 import { checkTypes } from "../src/typechecker.ts";
 import { type FileAnalysis } from "../src/types.ts";
-import { resolveFunctionAtOffset, functionSignature } from "../src/features.ts";
+import { resolveFunctionAtOffset, functionSignature } from "../src/hover-core.ts";
 import fontoxpath from "fontoxpath";
 
 const DEFAULT_CODE = `(: xq-lsp playground — errors are annotated inline :)
