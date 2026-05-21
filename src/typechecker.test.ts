@@ -319,6 +319,51 @@ describe("checkTypes", () => {
 		const errors = checkTypes(ast, src, analysis, new Map([["builtin:fn", builtins]]));
 		assert.equal(errors.length, 0, `unexpected errors: ${JSON.stringify(errors)}`);
 	});
+
+	test("no false positive when same variable name appears as param in one function and let-binding in another (issue #21)", () => {
+		// m:baz has $some-random-name as xs:string (param)
+		// m:entry has let $some-random-name := m:foo() (untyped let binding)
+		// m:bar expects $node as element()
+		// The call m:bar($some-random-name) inside m:entry must NOT be flagged,
+		// because the $some-random-name there is from the untyped let binding (unknown type),
+		// not from m:baz's typed param.
+		const src = `
+			module namespace m = 'uri';
+			declare function m:foo() as element()? external;
+			declare function m:baz ($some-random-name as xs:string) as map(*)? external;
+			declare function m:entry ($node as map(*)) as map(*)+ {
+				let $some-random-name := m:foo()
+				let $bar := m:bar($some-random-name)
+				return $bar
+			};
+			declare function m:bar ($node as element()) as map(*) {
+				map{"node": $node}
+			};
+		`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		const errors = checkTypes(ast, src, analysis, new Map());
+		assert.equal(errors.length, 0, `unexpected false-positive errors: ${JSON.stringify(errors)}`);
+	});
+
+	test("param type from one function does not bleed into sibling function scope", () => {
+		// local:a's $x is xs:string — passing it to local:needs-node($x as node()) should error
+		// local:b's $x is node() — passing it to local:needs-node($x as node()) should NOT error
+		const src = `
+			declare function local:needs-node($x as node()) { $x };
+			declare function local:a($x as xs:string) { local:needs-node($x) };
+			declare function local:b($x as node()) { local:needs-node($x) };
+			()
+		`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		const errors = checkTypes(ast, src, analysis, new Map());
+		// local:a passes xs:string to node() — 1 error; local:b passes node() to node() — no error
+		assert.equal(errors.length, 1, `expected exactly 1 error, got: ${JSON.stringify(errors)}`);
+		assert.ok(errors[0].message.includes("needs-node"), errors[0].message);
+	});
 });
 
 // ── formatType ────────────────────────────────────────────────────────────────
