@@ -341,6 +341,17 @@ local:double(5)`;
 		const hover = getHover(doc, 0, analysis, new Map());
 		assert.equal(hover, null);
 	});
+
+	test("hover respects arity when multiple overloads exist", () => {
+		const src = `subsequence((1,2,3),2,3)`;
+		const doc = makeDoc(src);
+		const srcAnalysis = analyze(src, "file:///test.xq");
+		const builtins = getBuiltins();
+		const hover = getHover(doc, src.indexOf("subsequence") + 1, srcAnalysis, new Map([["builtin:fn", builtins]]));
+		assert.ok(hover, "expected hover");
+		const value = typeof hover.contents === "object" && "value" in hover.contents ? hover.contents.value : "";
+		assert.ok(value.includes("$length"), `expected 3-arity overload with $length param, got: ${value}`);
+	});
 });
 
 // ── signature help ────────────────────────────────────────────────────────────

@@ -99,7 +99,10 @@ export function getHover(
 	}
 
 	// Check if hovering over a function name
-	const fn = resolveFunction(word, current, allFunctions(current, imported));
+	let callStart = end;
+	while (callStart < text.length && /\s/.test(text[callStart])) callStart++;
+	const arity = text[callStart] === "(" ? countCallArity(text, callStart + 1) : undefined;
+	const fn = resolveFunction(word, current, allFunctions(current, imported), arity);
 	if (fn) {
 		return {
 			contents: {
