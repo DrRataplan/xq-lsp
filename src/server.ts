@@ -19,6 +19,7 @@ import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getDefinition } from "./definition.ts";
 import type { FileAnalysis, TypeDiagnostic } from "./types.ts";
 import { checkTypes } from "./typechecker.ts";
+import { checkArities } from "./arity-diagnostics.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import {
 	findUndeclaredPrefixUsages,
@@ -26,6 +27,7 @@ import {
 	findDeclareNsInsertPosition,
 } from "./namespace-diagnostics.ts";
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
+import { checkUnused } from "./unused-diagnostics.ts";
 import { getRuntimeAnalyses } from "./runtimes.ts";
 
 const connection = createConnection(ProposedFeatures.all);
@@ -174,7 +176,10 @@ documents.onDidChangeContent((change) => {
 
 	if (hasAst && ast !== null) {
 		const imported = resolveImports(doc.uri, analysis);
-		typeErrorCache.set(doc.uri, checkTypes(ast, doc.getText(), analysis, imported));
+		typeErrorCache.set(doc.uri, [
+			...checkTypes(ast, doc.getText(), analysis, imported),
+			...checkArities(ast, analysis, imported),
+		]);
 	}
 
 	const typeDiags = (typeErrorCache.get(doc.uri) ?? []).map((td) => ({

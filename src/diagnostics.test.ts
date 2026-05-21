@@ -10,6 +10,7 @@ import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getBuiltins } from "./builtins.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import { formatQName } from "./types.ts";
+import type { FileAnalysis } from "./types.ts";
 import { getRuntimeAnalyses } from "./runtimes.ts";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import {
@@ -17,6 +18,7 @@ import {
 	findImportInsertPosition,
 	findDeclareNsInsertPosition,
 } from "./namespace-diagnostics.ts";
+import { checkArities } from "./arity-diagnostics.ts";
 
 // ── analyzer: valid XQuery via AST ──────────────────────────────────────────
 describe("analyze", () => {
@@ -847,5 +849,60 @@ fonto:`;
 		const items = getCompletions({ textBeforeCursor: "fonto:", cursorOffset: 6 }, mainAnalysis, imported);
 		const labels = items.map((i) => i.label);
 		assert.ok(!labels.includes("selection-common-ancestor"), `fonto functions should not appear without import`);
+	});
+});
+
+// ── arity-diagnostics ──────────────────────────────────────────────────────────
+
+describe("arity-diagnostics", () => {
+	const builtins = getBuiltins();
+
+	function arityDiags(src: string, importedAnalyses: Map<string, FileAnalysis> = new Map()) {
+		const { analysis, ast } = analyzeWithAst(src, "file:///main.xq");
+		if (!ast) return [];
+		return checkArities(ast, analysis, importedAnalyses);
+	}
+
+	test("calling a known function with too many args reports XPST0017", () => {
+		const ds = arityDiags(`fn:true("extra")`, new Map([["builtin:fn", builtins]]));
+		const d = ds.find((d) => d.code === "XPST0017");
+		assert.ok(d, `expected XPST0017, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("fn:true"), `expected fn:true in message, got: ${d!.message}`);
+		assert.ok(d!.message.includes("got 1"), `expected "got 1" in message, got: ${d!.message}`);
+	});
+
+	test("calling a known function with correct arity reports no error", () => {
+		const ds = arityDiags(`fn:exists((1,2,3))`, new Map([["builtin:fn", builtins]]));
+		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
+	});
+
+	test("calling fn:subsequence (2 and 3 arg overloads) with 2 args reports no error", () => {
+		const ds = arityDiags(`fn:subsequence((1,2,3), 2)`, new Map([["builtin:fn", builtins]]));
+		assert.equal(ds.length, 0, `expected no diagnostics for subsequence/2, got ${JSON.stringify(ds)}`);
+	});
+
+	test("calling fn:subsequence with 4 args (wrong arity) reports XPST0017", () => {
+		const ds = arityDiags(`fn:subsequence((1,2,3), 2, 1, "extra")`, new Map([["builtin:fn", builtins]]));
+		const d = ds.find((d) => d.code === "XPST0017");
+		assert.ok(d, `expected XPST0017, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("fn:subsequence"), `expected fn:subsequence in message, got: ${d!.message}`);
+		assert.ok(d!.message.includes("got 4"), `expected "got 4" in message, got: ${d!.message}`);
+	});
+
+	test("calling an entirely unknown function reports no error", () => {
+		const ds = arityDiags(`myns:unknownFunc(1, 2, 3)`, new Map([["builtin:fn", builtins]]));
+		assert.equal(ds.length, 0, `unknown function should not be reported, got ${JSON.stringify(ds)}`);
+	});
+
+	test("calling a locally-declared function with wrong arity reports XPST0017", () => {
+		const src = `
+declare function local:add($a, $b) { $a + $b };
+local:add(1, 2, 3)
+`;
+		const ds = arityDiags(src);
+		const d = ds.find((d) => d.code === "XPST0017");
+		assert.ok(d, `expected XPST0017 for local:add(1,2,3), got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("local:add"), `expected local:add in message, got: ${d!.message}`);
+		assert.ok(d!.message.includes("got 3"), `expected "got 3" in message, got: ${d!.message}`);
 	});
 });
