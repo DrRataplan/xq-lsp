@@ -17,6 +17,7 @@ import {
 	findImportInsertPosition,
 	findDeclareNsInsertPosition,
 } from "./namespace-diagnostics.ts";
+import { checkUnused } from "./unused-diagnostics.ts";
 
 // ── analyzer: valid XQuery via AST ──────────────────────────────────────────
 describe("analyze", () => {
@@ -847,5 +848,76 @@ fonto:`;
 		const items = getCompletions({ textBeforeCursor: "fonto:", cursorOffset: 6 }, mainAnalysis, imported);
 		const labels = items.map((i) => i.label);
 		assert.ok(!labels.includes("selection-common-ancestor"), `fonto functions should not appear without import`);
+	});
+});
+
+// ── unused-diagnostics ────────────────────────────────────────────────────────
+
+describe("unused-diagnostics", () => {
+	function unusedDiags(src: string) {
+		const { analysis, ast } = analyzeWithAst(src, "file:///main.xq");
+		if (!ast) return [];
+		return checkUnused(ast, analysis);
+	}
+
+	test("declared function that is called produces no diagnostic", () => {
+		const ds = unusedDiags(`
+declare function local:greet($name) { "Hello " || $name };
+local:greet("World")
+`);
+		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
+	});
+
+	test("declared function never called produces xq-lsp:unused-function diagnostic", () => {
+		const ds = unusedDiags(`
+declare function local:unused($x) { $x };
+1
+`);
+		const d = ds.find((d) => d.code === "xq-lsp:unused-function");
+		assert.ok(d, `expected xq-lsp:unused-function, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("unused"), `expected 'unused' in message, got: ${d!.message}`);
+	});
+
+	test("function name starting with _ produces no diagnostic even if never called", () => {
+		const ds = unusedDiags(`
+declare function local:_helper($x) { $x };
+1
+`);
+		assert.equal(ds.length, 0, `expected no diagnostics for _-prefixed function, got ${JSON.stringify(ds)}`);
+	});
+
+	test("module-level variable declared and referenced produces no diagnostic", () => {
+		const ds = unusedDiags(`
+declare variable $local:count := 42;
+$local:count + 1
+`);
+		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
+	});
+
+	test("module-level variable declared but never referenced produces xq-lsp:unused-variable diagnostic", () => {
+		const ds = unusedDiags(`
+declare variable $local:unused := 42;
+1
+`);
+		const d = ds.find((d) => d.code === "xq-lsp:unused-variable");
+		assert.ok(d, `expected xq-lsp:unused-variable, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("unused"), `expected 'unused' in message, got: ${d!.message}`);
+	});
+
+	test("variable name starting with _ produces no diagnostic even if never referenced", () => {
+		const ds = unusedDiags(`
+declare variable $local:_unused := 42;
+1
+`);
+		assert.equal(ds.length, 0, `expected no diagnostics for _-prefixed variable, got ${JSON.stringify(ds)}`);
+	});
+
+	test("function used via NamedFunctionRef produces no diagnostic", () => {
+		const ds = unusedDiags(`
+declare function local:fn($x) { $x };
+let $ref := local:fn#1
+return $ref(42)
+`);
+		assert.equal(ds.length, 0, `expected no diagnostics when function is referenced via #arity, got ${JSON.stringify(ds)}`);
 	});
 });
