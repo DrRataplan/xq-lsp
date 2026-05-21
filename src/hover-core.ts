@@ -94,3 +94,22 @@ export function resolveFunctionAtOffset(
 	const fn = resolveFunction(word, current, allFunctions(current, imported), ctx?.arity);
 	return fn ? { fn, start, end } : null;
 }
+
+/**
+ * Resolve signature help for the call enclosing `offset`.
+ * Returns the matched function and the index of the active parameter, or null.
+ * Requires a valid AST (returns null on the regex-fallback path).
+ */
+export function resolveSignatureAtOffset(
+	text: string,
+	offset: number,
+	current: FileAnalysis,
+	imported: Map<string, FileAnalysis>,
+): { fn: FunctionSymbol; activeParam: number } | null {
+	if (!current.ast) return null;
+	const ctx = callContextFromAst(current.ast, offset);
+	if (!ctx) return null;
+	const fn = resolveFunction(ctx.name, current, allFunctions(current, imported), ctx.arity);
+	if (!fn) return null;
+	return { fn, activeParam: ctx.activeParam };
+}

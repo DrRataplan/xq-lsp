@@ -1,8 +1,10 @@
 import { EditorView, basicSetup } from "codemirror";
-import { hoverTooltip } from "@codemirror/view";
+import { hoverTooltip, showTooltip } from "@codemirror/view";
+import { StateField } from "@codemirror/state";
 import { StreamLanguage } from "@codemirror/language";
 import { xQuery } from "@codemirror/legacy-modes/mode/xquery";
 import { linter, lintGutter, type Diagnostic } from "@codemirror/lint";
+import { autocompletion, type CompletionContext as CMCompletionContext } from "@codemirror/autocomplete";
 import { analyzeWithAst, analyze, XMLNS_FN } from "../src/analyzer.ts";
 import builtinsFn from "../builtins/builtins-fn.xq?raw";
 import builtinsMath from "../builtins/builtins-math.xq?raw";
@@ -11,7 +13,12 @@ import builtinsArray from "../builtins/builtins-array.xq?raw";
 import { findUndeclaredPrefixUsages } from "../src/namespace-diagnostics.ts";
 import { checkTypes } from "../src/typechecker.ts";
 import { type FileAnalysis } from "../src/types.ts";
-import { resolveFunctionAtOffset, functionSignature } from "../src/hover-core.ts";
+import {
+	resolveFunctionAtOffset,
+	resolveSignatureAtOffset,
+	functionSignature,
+} from "../src/hover-core.ts";
+import { getCompletions } from "../src/completion-core.ts";
 import fontoxpath from "fontoxpath";
 
 const DEFAULT_CODE = `(: xq-lsp playground — errors are annotated inline :)
@@ -76,10 +83,16 @@ function getBuiltins() {
 	return _builtins;
 }
 
+function getImported(analysis: FileAnalysis): Map<string, FileAnalysis> {
+	return new Map([["builtin:fn", getBuiltins()]]);
+}
+
+// ── Hover ────────────────────────────────────────────────────────────────────
+
 const xqueryHover = hoverTooltip((view, pos) => {
 	const text = view.state.doc.toString();
 	const { analysis } = analyzeWithAst(text, "playground.xq");
-	const result = resolveFunctionAtOffset(text, pos, analysis, new Map([["builtin:fn", getBuiltins()]]));
+	const result = resolveFunctionAtOffset(text, pos, analysis, getImported(analysis));
 	if (!result) return null;
 
 	return {
@@ -100,6 +113,86 @@ const xqueryHover = hoverTooltip((view, pos) => {
 		},
 	};
 });
+
+// ── Completions ───────────────────────────────────────────────────────────────
+
+function xqueryCompletions(ctx: CMCompletionContext) {
+	// Only trigger on word characters, $, or :
+	const word = ctx.matchBefore(/[$\w:][:\w-]*/);
+	if (!word && !ctx.explicit) return null;
+
+	const text = ctx.state.doc.toString();
+	const { analysis } = analyzeWithAst(text, "playground.xq");
+	const entries = getCompletions(
+		{ textBeforeCursor: text.slice(0, ctx.pos), cursorOffset: ctx.pos },
+		analysis,
+		getImported(analysis),
+	);
+	if (!entries.length) return null;
+
+	return {
+		from: word?.from ?? ctx.pos,
+		options: entries.map((e) => ({
+			label: e.label,
+			type: e.kind,
+			detail: e.detail,
+			info: e.documentation,
+			apply: e.insertText,
+		})),
+		validFor: /^[$\w:][:\w-]*$/,
+	};
+}
+
+// ── Signature help ────────────────────────────────────────────────────────────
+
+const signatureField = StateField.define({
+	create: () => null,
+	update(_val, tr) {
+		if (!tr.docChanged && !tr.selection) return _val;
+		return null; // cleared; recomputed in provide
+	},
+	provide: (f) =>
+		showTooltip.computeN([f], (state) => {
+			const text = state.doc.toString();
+			const pos = state.selection.main.head;
+			const { analysis } = analyzeWithAst(text, "playground.xq");
+			const sig = resolveSignatureAtOffset(
+				text,
+				pos,
+				analysis,
+				new Map([["builtin:fn", getBuiltins()]]),
+			);
+			if (!sig) return [];
+			const name = sig.fn.qname.prefix
+				? `${sig.fn.qname.prefix}:${sig.fn.qname.localName}`
+				: sig.fn.qname.localName;
+			const params = sig.fn.params
+				.map((p, i) => {
+					const label = `$${p.name}${p.type ? " as " + p.type : ""}`;
+					const span = document.createElement("span");
+					span.textContent = label;
+					if (i === sig.activeParam) span.className = "xq-sig-active";
+					return span.outerHTML;
+				})
+				.join(", ");
+			return [
+				{
+					pos,
+					above: true,
+					strictSide: false,
+					arrow: false,
+					create() {
+						const dom = document.createElement("div");
+						dom.className = "xq-signature";
+						dom.innerHTML = `<code>${name}(${params})</code>`;
+						return { dom };
+					},
+				},
+			];
+		}),
+});
+
+// ── Diagnostics ───────────────────────────────────────────────────────────────
 
 const xqueryLinter = linter((view): Diagnostic[] => {
 	const code = view.state.doc.toString();
@@ -124,6 +217,8 @@ const xqueryLinter = linter((view): Diagnostic[] => {
 	return diagnostics;
 });
 
+// ── Editor ────────────────────────────────────────────────────────────────────
+
 const view = new EditorView({
 	doc: getInitialCode(),
 	extensions: [
@@ -132,6 +227,8 @@ const view = new EditorView({
 		lintGutter(),
 		xqueryLinter,
 		xqueryHover,
+		autocompletion({ override: [xqueryCompletions] }),
+		signatureField,
 		EditorView.updateListener.of((update) => {
 			if (!update.docChanged) return;
 			const url = new URL(location.href);
