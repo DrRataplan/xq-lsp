@@ -37,13 +37,20 @@ export function checkArities(
 		// Unknown function — skip silently
 		if (overloads.length === 0) continue;
 
-		// Check if any overload accepts the given number of arguments
-		const arityMatch = overloads.some((f) => f.arity === call.args.length);
+		// Check if any overload accepts the given number of arguments.
+		// Variadic overloads accept any arg count >= their declared arity.
+		const arityMatch = overloads.some((f) => (f.variadic ? call.args.length >= f.arity : f.arity === call.args.length));
 		if (arityMatch) continue;
 
 		// Build the expected arities description
 		const arities = [...new Set(overloads.map((f) => f.arity))].sort((a, b) => a - b);
-		const expected = arities.length === 1 ? `${arities[0]}` : arities.join(" or ");
+		const isVariadic = overloads.some((f) => f.variadic);
+		const expected =
+			isVariadic
+				? `${arities[0]} or more`
+				: arities.length === 1
+					? `${arities[0]}`
+					: arities.join(" or ");
 
 		const name = formatQName(call.qname);
 		errors.push({

@@ -905,4 +905,21 @@ local:add(1, 2, 3)
 		assert.ok(d!.message.includes("local:add"), `expected local:add in message, got: ${d!.message}`);
 		assert.ok(d!.message.includes("got 3"), `expected "got 3" in message, got: ${d!.message}`);
 	});
+
+	test("fn:concat with 2 args (minimum) reports no error", () => {
+		const ds = arityDiags(`fn:concat("a", "b")`, new Map([["builtin:fn", builtins]]));
+		assert.equal(ds.length, 0, `expected no diagnostics for concat/2, got ${JSON.stringify(ds)}`);
+	});
+
+	test("fn:concat with 5 args (variadic, above minimum) reports no error", () => {
+		const ds = arityDiags(`fn:concat("a", "b", "c", "d", "e")`, new Map([["builtin:fn", builtins]]));
+		assert.equal(ds.length, 0, `expected no diagnostics for variadic concat/5, got ${JSON.stringify(ds)}`);
+	});
+
+	test("fn:concat with 1 arg (below minimum 2) reports XPST0017", () => {
+		const ds = arityDiags(`fn:concat("only-one")`, new Map([["builtin:fn", builtins]]));
+		const d = ds.find((d) => d.code === "XPST0017");
+		assert.ok(d, `expected XPST0017 for concat/1, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("or more"), `expected "or more" in variadic message, got: ${d!.message}`);
+	});
 });
