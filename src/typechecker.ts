@@ -1,7 +1,7 @@
 import type { Node, NonTerminal } from "xq-parser";
 import type { XQueryType, TypeDiagnostic, FileAnalysis, FunctionSymbol } from "./types.ts";
 import { formatQName, qnameKey } from "./types.ts";
-import { findAll, isTerminal } from "./analyzer.ts";
+import { findAll, isTerminal, directChildOf } from "./analyzer.ts";
 import { asFunctionCall, asVarRef, asTypedBinding, literalKind, isPathExpr, argExpr } from "./ast-nodes.ts";
 
 // ── Type constants ───────────────────────────────────────────────────────────
@@ -48,9 +48,9 @@ export function parseType(typeStr: string): XQueryType {
 		return { kind: "node", name, occurrence };
 	}
 
-	if (base.startsWith("map(")) return { kind: "map", occurrence };
-	if (base.startsWith("array(")) return { kind: "array", occurrence };
-	if (base.startsWith("function(")) return { kind: "function", occurrence };
+	if (base.startsWith("map(")) return { kind: "map", name: base, occurrence };
+	if (base.startsWith("array(")) return { kind: "array", name: base, occurrence };
+	if (base.startsWith("function(")) return { kind: "function", name: base, occurrence };
 
 	if (base.includes(":")) return { kind: "atomic", name: base, occurrence };
 
@@ -185,18 +185,6 @@ export function inferExprType(
 	return UNKNOWN;
 }
 
-// ── Variable type context ─────────────────────────────────────────────────────
-
-export function buildVarTypes(ast: Node, text: string, analysis: FileAnalysis): Map<string, XQueryType> {
-	const types = new Map<string, XQueryType>();
-	const nodeTypes = ["LetBinding", "ForBinding", "Param", "VarDecl"];
-	for (const node of nodeTypes.flatMap((t) => findAll(ast, t))) {
-		const binding = asTypedBinding(node, text, analysis);
-		if (binding?.typeStr) types.set(qnameKey(binding.qname), parseType(binding.typeStr));
-	}
-	return types;
-}
-
 // ── Type name formatting ──────────────────────────────────────────────────────
 
 export function formatType(t: XQueryType): string {
@@ -205,6 +193,103 @@ export function formatType(t: XQueryType): string {
 	if (t.kind === "item") return `item()${t.occurrence}`;
 	if (t.kind === "node") return `${t.name ?? "node"}()${t.occurrence}`;
 	return `${t.name ?? t.kind}${t.occurrence}`;
+}
+
+// ── Scope-aware type checking ─────────────────────────────────────────────────
+
+// Collect module-level VarDecl types — visible throughout the whole module.
+function buildModuleVarTypes(ast: Node, text: string, analysis: FileAnalysis): Map<string, XQueryType> {
+	const types = new Map<string, XQueryType>();
+	for (const node of findAll(ast, "VarDecl")) {
+		const binding = asTypedBinding(node, text, analysis);
+		if (binding?.typeStr) types.set(qnameKey(binding.qname), parseType(binding.typeStr));
+	}
+	return types;
+}
+
+// Collect typed param bindings from a ParamList into `scope`.
+function collectParams(paramList: Node | undefined, text: string, analysis: FileAnalysis, scope: Map<string, XQueryType>): void {
+	if (!paramList) return;
+	for (const param of findAll(paramList, "Param")) {
+		const binding = asTypedBinding(param, text, analysis);
+		if (binding?.typeStr) scope.set(qnameKey(binding.qname), parseType(binding.typeStr));
+	}
+}
+
+// Check a single FunctionCall node against the known function signatures.
+function typeCheckCall(
+	callNode: Node,
+	varTypes: Map<string, XQueryType>,
+	analysis: FileAnalysis,
+	allFns: FunctionSymbol[],
+	errors: TypeDiagnostic[],
+): void {
+	const call = asFunctionCall(callNode, analysis);
+	if (!call) return;
+	const fn = allFns.find(
+		(f) =>
+			f.qname.namespaceUri === call.qname.namespaceUri &&
+			f.qname.localName === call.qname.localName &&
+			f.arity === call.args.length,
+	);
+	if (!fn) return;
+	for (let i = 0; i < call.args.length; i++) {
+		const param = fn.params[i];
+		if (!param?.type) continue;
+		const declaredType = parseType(param.type);
+		if (declaredType.kind === "unknown") continue;
+		const expr = argExpr(call.args[i]);
+		if (!expr) continue;
+		const inferredType = inferExprType(expr, varTypes, analysis, allFns);
+		if (inferredType.kind === "unknown") continue;
+		if (!isAssignable(inferredType, declaredType)) {
+			errors.push({
+				message: `Argument ${i + 1} of ${formatQName(call.qname)}: expected ${param.type}, got ${formatType(inferredType)} [XPTY0004]`,
+				code: "XPTY0004",
+				offset: call.args[i].start,
+				length: (call.args[i].end ?? call.args[i].start + 1) - call.args[i].start,
+			});
+		}
+	}
+}
+
+// Walk `node` checking function calls with `scopeTypes` as the variable context.
+// `moduleTypes` is passed separately so InlineFunctionExpr can start a fresh isolated scope.
+// LetBinding/ForBinding nodes extend `scopeTypes` in place as the walk proceeds.
+// InlineFunctionExpr nodes receive a new isolated scope (their own params + module vars).
+function walkScope(
+	node: Node,
+	scopeTypes: Map<string, XQueryType>,
+	moduleTypes: Map<string, XQueryType>,
+	text: string,
+	analysis: FileAnalysis,
+	allFns: FunctionSymbol[],
+	errors: TypeDiagnostic[],
+): void {
+	if (isTerminal(node)) return;
+	const nt = node as NonTerminal;
+
+	if (node.type === "InlineFunctionExpr") {
+		// New isolated scope: module vars + this inline function's own params.
+		const innerScope = new Map(moduleTypes);
+		collectParams(directChildOf(node, "ParamList"), text, analysis, innerScope);
+		const body = directChildOf(node, "FunctionBody");
+		if (body) walkScope(body, innerScope, moduleTypes, text, analysis, allFns, errors);
+		return;
+	}
+
+	if (node.type === "LetBinding" || node.type === "ForBinding") {
+		const binding = asTypedBinding(node, text, analysis);
+		if (binding?.typeStr) scopeTypes.set(qnameKey(binding.qname), parseType(binding.typeStr));
+	}
+
+	if (node.type === "FunctionCall") {
+		typeCheckCall(node, scopeTypes, analysis, allFns, errors);
+	}
+
+	for (const child of nt.children) {
+		walkScope(child, scopeTypes, moduleTypes, text, analysis, allFns, errors);
+	}
 }
 
 // ── Main entry point ─────────────────────────────────────────────────────────
@@ -217,39 +302,23 @@ export function checkTypes(
 ): TypeDiagnostic[] {
 	const errors: TypeDiagnostic[] = [];
 	const allFns = allFunctionsFlat(analysis, importedAnalyses);
-	const varTypes = buildVarTypes(ast, text, analysis);
+	const moduleTypes = buildModuleVarTypes(ast, text, analysis);
 
-	for (const callNode of findAll(ast, "FunctionCall")) {
-		const call = asFunctionCall(callNode, analysis);
-		if (!call) continue;
-		const fn = allFns.find(
-			(f) =>
-				f.qname.namespaceUri === call.qname.namespaceUri &&
-				f.qname.localName === call.qname.localName &&
-				f.arity === call.args.length,
-		);
-		if (!fn) continue;
+	// Each named function declaration gets its own isolated scope (params + module vars).
+	for (const annotated of findAll(ast, "AnnotatedDecl")) {
+		const decl = directChildOf(annotated, "FunctionDecl");
+		if (!decl) continue;
+		const body = directChildOf(decl, "FunctionBody");
+		if (!body) continue; // external function — nothing to check
 
-		for (let i = 0; i < call.args.length; i++) {
-			const param = fn.params[i];
-			if (!param?.type) continue;
-			const declaredType = parseType(param.type);
-			if (declaredType.kind === "unknown") continue;
+		const scopeTypes = new Map(moduleTypes);
+		collectParams(directChildOf(decl, "ParamList"), text, analysis, scopeTypes);
+		walkScope(body, scopeTypes, moduleTypes, text, analysis, allFns, errors);
+	}
 
-			const expr = argExpr(call.args[i]);
-			if (!expr) continue;
-			const inferredType = inferExprType(expr, varTypes, analysis, allFns);
-			if (inferredType.kind === "unknown") continue;
-
-			if (!isAssignable(inferredType, declaredType)) {
-				errors.push({
-					message: `Argument ${i + 1} of ${formatQName(call.qname)}: expected ${param.type}, got ${formatType(inferredType)} [XPTY0004]`,
-					code: "XPTY0004",
-					offset: call.args[i].start,
-					length: (call.args[i].end ?? call.args[i].start + 1) - call.args[i].start,
-				});
-			}
-		}
+	// Top-level query body (present in main modules, absent in library modules).
+	for (const queryBody of findAll(ast, "QueryBody")) {
+		walkScope(queryBody, new Map(moduleTypes), moduleTypes, text, analysis, allFns, errors);
 	}
 
 	return errors;
