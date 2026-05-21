@@ -3,14 +3,15 @@ import { hoverTooltip } from "@codemirror/view";
 import { StreamLanguage } from "@codemirror/language";
 import { xQuery } from "@codemirror/legacy-modes/mode/xquery";
 import { linter, lintGutter, type Diagnostic } from "@codemirror/lint";
-import { analyzeWithAst, analyze, resolvePrefix, XMLNS_FN } from "../src/analyzer.ts";
+import { analyzeWithAst, analyze, XMLNS_FN } from "../src/analyzer.ts";
 import builtinsFn from "../builtins/builtins-fn.xq?raw";
 import builtinsMath from "../builtins/builtins-math.xq?raw";
 import builtinsMap from "../builtins/builtins-map.xq?raw";
 import builtinsArray from "../builtins/builtins-array.xq?raw";
 import { findUndeclaredPrefixUsages } from "../src/namespace-diagnostics.ts";
 import { checkTypes } from "../src/typechecker.ts";
-import { formatQName, type FileAnalysis, type FunctionSymbol } from "../src/types.ts";
+import { type FileAnalysis } from "../src/types.ts";
+import { resolveFunctionAtOffset, functionSignature } from "../src/features.ts";
 import fontoxpath from "fontoxpath";
 
 const DEFAULT_CODE = `(: xq-lsp playground — errors are annotated inline :)
@@ -75,53 +76,24 @@ function getBuiltins() {
 	return _builtins;
 }
 
-function wordAt(text: string, offset: number): { word: string; start: number; end: number } {
-	let start = offset;
-	let end = offset;
-	while (start > 0 && /[\w:\-]/.test(text[start - 1])) start--;
-	while (end < text.length && /[\w:\-]/.test(text[end])) end++;
-	return { word: text.slice(start, end), start, end };
-}
-
-function functionSignature(fn: FunctionSymbol): string {
-	const params = fn.params.map((p) => `$${p.name}${p.type ? " as " + p.type : ""}`).join(", ");
-	const ret = fn.returnType ? ` as ${fn.returnType}` : "";
-	return `declare function ${formatQName(fn.qname)}(${params})${ret}`;
-}
-
-function resolveHoverFn(word: string, analysis: FileAnalysis): FunctionSymbol | undefined {
-	const colonIdx = word.indexOf(":");
-	const prefix = colonIdx >= 0 ? word.slice(0, colonIdx) : "";
-	const localName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
-	const uri = resolvePrefix(prefix, analysis);
-	const allFns = [...analysis.functions, ...getBuiltins().functions];
-	return allFns.find((f) => f.qname.namespaceUri === uri && f.qname.localName === localName);
-}
-
 const xqueryHover = hoverTooltip((view, pos) => {
 	const text = view.state.doc.toString();
-	const { word, start, end } = wordAt(text, pos);
-	if (!word) return null;
-	if (start > 0 && text[start - 1] === "$") return null;
-
-	const { analysis, parseError } = analyzeWithAst(text, "playground.xq");
-	if (parseError) return null;
-
-	const fn = resolveHoverFn(word, analysis);
-	if (!fn) return null;
+	const { analysis } = analyzeWithAst(text, "playground.xq");
+	const result = resolveFunctionAtOffset(text, pos, analysis, new Map([["builtin:fn", getBuiltins()]]));
+	if (!result) return null;
 
 	return {
-		pos: start,
-		end,
+		pos: result.start,
+		end: result.end,
 		create() {
 			const dom = document.createElement("div");
 			dom.className = "xq-hover";
 			const sig = document.createElement("code");
-			sig.textContent = functionSignature(fn);
+			sig.textContent = functionSignature(result.fn);
 			dom.appendChild(sig);
-			if (fn.doc?.description) {
+			if (result.fn.doc?.description) {
 				const desc = document.createElement("p");
-				desc.textContent = fn.doc.description;
+				desc.textContent = result.fn.doc.description;
 				dom.appendChild(desc);
 			}
 			return { dom };

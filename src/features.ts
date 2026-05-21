@@ -2,13 +2,10 @@ import {
 	SignatureInformation,
 	ParameterInformation,
 	SymbolKind,
-	Location,
 	MarkupKind,
 } from "vscode-languageserver/node.js";
-import type { Hover, SignatureHelp, DocumentSymbol, Range, Position } from "vscode-languageserver/node.js";
+import type { Hover, SignatureHelp, DocumentSymbol, Range } from "vscode-languageserver/node.js";
 import type { TextDocument } from "vscode-languageserver-textdocument";
-import * as fs from "fs";
-import { fileURLToPath } from "url";
 import type { Node } from "xq-parser";
 import type { FileAnalysis, FunctionSymbol } from "./types.ts";
 import { formatQName } from "./types.ts";
@@ -50,7 +47,7 @@ function wordAt(text: string, offset: number): { word: string; start: number; en
 	return { word: text.slice(start, end), start, end };
 }
 
-function functionSignature(fn: FunctionSymbol): string {
+export function functionSignature(fn: FunctionSymbol): string {
 	const params = fn.params.map((p) => `$${p.name}${p.type ? " as " + p.type : ""}`).join(", ");
 	const ret = fn.returnType ? ` as ${fn.returnType}` : "";
 	return `declare function ${formatQName(fn.qname)}(${params})${ret}`;
@@ -60,12 +57,6 @@ function allFunctions(current: FileAnalysis, imported: Map<string, FileAnalysis>
 	const fns = [...current.functions];
 	for (const a of imported.values()) fns.push(...a.functions);
 	return fns;
-}
-
-function positionInText(text: string, offset: number): Position {
-	const before = text.slice(0, offset);
-	const lines = before.split("\n");
-	return { line: lines.length - 1, character: lines[lines.length - 1].length };
 }
 
 function rangeFromOffset(doc: TextDocument, start: number, end: number): Range {
@@ -103,6 +94,24 @@ function callContextFromAst(
 
 // ── Hover ────────────────────────────────────────────────────────────────────
 
+/**
+ * Resolve the function being hovered at `offset` in `text`.
+ * Returns the matched symbol and its word span, or null.
+ * Usable without LSP types — shared with the playground.
+ */
+export function resolveFunctionAtOffset(
+	text: string,
+	offset: number,
+	current: FileAnalysis,
+	imported: Map<string, FileAnalysis>,
+): { fn: FunctionSymbol; start: number; end: number } | null {
+	const { word, start, end } = wordAt(text, offset);
+	if (!word || (start > 0 && text[start - 1] === "$")) return null;
+	const ctx = current.ast ? callContextFromAst(current.ast, offset) : null;
+	const fn = resolveFunction(word, current, allFunctions(current, imported), ctx?.arity);
+	return fn ? { fn, start, end } : null;
+}
+
 export function getHover(
 	doc: TextDocument,
 	offset: number,
@@ -135,17 +144,14 @@ export function getHover(
 		return null;
 	}
 
-	// Check if hovering over a function name — use AST for arity when available
-	const ctx = current.ast ? callContextFromAst(current.ast, offset) : null;
-	const arity = ctx?.arity;
-	const fn = resolveFunction(word, current, allFunctions(current, imported), arity);
-	if (fn) {
+	const result = resolveFunctionAtOffset(text, offset, current, imported);
+	if (result) {
 		return {
 			contents: {
 				kind: MarkupKind.Markdown,
-				value: "```xquery\n" + functionSignature(fn) + "\n```",
+				value: "```xquery\n" + functionSignature(result.fn) + "\n```",
 			},
-			range: rangeFromOffset(doc, start, end),
+			range: rangeFromOffset(doc, result.start, result.end),
 		};
 	}
 
@@ -310,70 +316,3 @@ export function getDocumentSymbols(doc: TextDocument, current: FileAnalysis): Do
 	return symbols;
 }
 
-// ── Go to definition ─────────────────────────────────────────────────────────
-
-export function getDefinition(
-	doc: TextDocument,
-	offset: number,
-	current: FileAnalysis,
-	imported: Map<string, FileAnalysis>,
-	resolveUri: (atPath: string) => string,
-): Location | null {
-	const text = doc.getText();
-	const { word, start } = wordAt(text, offset);
-	if (!word) return null;
-
-	const hasDollar = start > 0 && text[start - 1] === "$";
-
-	if (hasDollar) {
-		const colonIdx = word.indexOf(":");
-		const varPrefix = colonIdx >= 0 ? word.slice(0, colonIdx) : "";
-		const varLocalName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
-		const varNsUri = varPrefix ? resolvePrefix(varPrefix, current) : "";
-		const allVars = [...current.moduleVariables, ...current.localBindings];
-		const v = allVars.find((v) => v.qname.namespaceUri === varNsUri && v.qname.localName === varLocalName);
-		if (!v) return null;
-		const pos = doc.positionAt(v.offset);
-		return Location.create(doc.uri, { start: pos, end: pos });
-	}
-
-	// Function definition — resolve by namespace URI, search current file then all imports
-	const colonIdx = word.indexOf(":");
-	const wordPrefix = colonIdx >= 0 ? word.slice(0, colonIdx) : "";
-	const wordLocalName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
-	const targetUri = resolvePrefix(wordPrefix, current);
-
-	const localFn = current.functions.find(
-		(f) => f.qname.namespaceUri === targetUri && f.qname.localName === wordLocalName,
-	);
-	if (localFn) {
-		const pos = doc.positionAt(localFn.sourceOffset ?? 0);
-		return Location.create(doc.uri, { start: pos, end: pos });
-	}
-
-	// Search imported files: find which import contains the function, then navigate there
-	for (const imp of current.imports) {
-		const key = imp.atPath ?? imp.namespaceUri;
-		const analysis = imported.get(key);
-		if (!analysis) continue;
-		const fn = analysis.functions.find(
-			(f) => f.qname.namespaceUri === targetUri && f.qname.localName === wordLocalName,
-		);
-		if (!fn) continue;
-		// Prefer resolving via atPath; fall back to the sourceUri recorded on the symbol
-		const uri = imp.atPath ? resolveUri(imp.atPath) : fn.sourceUri;
-		let pos: Position = { line: 0, character: 0 };
-		if (fn.sourceOffset !== undefined) {
-			try {
-				const filePath = fileURLToPath(uri);
-				const srcText = fs.readFileSync(filePath, "utf-8");
-				pos = positionInText(srcText, fn.sourceOffset);
-			} catch {
-				/* file not readable, use line 0 */
-			}
-		}
-		return Location.create(uri, { start: pos, end: pos });
-	}
-
-	return null;
-}
