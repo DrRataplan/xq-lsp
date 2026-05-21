@@ -380,4 +380,20 @@ describe("formatType", () => {
 	test("item() formats correctly", () => {
 		assert.equal(formatType({ kind: "item", occurrence: "*" }), "item()*");
 	});
+
+	test("map(*) formats with parentheses and content", () => {
+		assert.equal(formatType(parseType("map(*)")), "map(*)");
+	});
+
+	test("map(*)? retains occurrence", () => {
+		assert.equal(formatType(parseType("map(*)?")), "map(*)?");
+	});
+
+	test("array(*) formats with parentheses", () => {
+		assert.equal(formatType(parseType("array(*)")), "array(*)");
+	});
+
+	test("function(*) formats with parentheses", () => {
+		assert.equal(formatType(parseType("function(*)")), "function(*)");
+	});
 });

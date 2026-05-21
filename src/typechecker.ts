@@ -48,9 +48,9 @@ export function parseType(typeStr: string): XQueryType {
 		return { kind: "node", name, occurrence };
 	}
 
-	if (base.startsWith("map(")) return { kind: "map", occurrence };
-	if (base.startsWith("array(")) return { kind: "array", occurrence };
-	if (base.startsWith("function(")) return { kind: "function", occurrence };
+	if (base.startsWith("map(")) return { kind: "map", name: base, occurrence };
+	if (base.startsWith("array(")) return { kind: "array", name: base, occurrence };
+	if (base.startsWith("function(")) return { kind: "function", name: base, occurrence };
 
 	if (base.includes(":")) return { kind: "atomic", name: base, occurrence };
 
