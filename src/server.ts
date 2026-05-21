@@ -189,7 +189,8 @@ documents.onDidChangeContent((change) => {
 	}));
 
 	// findUndeclaredPrefixUsages returns [] when ast is null (parse error path).
-	const nsDiagRaw = findUndeclaredPrefixUsages(ast, analysis);
+	const knownPrefixes = findConfig(doc.uri)?.config.prefixes ?? {};
+	const nsDiagRaw = findUndeclaredPrefixUsages(ast, analysis, knownPrefixes);
 	const nsDiags = nsDiagRaw.map((nd) => ({
 		severity: DiagnosticSeverity.Error,
 		range: {
@@ -260,6 +261,7 @@ connection.onCodeAction((params) => {
 	const globAnalyses = getGlobAnalyses(doc.uri);
 	const config = findConfig(doc.uri)?.config;
 	const generateLocationHints = config?.generateLocationHints ?? true;
+	const configPrefixes = config?.prefixes ?? {};
 	const actions: CodeAction[] = [];
 
 	for (const diag of params.context.diagnostics) {
@@ -320,6 +322,27 @@ connection.onCodeAction((params) => {
 					},
 				});
 			}
+		}
+
+		// Config-defined prefix: offer to insert a declare namespace statement.
+		if (Object.prototype.hasOwnProperty.call(configPrefixes, prefix)) {
+			const nsUri = configPrefixes[prefix];
+			const insertPos = findDeclareNsInsertPosition(text);
+			actions.push({
+				title: `Declare namespace ${prefix} = "${nsUri}"`,
+				kind: CodeActionKind.QuickFix,
+				diagnostics: [diag],
+				edit: {
+					changes: {
+						[doc.uri]: [
+							{
+								range: { start: insertPos, end: insertPos },
+								newText: `declare namespace ${prefix} = "${nsUri}";\n`,
+							},
+						],
+					},
+				},
+			});
 		}
 	}
 

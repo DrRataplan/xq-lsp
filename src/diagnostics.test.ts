@@ -849,3 +849,61 @@ fonto:`;
 		assert.ok(!labels.includes("selection-common-ancestor"), `fonto functions should not appear without import`);
 	});
 });
+
+// ── config-prefixes ───────────────────────────────────────────────────────────
+
+describe("config-prefixes", () => {
+	function withTmpDir(fn: (dir: string) => void): void {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xq-lsp-test-"));
+		try {
+			fn(dir);
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
+	}
+
+	test("findConfig: parses prefixes map from config", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "lsp-config.xq"),
+				`map { "prefixes": map { "tei": "http://www.tei-c.org/ns/1.0", "dc": "http://purl.org/dc/elements/1.1/" } }`,
+			);
+			const result = findConfig(pathToFileURL(path.join(dir, "main.xq")).toString());
+			assert.ok(result, "expected config to be found");
+			assert.deepEqual(result.config.prefixes, {
+				tei: "http://www.tei-c.org/ns/1.0",
+				dc: "http://purl.org/dc/elements/1.1/",
+			});
+		});
+	});
+
+	test("findConfig: prefixes defaults to {} when key absent", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(path.join(dir, "lsp-config.xq"), `map { "glob": "**/*.xq" }`);
+			const result = findConfig(pathToFileURL(path.join(dir, "main.xq")).toString());
+			assert.ok(result, "expected config to be found");
+			assert.deepEqual(result.config.prefixes, {});
+		});
+	});
+
+	test("findUndeclaredPrefixUsages: prefix in knownPrefixes produces no diagnostic", () => {
+		const src = `<tei:body/>`;
+		const { analysis, ast } = analyzeWithAst(src, "file:///main.xq");
+		const knownPrefixes = { tei: "http://www.tei-c.org/ns/1.0" };
+		const ds = findUndeclaredPrefixUsages(ast, analysis, knownPrefixes);
+		assert.ok(
+			!ds.some((d) => d.prefix === "tei"),
+			`tei in knownPrefixes should not be reported, got ${JSON.stringify(ds)}`,
+		);
+	});
+
+	test("findUndeclaredPrefixUsages: prefix NOT in knownPrefixes still reports XQST0081", () => {
+		const src = `<other:elem/>`;
+		const { analysis, ast } = analyzeWithAst(src, "file:///main.xq");
+		const knownPrefixes = { tei: "http://www.tei-c.org/ns/1.0" };
+		const ds = findUndeclaredPrefixUsages(ast, analysis, knownPrefixes);
+		const d = ds.find((d) => d.prefix === "other");
+		assert.ok(d, `expected XQST0081 for 'other', got ${JSON.stringify(ds)}`);
+		assert.equal(d!.code, "XQST0081");
+	});
+});

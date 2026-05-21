@@ -18,6 +18,7 @@ function checkQNameNode(
 	kind: NamespaceUsageKind,
 	analysis: FileAnalysis,
 	out: NamespaceDiagnostic[],
+	knownPrefixes?: Record<string, string>,
 ): void {
 	if (!node) return;
 	const name = firstTerminalValue(node);
@@ -27,6 +28,7 @@ function checkQNameNode(
 	const prefix = name.slice(0, colonIdx);
 	const uri = resolvePrefix(prefix, analysis);
 	if (uri.startsWith("urn:xq-lsp:undeclared:")) {
+		if (knownPrefixes && Object.prototype.hasOwnProperty.call(knownPrefixes, prefix)) return;
 		out.push({
 			message: `Namespace prefix '${prefix}' is not declared`,
 			code: "XQST0081",
@@ -43,32 +45,39 @@ function checkQNameNode(
  * declared in `analysis` (via import module namespace, declare namespace,
  * module namespace, or a built-in prefix).
  *
+ * If `knownPrefixes` is provided, prefixes that appear as keys in that map
+ * are suppressed (no diagnostic emitted), since they are known from config.
+ *
  * Returns an empty array when `ast` is null (parse failure).
  */
-export function findUndeclaredPrefixUsages(ast: Node | null, analysis: FileAnalysis): NamespaceDiagnostic[] {
+export function findUndeclaredPrefixUsages(
+	ast: Node | null,
+	analysis: FileAnalysis,
+	knownPrefixes?: Record<string, string>,
+): NamespaceDiagnostic[] {
 	if (!ast) return [];
 	const out: NamespaceDiagnostic[] = [];
 
 	for (const node of findAll(ast, "FunctionCall"))
-		checkQNameNode(directChildOf(node, "FunctionEQName"), "function", analysis, out);
+		checkQNameNode(directChildOf(node, "FunctionEQName"), "function", analysis, out, knownPrefixes);
 
 	for (const node of findAll(ast, "NamedFunctionRef"))
-		checkQNameNode(directChildOf(node, "EQName"), "function", analysis, out);
+		checkQNameNode(directChildOf(node, "EQName"), "function", analysis, out, knownPrefixes);
 
 	for (const node of findAll(ast, "VarRef"))
-		checkQNameNode(directChildOf(node, "VarName"), "variable", analysis, out);
+		checkQNameNode(directChildOf(node, "VarName"), "variable", analysis, out, knownPrefixes);
 
 	// Direct element constructor: <ns:foo ...>
 	for (const node of findAll(ast, "DirElemConstructor"))
-		checkQNameNode(directChildOf(node, "QName"), "element", analysis, out);
+		checkQNameNode(directChildOf(node, "QName"), "element", analysis, out, knownPrefixes);
 
 	// Computed element constructor: element ns:foo { ... }
 	for (const node of findAll(ast, "CompElemConstructor"))
-		checkQNameNode(directChildOf(node, "EQName"), "element", analysis, out);
+		checkQNameNode(directChildOf(node, "EQName"), "element", analysis, out, knownPrefixes);
 
 	// Computed attribute constructor: attribute ns:attr { ... }
 	for (const node of findAll(ast, "CompAttrConstructor"))
-		checkQNameNode(directChildOf(node, "EQName"), "element", analysis, out);
+		checkQNameNode(directChildOf(node, "EQName"), "element", analysis, out, knownPrefixes);
 
 	return out;
 }
