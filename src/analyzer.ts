@@ -118,6 +118,7 @@ function parseDocComment(raw: string): DocComment {
 
 	const params: Record<string, string> = {};
 	let returns: string | undefined;
+	let variadic = false;
 	const descLines: string[] = [];
 	let inDescription = true;
 
@@ -130,12 +131,15 @@ function parseDocComment(raw: string): DocComment {
 		} else if (returnMatch) {
 			inDescription = false;
 			returns = returnMatch[1].trim();
+		} else if (/^@variadic\b/.test(line)) {
+			inDescription = false;
+			variadic = true;
 		} else if (inDescription) {
 			descLines.push(line);
 		}
 	}
 
-	return { description: descLines.join("\n").trim(), params, returns };
+	return { description: descLines.join("\n").trim(), params, returns, variadic: variadic || undefined };
 }
 
 /** Find a doc comment immediately preceding `offset` in raw text (regex fallback path). */
@@ -255,6 +259,7 @@ function extractFunctions(
 		results.push({
 			qname: makeFnQName(name, prefixMap, defaultFnNs),
 			arity: params.length,
+			variadic: doc?.variadic,
 			params,
 			returnType,
 			doc,

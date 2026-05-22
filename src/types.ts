@@ -22,11 +22,13 @@ export interface DocComment {
 	description: string;
 	params: Record<string, string>; // param name (without $) → description
 	returns?: string;
+	variadic?: boolean; // true when @variadic tag is present
 }
 
 export interface FunctionSymbol {
 	qname: QName;
-	arity: number;
+	arity: number; // minimum number of arguments (= declared param count)
+	variadic?: boolean; // accepts any number of args >= arity (e.g. fn:concat)
 	params: ParamInfo[];
 	returnType?: string;
 	doc?: DocComment;

@@ -237,6 +237,7 @@ declare function fn:codepoint-equal($comparand1 as xs:string?, $comparand2 as xs
  : @param $arg1 First string
  : @param $arg2 Second string
  : @return Concatenated string
+ : @variadic
  :)
 declare function fn:concat($arg1 as xs:anyAtomicType?, $arg2 as xs:anyAtomicType?) as xs:string external;
 
