@@ -1,6 +1,6 @@
 import type { Node } from "xq-parser";
 import type { FileAnalysis } from "./types.ts";
-import { qnameKey } from "./types.ts";
+import { qnameKey, formatQName } from "./types.ts";
 import { findAll, directChildOf, firstTerminalValue, resolvePrefix } from "./analyzer.ts";
 import { asFunctionCall, asVarRef, asVarDecl, asFunctionDeclaration } from "./ast-nodes.ts";
 
@@ -73,11 +73,12 @@ export function checkUnused(ast: Node, analysis: FileAnalysis): UnusedDiagnostic
 
 		if (usedFunctions.has(qnameKey(sym.qname))) continue;
 
+		const fnName = formatQName(fn.qname);
 		out.push({
-			message: `Function '${fn.rawName}' is declared but never used`,
+			message: `Function '${fnName}' is declared but never used`,
 			code: "xq-lsp:unused-function",
 			offset: fn.nameNode.start ?? 0,
-			length: fn.rawName.length,
+			length: fnName.length,
 		});
 	}
 
@@ -86,16 +87,17 @@ export function checkUnused(ast: Node, analysis: FileAnalysis): UnusedDiagnostic
 	for (const varDecl of findAll(ast, "VarDecl")) {
 		const decl = asVarDecl(varDecl, analysis);
 		if (!decl) continue;
-		const { qname, nameNode, rawName } = decl;
+		const { qname, nameNode } = decl;
 
 		if (qname.localName.startsWith("_")) continue;
 		if (usedVariables.has(qnameKey(qname))) continue;
 
+		const varName = formatQName(qname);
 		out.push({
-			message: `Variable '$${rawName}' is declared but never used`,
+			message: `Variable '$${varName}' is declared but never used`,
 			code: "xq-lsp:unused-variable",
 			offset: nameNode.start ?? 0,
-			length: rawName.length,
+			length: varName.length,
 		});
 	}
 

@@ -52,11 +52,8 @@ export function asVarRef(node: Node, analysis: FileAnalysis): QName | null {
 
 // ── VarDecl ───────────────────────────────────────────────────────────────────
 
-/** Resolved QName, the name node (for offset/length), and the raw name text for a VarDecl, or null. */
-export function asVarDecl(
-	node: Node,
-	analysis: FileAnalysis,
-): { qname: QName; nameNode: Node; rawName: string } | null {
+/** Resolved QName and the name node (for offset/length) for a VarDecl, or null. */
+export function asVarDecl(node: Node, analysis: FileAnalysis): { qname: QName; nameNode: Node } | null {
 	if (node.type !== "VarDecl") return null;
 	const nameNode = directChildOf(node, "VarName");
 	if (!nameNode) return null;
@@ -66,16 +63,16 @@ export function asVarDecl(
 	const prefix = colonIdx >= 0 ? rawName.slice(0, colonIdx) : "";
 	const localName = colonIdx >= 0 ? rawName.slice(colonIdx + 1) : rawName;
 	const namespaceUri = prefix ? resolvePrefix(prefix, analysis) : "";
-	return { qname: { prefix, localName, namespaceUri }, nameNode, rawName };
+	return { qname: { prefix, localName, namespaceUri }, nameNode };
 }
 
 // ── FunctionDecl (inside AnnotatedDecl) ──────────────────────────────────────
 
-/** Resolved QName, name node, raw name text, and annotation local-names for an AnnotatedDecl, or null. */
+/** Resolved QName, name node, and annotation local-names for an AnnotatedDecl, or null. */
 export function asFunctionDeclaration(
 	node: Node,
 	analysis: FileAnalysis,
-): { qname: QName; nameNode: Node; rawName: string; annotations: string[] } | null {
+): { qname: QName; nameNode: Node; annotations: string[] } | null {
 	if (node.type !== "AnnotatedDecl") return null;
 	const decl = directChildOf(node, "FunctionDecl");
 	if (!decl) return null;
@@ -95,7 +92,7 @@ export function asFunctionDeclaration(
 		const annLocal = name.includes(":") ? name.slice(name.indexOf(":") + 1) : name;
 		annotations.push(annLocal);
 	}
-	return { qname: { prefix, localName, namespaceUri }, nameNode, rawName, annotations };
+	return { qname: { prefix, localName, namespaceUri }, nameNode, annotations };
 }
 
 // ── Literals ──────────────────────────────────────────────────────────────────
