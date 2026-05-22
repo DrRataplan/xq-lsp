@@ -936,4 +936,24 @@ return $ref(42)
 `);
 		assert.equal(ds.length, 0, `expected no diagnostics when function is referenced via #arity, got ${JSON.stringify(ds)}`);
 	});
+
+	test("mutually recursive %private functions produce no diagnostic", () => {
+		const ds = unusedDiags(`
+declare %private function local:even($n) { if ($n = 0) then true() else local:odd($n - 1) };
+declare %private function local:odd($n) { if ($n = 0) then false() else local:even($n - 1) };
+local:even(4)
+`);
+		assert.equal(ds.length, 0, `mutually recursive functions should not be flagged, got ${JSON.stringify(ds)}`);
+	});
+
+	test("mutually recursive %private functions with no external caller produce no diagnostic (cycle not tracked)", () => {
+		// Each function appears as a call-site for the other, so neither is
+		// flagged — detecting closed cycles would require reachability analysis.
+		const ds = unusedDiags(`
+declare %private function local:ping($n) { local:pong($n) };
+declare %private function local:pong($n) { local:ping($n) };
+1
+`);
+		assert.equal(ds.length, 0, `expected no diagnostics (cycle detection not implemented), got ${JSON.stringify(ds)}`);
+	});
 });
