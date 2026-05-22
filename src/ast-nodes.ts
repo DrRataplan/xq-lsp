@@ -34,6 +34,28 @@ export function asFunctionCall(node: Node, analysis: FileAnalysis): FunctionCall
 	return { qname: { prefix, localName, namespaceUri }, args };
 }
 
+// ── NamedFunctionRef ──────────────────────────────────────────────────────────
+
+export interface NamedFunctionRefShape {
+	qname: QName;
+	arity: number;
+}
+
+export function asNamedFunctionRef(node: Node, analysis: FileAnalysis): NamedFunctionRefShape | null {
+	if (node.type !== "NamedFunctionRef") return null;
+	const eqname = directChildOf(node, "EQName");
+	if (!eqname) return null;
+	const name = firstTerminalValue(eqname);
+	if (!name) return null;
+	const colonIdx = name.indexOf(":");
+	const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : "";
+	const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
+	const namespaceUri = resolvePrefix(prefix, analysis);
+	const arityNode = directChildOf(node, "IntegerLiteral");
+	const arity = arityNode ? parseInt(firstTerminalValue(arityNode) ?? "0", 10) : 0;
+	return { qname: { prefix, localName, namespaceUri }, arity };
+}
+
 // ── VarRef ────────────────────────────────────────────────────────────────────
 
 export function asVarRef(node: Node, analysis: FileAnalysis): QName | null {

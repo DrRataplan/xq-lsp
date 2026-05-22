@@ -1,8 +1,8 @@
 import type { Node } from "xq-parser";
 import type { FileAnalysis } from "./types.ts";
 import { qnameKey, formatQName } from "./types.ts";
-import { findAll, directChildOf, firstTerminalValue, resolvePrefix } from "./analyzer.ts";
-import { asFunctionCall, asVarRef, asVarDecl, asFunctionDeclaration } from "./ast-nodes.ts";
+import { findAll } from "./analyzer.ts";
+import { asFunctionCall, asNamedFunctionRef, asVarRef, asVarDecl, asFunctionDeclaration } from "./ast-nodes.ts";
 
 export interface UnusedDiagnostic {
 	message: string;
@@ -35,15 +35,8 @@ export function checkUnused(ast: Node, analysis: FileAnalysis): UnusedDiagnostic
 	}
 
 	for (const node of findAll(ast, "NamedFunctionRef")) {
-		const eqname = directChildOf(node, "EQName");
-		if (!eqname) continue;
-		const name = firstTerminalValue(eqname);
-		if (!name) continue;
-		const colonIdx = name.indexOf(":");
-		const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : "";
-		const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
-		const namespaceUri = resolvePrefix(prefix, analysis);
-		usedFunctions.add(qnameKey({ prefix, localName, namespaceUri }));
+		const ref = asNamedFunctionRef(node, analysis);
+		if (ref) usedFunctions.add(qnameKey(ref.qname));
 	}
 
 	// ── Collect used variable keys ───────────────────────────────────────────
