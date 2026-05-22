@@ -27,6 +27,7 @@ import {
 	findDeclareNsInsertPosition,
 } from "./namespace-diagnostics.ts";
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
+import { checkUnused } from "./unused-diagnostics.ts";
 import { getRuntimeAnalyses } from "./runtimes.ts";
 
 const connection = createConnection(ProposedFeatures.all);
@@ -206,7 +207,20 @@ documents.onDidChangeContent((change) => {
 		data: { prefix: nd.prefix, usageKind: nd.usageKind } as { prefix: string; usageKind: NamespaceUsageKind },
 	}));
 
-	connection.sendDiagnostics({ uri: doc.uri, diagnostics: [...parseDiags, ...typeDiags, ...nsDiags] });
+	// checkUnused only runs when the AST is available.
+	const unusedDiagRaw = hasAst && ast !== null ? checkUnused(ast, analysis) : [];
+	const unusedDiags = unusedDiagRaw.map((ud) => ({
+		severity: DiagnosticSeverity.Hint,
+		range: {
+			start: doc.positionAt(ud.offset),
+			end: doc.positionAt(ud.offset + ud.length),
+		},
+		message: ud.message,
+		code: ud.code,
+		source: "xquery-lsp",
+	}));
+
+	connection.sendDiagnostics({ uri: doc.uri, diagnostics: [...parseDiags, ...typeDiags, ...nsDiags, ...unusedDiags] });
 });
 
 connection.onCompletion((params) => {

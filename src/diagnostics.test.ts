@@ -19,6 +19,7 @@ import {
 	findDeclareNsInsertPosition,
 } from "./namespace-diagnostics.ts";
 import { checkFunctionCalls } from "./functioncall-diagnostics.ts";
+import { checkUnused } from "./unused-diagnostics.ts";
 
 // ── analyzer: valid XQuery via AST ──────────────────────────────────────────
 describe("analyze", () => {
@@ -932,5 +933,207 @@ local:add(1, 2, 3)
 		const d = ds.find((d) => d.code === "XPST0017");
 		assert.ok(d, `expected XPST0017 for concat/1, got ${JSON.stringify(ds)}`);
 		assert.ok(d!.message.includes("or more"), `expected "or more" in variadic message, got: ${d!.message}`);
+	});
+});
+
+// ── unused-diagnostics ────────────────────────────────────────────────────────
+
+describe("unused-diagnostics", () => {
+	function unusedDiags(src: string) {
+		const { analysis, ast } = analyzeWithAst(src, "file:///main.xq");
+		if (!ast) return [];
+		return checkUnused(ast, analysis);
+	}
+
+	test("%private function that is called produces no diagnostic", () => {
+		const ds = unusedDiags(`
+declare %private function local:greet($name) { "Hello " || $name };
+local:greet("World")
+`);
+		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
+	});
+
+	test("%private function never called produces xq-lsp:unused-function diagnostic", () => {
+		const ds = unusedDiags(`
+declare %private function local:unused($x) { $x };
+1
+`);
+		const d = ds.find((d) => d.code === "xq-lsp:unused-function");
+		assert.ok(d, `expected xq-lsp:unused-function, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("unused"), `expected 'unused' in message, got: ${d!.message}`);
+	});
+
+	test("function with no annotation never called produces no diagnostic (public by default)", () => {
+		const ds = unusedDiags(`
+declare function local:pub($x) { $x };
+1
+`);
+		assert.equal(ds.length, 0, `unannotated function should not be flagged, got ${JSON.stringify(ds)}`);
+	});
+
+	test("%public function never called produces no diagnostic", () => {
+		const ds = unusedDiags(`
+declare %public function local:pub($x) { $x };
+1
+`);
+		assert.equal(ds.length, 0, `%public function should not be flagged, got ${JSON.stringify(ds)}`);
+	});
+
+	test("%private function name starting with _ produces no diagnostic even if never called", () => {
+		const ds = unusedDiags(`
+declare %private function local:_helper($x) { $x };
+1
+`);
+		assert.equal(ds.length, 0, `expected no diagnostics for _-prefixed %private function, got ${JSON.stringify(ds)}`);
+	});
+
+	test("unannotated module variable never referenced produces no diagnostic (public by default)", () => {
+		const ds = unusedDiags(`
+declare variable $local:count := 42;
+1
+`);
+		assert.equal(ds.length, 0, `unannotated variable should not be flagged, got ${JSON.stringify(ds)}`);
+	});
+
+	test("%private module variable referenced produces no diagnostic", () => {
+		const ds = unusedDiags(`
+declare %private variable $local:count := 42;
+$local:count + 1
+`);
+		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
+	});
+
+	test("%private module variable never referenced produces xq-lsp:unused-variable diagnostic", () => {
+		const ds = unusedDiags(`
+declare %private variable $local:unused := 42;
+1
+`);
+		const d = ds.find((d) => d.code === "xq-lsp:unused-variable");
+		assert.ok(d, `expected xq-lsp:unused-variable, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("unused"), `expected 'unused' in message, got: ${d!.message}`);
+	});
+
+	test("variable name starting with _ produces no diagnostic even if never referenced", () => {
+		const ds = unusedDiags(`
+declare %private variable $local:_unused := 42;
+1
+`);
+		assert.equal(ds.length, 0, `expected no diagnostics for _-prefixed variable, got ${JSON.stringify(ds)}`);
+	});
+
+	test("local let-binding with same name does not suppress unused diagnostic on module variable", () => {
+		const ds = unusedDiags(`
+declare %private variable $x := 42;
+let $x := "shadow"
+return $x
+`);
+		const d = ds.find((d) => d.code === "xq-lsp:unused-variable");
+		assert.ok(d, `expected module $x to be flagged as unused when shadowed by local let binding`);
+	});
+
+	test("%private function called with correct arity produces no diagnostic", () => {
+		const ds = unusedDiags(`
+declare %private function local:f($x) { $x };
+local:f(42)
+`);
+		assert.equal(ds.length, 0, `expected no diagnostic when called with correct arity, got ${JSON.stringify(ds)}`);
+	});
+
+	test("%private function only called with wrong arity is flagged as unused", () => {
+		const ds = unusedDiags(`
+declare %private function local:f($x) { $x };
+local:f(1, 2)
+`);
+		const d = ds.find((d) => d.code === "xq-lsp:unused-function");
+		assert.ok(d, `expected function to be flagged when only called with wrong arity`);
+	});
+
+	test("overloaded %private functions — only the unused arity is flagged", () => {
+		const ds = unusedDiags(`
+declare %private function local:f($x) { $x };
+declare %private function local:f($x, $y) { $x + $y };
+local:f(42)
+`);
+		assert.equal(ds.length, 1, `expected only the unused overload to be flagged, got ${JSON.stringify(ds)}`);
+		assert.equal(ds[0].code, "xq-lsp:unused-function");
+	});
+
+	test("function used via NamedFunctionRef produces no diagnostic", () => {
+		const ds = unusedDiags(`
+declare function local:fn($x) { $x };
+let $ref := local:fn#1
+return $ref(42)
+`);
+		assert.equal(ds.length, 0, `expected no diagnostics when function is referenced via #arity, got ${JSON.stringify(ds)}`);
+	});
+
+	test("mutually recursive %private functions produce no diagnostic", () => {
+		const ds = unusedDiags(`
+declare %private function local:even($n) { if ($n = 0) then true() else local:odd($n - 1) };
+declare %private function local:odd($n) { if ($n = 0) then false() else local:even($n - 1) };
+local:even(4)
+`);
+		assert.equal(ds.length, 0, `mutually recursive functions should not be flagged, got ${JSON.stringify(ds)}`);
+	});
+
+	test("mutually recursive %private functions with no external caller produce no diagnostic (cycle not tracked)", () => {
+		// Each function appears as a call-site for the other, so neither is
+		// flagged — detecting closed cycles would require reachability analysis.
+		const ds = unusedDiags(`
+declare %private function local:ping($n) { local:pong($n) };
+declare %private function local:pong($n) { local:ping($n) };
+1
+`);
+		assert.equal(ds.length, 0, `expected no diagnostics (cycle detection not implemented), got ${JSON.stringify(ds)}`);
+	});
+
+	// ── FLWOR clause walker coverage ─────────────────────────────────────────────
+
+	test("for-clause with positional var: local $pos does not suppress unused module variable", () => {
+		const ds = unusedDiags(`
+declare %private variable $local:unused := 0;
+for $item at $pos in (1, 2, 3) return $pos
+`);
+		assert.ok(ds.some((d) => d.code === "xq-lsp:unused-variable"), `expected $local:unused to be flagged`);
+	});
+
+	test("count-clause variable is scoped correctly", () => {
+		const ds = unusedDiags(`
+declare %private variable $local:unused := 0;
+for $x in (1, 2) count $i return $i
+`);
+		assert.ok(ds.some((d) => d.code === "xq-lsp:unused-variable"), `expected $local:unused to be flagged`);
+	});
+
+	test("group-by clause with := introduces scoped binding", () => {
+		const ds = unusedDiags(`
+declare %private variable $local:unused := 0;
+for $x in (1, 2) let $y := $x group by $key := $y return $key
+`);
+		assert.ok(ds.some((d) => d.code === "xq-lsp:unused-variable"), `expected $local:unused to be flagged`);
+	});
+
+	test("tumbling window clause variable is scoped correctly", () => {
+		const ds = unusedDiags(`
+declare %private variable $local:unused := 0;
+for tumbling window $w in (1, 2, 3) start when true() return count($w)
+`);
+		assert.ok(ds.some((d) => d.code === "xq-lsp:unused-variable"), `expected $local:unused to be flagged`);
+	});
+
+	test("quantified expression variable is scoped correctly", () => {
+		const ds = unusedDiags(`
+declare %private variable $local:unused := 0;
+some $x in (1, 2, 3) satisfies $x > 2
+`);
+		assert.ok(ds.some((d) => d.code === "xq-lsp:unused-variable"), `expected $local:unused to be flagged`);
+	});
+
+	test("catch clause body is walked for variable references", () => {
+		const ds = unusedDiags(`
+declare %private variable $local:unused := 0;
+try { 1 } catch * { 0 }
+`);
+		assert.ok(ds.some((d) => d.code === "xq-lsp:unused-variable"), `expected $local:unused to be flagged`);
 	});
 });
