@@ -19,6 +19,7 @@ import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getDefinition } from "./definition.ts";
 import type { FileAnalysis, TypeDiagnostic } from "./types.ts";
 import { checkTypes } from "./typechecker.ts";
+import { checkFunctionCalls } from "./functioncall-diagnostics.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import {
 	findUndeclaredPrefixUsages,
@@ -174,7 +175,10 @@ documents.onDidChangeContent((change) => {
 
 	if (hasAst && ast !== null) {
 		const imported = resolveImports(doc.uri, analysis);
-		typeErrorCache.set(doc.uri, checkTypes(ast, doc.getText(), analysis, imported));
+		typeErrorCache.set(doc.uri, [
+			...checkTypes(ast, doc.getText(), analysis, imported),
+			...checkFunctionCalls(ast, analysis, imported),
+		]);
 	}
 
 	const typeDiags = (typeErrorCache.get(doc.uri) ?? []).map((td) => ({

@@ -10,6 +10,7 @@ import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getBuiltins } from "./builtins.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import { formatQName } from "./types.ts";
+import type { FileAnalysis } from "./types.ts";
 import { getRuntimeAnalyses } from "./runtimes.ts";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import {
@@ -17,6 +18,7 @@ import {
 	findImportInsertPosition,
 	findDeclareNsInsertPosition,
 } from "./namespace-diagnostics.ts";
+import { checkFunctionCalls } from "./functioncall-diagnostics.ts";
 
 // ── analyzer: valid XQuery via AST ──────────────────────────────────────────
 describe("analyze", () => {
@@ -847,5 +849,88 @@ fonto:`;
 		const items = getCompletions({ textBeforeCursor: "fonto:", cursorOffset: 6 }, mainAnalysis, imported);
 		const labels = items.map((i) => i.label);
 		assert.ok(!labels.includes("selection-common-ancestor"), `fonto functions should not appear without import`);
+	});
+});
+
+// ── functioncall-diagnostics ───────────────────────────────────────────────────
+
+describe("functioncall-diagnostics", () => {
+	const builtins = getBuiltins();
+
+	function fnCallDiags(src: string, importedAnalyses: Map<string, FileAnalysis> = new Map()) {
+		const { analysis, ast } = analyzeWithAst(src, "file:///main.xq");
+		if (!ast) return [];
+		return checkFunctionCalls(ast, analysis, importedAnalyses);
+	}
+
+	test("calling a known function with too many args reports XPST0017", () => {
+		const ds = fnCallDiags(`fn:true("extra")`, new Map([["builtin:fn", builtins]]));
+		const d = ds.find((d) => d.code === "XPST0017");
+		assert.ok(d, `expected XPST0017, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("fn:true"), `expected fn:true in message, got: ${d!.message}`);
+		assert.ok(d!.message.includes("got 1"), `expected "got 1" in message, got: ${d!.message}`);
+	});
+
+	test("calling a known function with correct arity reports no error", () => {
+		const ds = fnCallDiags(`fn:exists((1,2,3))`, new Map([["builtin:fn", builtins]]));
+		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
+	});
+
+	test("calling fn:subsequence (2 and 3 arg overloads) with 2 args reports no error", () => {
+		const ds = fnCallDiags(`fn:subsequence((1,2,3), 2)`, new Map([["builtin:fn", builtins]]));
+		assert.equal(ds.length, 0, `expected no diagnostics for subsequence/2, got ${JSON.stringify(ds)}`);
+	});
+
+	test("calling fn:subsequence with 4 args (wrong arity) reports XPST0017", () => {
+		const ds = fnCallDiags(`fn:subsequence((1,2,3), 2, 1, "extra")`, new Map([["builtin:fn", builtins]]));
+		const d = ds.find((d) => d.code === "XPST0017");
+		assert.ok(d, `expected XPST0017, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("fn:subsequence"), `expected fn:subsequence in message, got: ${d!.message}`);
+		assert.ok(d!.message.includes("got 4"), `expected "got 4" in message, got: ${d!.message}`);
+	});
+
+	test("calling a function in an unknown namespace reports no error", () => {
+		// myns: has no analysis loaded, so we can't know what it declares.
+		// The undeclared prefix is caught separately by findUndeclaredPrefixUsages (XQST0081).
+		const ds = fnCallDiags(`myns:unknownFunc(1, 2, 3)`, new Map([["builtin:fn", builtins]]));
+		assert.equal(ds.length, 0, `unknown namespace should not be reported, got ${JSON.stringify(ds)}`);
+	});
+
+	test("calling an undeclared function in a known namespace reports XPST0017", () => {
+		// fn: namespace is known (builtins loaded), but fn:doesNotExist is not declared.
+		const ds = fnCallDiags(`fn:doesNotExist(1)`, new Map([["builtin:fn", builtins]]));
+		const d = ds.find((d) => d.code === "XPST0017");
+		assert.ok(d, `expected XPST0017, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("fn:doesNotExist"), `expected fn:doesNotExist in message, got: ${d!.message}`);
+		assert.ok(d!.message.includes("not declared"), `expected "not declared" in message, got: ${d!.message}`);
+	});
+
+	test("calling a locally-declared function with wrong arity reports XPST0017", () => {
+		const src = `
+declare function local:add($a, $b) { $a + $b };
+local:add(1, 2, 3)
+`;
+		const ds = fnCallDiags(src);
+		const d = ds.find((d) => d.code === "XPST0017");
+		assert.ok(d, `expected XPST0017 for local:add(1,2,3), got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("local:add"), `expected local:add in message, got: ${d!.message}`);
+		assert.ok(d!.message.includes("got 3"), `expected "got 3" in message, got: ${d!.message}`);
+	});
+
+	test("fn:concat with 2 args (minimum) reports no error", () => {
+		const ds = fnCallDiags(`fn:concat("a", "b")`, new Map([["builtin:fn", builtins]]));
+		assert.equal(ds.length, 0, `expected no diagnostics for concat/2, got ${JSON.stringify(ds)}`);
+	});
+
+	test("fn:concat with 5 args (variadic, above minimum) reports no error", () => {
+		const ds = fnCallDiags(`fn:concat("a", "b", "c", "d", "e")`, new Map([["builtin:fn", builtins]]));
+		assert.equal(ds.length, 0, `expected no diagnostics for variadic concat/5, got ${JSON.stringify(ds)}`);
+	});
+
+	test("fn:concat with 1 arg (below minimum 2) reports XPST0017", () => {
+		const ds = fnCallDiags(`fn:concat("only-one")`, new Map([["builtin:fn", builtins]]));
+		const d = ds.find((d) => d.code === "XPST0017");
+		assert.ok(d, `expected XPST0017 for concat/1, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("or more"), `expected "or more" in variadic message, got: ${d!.message}`);
 	});
 });
