@@ -82,7 +82,8 @@ const ATOMIC_SUBTYPES: Record<string, string[]> = {
 	// Numeric type promotion per XPath 3.1 §B.1: integer/decimal/float promote to double; integer/decimal promote to float
 	"xs:double": ["xs:float", "xs:decimal", "xs:integer"],
 	"xs:float": ["xs:decimal", "xs:integer"],
-	"xs:string": ["xs:normalizedString", "xs:token", "xs:language", "xs:Name", "xs:NCName", "xs:NMTOKEN"],
+	// xs:anyURI promotes to xs:string in function-call context per XPath 3.1 §2.6.5
+	"xs:string": ["xs:normalizedString", "xs:token", "xs:language", "xs:Name", "xs:NCName", "xs:NMTOKEN", "xs:anyURI"],
 };
 
 function isAtomicSubtype(from: string, to: string): boolean {
