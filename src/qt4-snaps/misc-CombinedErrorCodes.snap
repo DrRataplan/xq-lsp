@@ -1,0 +1,352 @@
+[
+  {
+    "testCase": "K-CombinedErrorCodes-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0009",
+    "got": []
+  },
+  {
+    "testCase": "K-CombinedErrorCodes-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0009",
+    "got": []
+  },
+  {
+    "testCase": "K-CombinedErrorCodes-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0009",
+    "got": []
+  },
+  {
+    "testCase": "K-CombinedErrorCodes-4",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0009",
+    "got": []
+  },
+  {
+    "testCase": "K-CombinedErrorCodes-5",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0009",
+    "got": []
+  },
+  {
+    "testCase": "K-CombinedErrorCodes-6",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0009",
+    "got": []
+  },
+  {
+    "testCase": "XPTY0004_10",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "XQST0022_1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "XQST0022_2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "XQST0031",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0031",
+    "got": []
+  },
+  {
+    "testCase": "XQST0032",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0032",
+    "got": []
+  },
+  {
+    "testCase": "XQST0033",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0033",
+    "got": []
+  },
+  {
+    "testCase": "XQST0034",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0034",
+    "got": []
+  },
+  {
+    "testCase": "XQST0038_1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0038",
+    "got": []
+  },
+  {
+    "testCase": "XQST0038_3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0038",
+    "got": []
+  },
+  {
+    "testCase": "XQST0039",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0039",
+    "got": []
+  },
+  {
+    "testCase": "XQST0040",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0040",
+    "got": []
+  },
+  {
+    "testCase": "XQST0045-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "XQST0045-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "XQST0046_02",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0046",
+    "got": []
+  },
+  {
+    "testCase": "XQST0046_09",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0046",
+    "got": []
+  },
+  {
+    "testCase": "XQST0046_10",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0046",
+    "got": []
+  },
+  {
+    "testCase": "XQST0046_11",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0046",
+    "got": []
+  },
+  {
+    "testCase": "XQST0047",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0047",
+    "got": []
+  },
+  {
+    "testCase": "XQST0048",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0048",
+    "got": []
+  },
+  {
+    "testCase": "XQST0049",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0049",
+    "got": []
+  },
+  {
+    "testCase": "XQST0054",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0054",
+    "got": []
+  },
+  {
+    "testCase": "XQST0055",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0055",
+    "got": []
+  },
+  {
+    "testCase": "XQST0057",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0057",
+    "got": []
+  },
+  {
+    "testCase": "XQST0059_2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0059",
+    "got": []
+  },
+  {
+    "testCase": "XQST0059_4",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0059",
+    "got": []
+  },
+  {
+    "testCase": "XQST0059_5",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0059",
+    "got": []
+  },
+  {
+    "testCase": "XQST0060",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0060",
+    "got": []
+  },
+  {
+    "testCase": "XQST0065",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0065",
+    "got": []
+  },
+  {
+    "testCase": "XQST0066_1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0066",
+    "got": []
+  },
+  {
+    "testCase": "XQST0066_3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0066",
+    "got": []
+  },
+  {
+    "testCase": "XQST0067",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0067",
+    "got": []
+  },
+  {
+    "testCase": "XQST0068",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0068",
+    "got": []
+  },
+  {
+    "testCase": "XQST0069",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0069",
+    "got": []
+  },
+  {
+    "testCase": "XQST0070_1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "XQST0070_2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "XQST0070_3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "XQST0070_4",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "XQST0071_1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0071",
+    "got": []
+  },
+  {
+    "testCase": "XQST0071_2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0071",
+    "got": []
+  },
+  {
+    "testCase": "XQST0076",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0076",
+    "got": []
+  },
+  {
+    "testCase": "XQST0079",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0079",
+    "got": []
+  },
+  {
+    "testCase": "XQST0085",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0085",
+    "got": []
+  },
+  {
+    "testCase": "XQST0085c",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "XQST0087",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0087",
+    "got": []
+  },
+  {
+    "testCase": "XQST0088_1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0088",
+    "got": []
+  },
+  {
+    "testCase": "XQST0088_2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0088",
+    "got": []
+  },
+  {
+    "testCase": "XQST0089",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0089",
+    "got": []
+  },
+  {
+    "testCase": "XQST0090",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0090",
+    "got": []
+  },
+  {
+    "testCase": "XQST0093",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0093",
+    "got": []
+  },
+  {
+    "testCase": "XQST0125_1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0125",
+    "got": []
+  },
+  {
+    "testCase": "XQST0125_2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0125",
+    "got": []
+  },
+  {
+    "testCase": "typeswitch-in-xpath",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  }
+]

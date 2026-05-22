@@ -1,0 +1,42 @@
+[
+  {
+    "testCase": "xs-error-001",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "xs-error-002",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "xs-error-003",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "xs-error-004",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "xs-error-017",
+    "outcome": "false-positive",
+    "expectedCode": "FOER0000",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xs-error-018",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

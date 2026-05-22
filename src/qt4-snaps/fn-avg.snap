@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "fn-avg-mix-args-066",
+    "outcome": "false-positive",
+    "expectedCode": "FORG0001",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

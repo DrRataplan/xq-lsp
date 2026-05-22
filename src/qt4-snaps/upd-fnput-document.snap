@@ -1,0 +1,130 @@
+[
+  {
+    "testCase": "fn-put-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-003-fail",
+    "outcome": "false-positive",
+    "expectedCode": "FOUP0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-004-fail",
+    "outcome": "false-positive",
+    "expectedCode": "FOUP0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-005-fail",
+    "outcome": "false-positive",
+    "expectedCode": "FOUP0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-006-fail",
+    "outcome": "false-positive",
+    "expectedCode": "FOUP0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-007",
+    "outcome": "false-positive",
+    "expectedCode": "FOUP0002",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-008",
+    "outcome": "false-positive",
+    "expectedCode": "XUST0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-009",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-012",
+    "outcome": "false-positive",
+    "expectedCode": "XUDY0031",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-013",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-014",
+    "outcome": "false-positive",
+    "expectedCode": "XUDY0031",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-put-101",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  }
+]

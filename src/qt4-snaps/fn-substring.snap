@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "fn-substring-22",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

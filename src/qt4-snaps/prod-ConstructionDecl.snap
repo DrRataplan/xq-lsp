@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "constprolog-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0067",
+    "got": []
+  },
+  {
+    "testCase": "K-ConstructionProlog-4",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0067",
+    "got": []
+  }
+]

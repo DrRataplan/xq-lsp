@@ -1,0 +1,166 @@
+[
+  {
+    "testCase": "ForExpr002",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "ForExpr009",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "ForExpr013",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "ForExpr024",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0089",
+    "got": []
+  },
+  {
+    "testCase": "ForExpr031",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0089",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-26",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-28",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-29",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-31",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-32",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-34",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-35",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-36",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-37",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-38",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-39",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-40",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-41",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-42",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-43",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-44",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-45",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-57",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "K-ForExprWithout-58",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "ForExprType011",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  },
+  {
+    "testCase": "ForExprType045",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  },
+  {
+    "testCase": "ForExprType047",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  }
+]

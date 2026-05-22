@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "cbcl-fn-resolve-qname-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  }
+]

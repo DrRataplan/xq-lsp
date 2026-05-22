@@ -1,0 +1,20 @@
+[
+  {
+    "testCase": "base-URI-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0032",
+    "got": []
+  },
+  {
+    "testCase": "K-BaseURIProlog-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0032",
+    "got": []
+  },
+  {
+    "testCase": "K-BaseURIProlog-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0032",
+    "got": []
+  }
+]

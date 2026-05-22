@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "fn-exists-101",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  }
+]

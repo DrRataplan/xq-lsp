@@ -1,0 +1,124 @@
+[
+  {
+    "testCase": "default_namespace-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "default_namespace-023",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "default_namespace-024",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "default_namespace-025",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "defaultnamespacedeclerr-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0066",
+    "got": []
+  },
+  {
+    "testCase": "defaultnamespacedeclerr-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0066",
+    "got": []
+  },
+  {
+    "testCase": "defaultnamespacedeclerr-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "defaultnamespacedeclerr-4",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "defaultnamespacedeclerr-5",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "defaultnamespacedeclerr-6",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "defaultnamespacedeclerr-7",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "defaultnamespacedeclerr-8",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "K-DefaultNamespaceProlog-5",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K2-DefaultNamespaceProlog-7",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0071",
+    "got": []
+  },
+  {
+    "testCase": "K2-DefaultNamespaceProlog-8",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0071",
+    "got": []
+  },
+  {
+    "testCase": "K2-DefaultNamespaceProlog-9",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0071",
+    "got": []
+  },
+  {
+    "testCase": "K2-DefaultNamespaceProlog-10",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0040",
+    "got": []
+  },
+  {
+    "testCase": "K2-DefaultNamespaceProlog-12",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  },
+  {
+    "testCase": "K2-DefaultNamespaceProlog-12a",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0052",
+    "got": []
+  }
+]

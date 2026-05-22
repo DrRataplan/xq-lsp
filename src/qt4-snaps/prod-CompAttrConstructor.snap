@@ -1,0 +1,30 @@
+[
+  {
+    "testCase": "Constr-compattr-name-4",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "Constr-compattr-id-1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "K2-ComputeConAttr-42",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "K2-ComputeConAttr-43",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  }
+]

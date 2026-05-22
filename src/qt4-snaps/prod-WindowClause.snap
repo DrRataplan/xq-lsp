@@ -1,0 +1,178 @@
+[
+  {
+    "testCase": "SlidingWindowExpr503",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0089",
+    "got": []
+  },
+  {
+    "testCase": "TumblingWindowExpr503",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0103",
+    "got": []
+  },
+  {
+    "testCase": "WindowingUseCase04",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase04S",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase06",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase06S",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase16",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase16S",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase17",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase17S",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "TumblingWindowExpr504",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0103",
+    "got": []
+  },
+  {
+    "testCase": "SlidingWindowExpr504",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0103",
+    "got": []
+  },
+  {
+    "testCase": "TumblingWindowExpr519",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "SlidingWindowExpr519",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "TumblingWindowExpr520",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0103",
+    "got": []
+  },
+  {
+    "testCase": "TumblingWindowExpr521",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0103",
+    "got": []
+  },
+  {
+    "testCase": "TumblingWindowExpr522",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0103",
+    "got": []
+  },
+  {
+    "testCase": "TumblingWindowExpr523",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0103",
+    "got": []
+  },
+  {
+    "testCase": "TumblingWindowExpr524",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0103",
+    "got": []
+  },
+  {
+    "testCase": "TumblingWindowExpr525",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0103",
+    "got": []
+  },
+  {
+    "testCase": "TumblingWindowExpr526",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0103",
+    "got": []
+  },
+  {
+    "testCase": "TumblingWindowExpr527",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0103",
+    "got": []
+  },
+  {
+    "testCase": "TumblingWindowExpr528",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0103",
+    "got": []
+  },
+  {
+    "testCase": "TumblingWindowExpr541",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "SlidingWindowExpr561",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "SlidingWindowExpr562",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

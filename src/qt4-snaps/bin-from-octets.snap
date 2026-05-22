@@ -1,0 +1,74 @@
+[
+  {
+    "testCase": "EXPath-binary-from-octets-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-from-octets-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-from-octets-003",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/binary}octet-out-of-range",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-from-octets-004",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/binary}octet-out-of-range",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-from-octets1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-from-octets2",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-from-octets3",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-from-octets4",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/binary}octet-out-of-range",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-from-octets5",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/binary}octet-out-of-range",
+    "got": [
+      "XQST0081"
+    ]
+  }
+]

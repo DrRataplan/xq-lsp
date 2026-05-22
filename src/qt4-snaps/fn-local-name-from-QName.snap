@@ -1,0 +1,18 @@
+[
+  {
+    "testCase": "LocalNameFromQNameFunc009",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "LocalNameFromQNameFunc010",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

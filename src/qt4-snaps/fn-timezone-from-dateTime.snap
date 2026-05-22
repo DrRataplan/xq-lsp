@@ -1,0 +1,26 @@
+[
+  {
+    "testCase": "fn-timezone-from-dateTimealt-10",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-timezone-from-dateTimealt-12",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-timezone-from-dateTimealt-13",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

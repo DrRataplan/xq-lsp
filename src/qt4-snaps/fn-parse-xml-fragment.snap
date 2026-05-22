@@ -1,0 +1,194 @@
+[
+  {
+    "testCase": "parse-xml-fragment-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-004",
+    "outcome": "false-positive",
+    "expectedCode": "FODC0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-007",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-008",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-009",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-010",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-011",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-012",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-013",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-014",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-015",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-016",
+    "outcome": "false-positive",
+    "expectedCode": "FODC0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-017",
+    "outcome": "false-positive",
+    "expectedCode": "FODC0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-018",
+    "outcome": "false-positive",
+    "expectedCode": "FODC0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-019",
+    "outcome": "false-positive",
+    "expectedCode": "FODC0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-020",
+    "outcome": "false-positive",
+    "expectedCode": "FODC0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-021",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-022",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-023",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-024",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-025",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "parse-xml-fragment-026",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  }
+]

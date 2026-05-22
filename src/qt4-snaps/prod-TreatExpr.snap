@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "K-SeqExprTreat-8",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprTreat-9",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  }
+]
