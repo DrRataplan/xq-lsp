@@ -48,14 +48,6 @@
     ]
   },
   {
-    "testCase": "functx-fn-doc-available-1",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "functx-fn-max-4",
     "outcome": "false-positive",
     "expectedCode": null,

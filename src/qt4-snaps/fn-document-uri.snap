@@ -16,22 +16,6 @@
     ]
   },
   {
-    "testCase": "fn-document-uri-20",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "fn-document-uri-21",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "fn-document-uri-36",
     "outcome": "false-positive",
     "expectedCode": null,
@@ -52,14 +36,6 @@
     "outcome": "false-negative",
     "expectedCode": "XPST0017",
     "got": []
-  },
-  {
-    "testCase": "K-DocumentURIFunc-2a",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
   },
   {
     "testCase": "K2-DocumentURIFunc-5",

@@ -332,7 +332,6 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPTY0004",
       "XPST0017"
     ]
   },
@@ -341,7 +340,6 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPTY0004",
       "XPST0017"
     ]
   },
@@ -350,7 +348,6 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPTY0004",
       "XPST0017"
     ]
   },
@@ -359,7 +356,6 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPTY0004",
       "XPST0017"
     ]
   },
@@ -368,7 +364,6 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPTY0004",
       "XPST0017"
     ]
   },
@@ -377,7 +372,6 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPTY0004",
       "XPST0017"
     ]
   },
@@ -386,7 +380,6 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPTY0004",
       "XPST0017"
     ]
   },
@@ -403,7 +396,6 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPTY0004",
       "XPST0017"
     ]
   },
@@ -420,7 +412,6 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPTY0004",
       "XPST0017"
     ]
   },
@@ -429,7 +420,6 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPTY0004",
       "XPST0017"
     ]
   },
@@ -438,7 +428,6 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPTY0004",
       "XPST0017"
     ]
   },
