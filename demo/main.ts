@@ -3,7 +3,7 @@ import { hoverTooltip, showTooltip } from "@codemirror/view";
 import { StateField } from "@codemirror/state";
 import { StreamLanguage } from "@codemirror/language";
 import { xQuery } from "@codemirror/legacy-modes/mode/xquery";
-import { linter, lintGutter, type Diagnostic } from "@codemirror/lint";
+import { linter, lintGutter, forceLinting, type Diagnostic } from "@codemirror/lint";
 import { autocompletion, type CompletionContext as CMCompletionContext } from "@codemirror/autocomplete";
 import { analyzeWithAst, analyze, XMLNS_FN } from "../src/analyzer.ts";
 import builtinsFn from "../builtins/builtins-fn.xq?raw";
@@ -194,11 +194,32 @@ const signatureField = StateField.define({
 		}),
 });
 
+// ── Config panel ─────────────────────────────────────────────────────────────
+
+const configEl = document.getElementById("config-editor") as HTMLTextAreaElement;
+const configErrorEl = document.getElementById("config-error")!;
+
 // ── Diagnostics ───────────────────────────────────────────────────────────────
+
+function getConfigPrefixes(): Record<string, string> {
+	const text = configEl.value.trim();
+	if (!text) return {};
+	try {
+		const map = fontoxpath.evaluateXPathToMap(`(${text})?prefixes`, null, null, {});
+		const result: Record<string, string> = {};
+		for (const [k, v] of Object.entries(map)) {
+			if (typeof v === "string") result[k] = v;
+		}
+		return result;
+	} catch {
+		return {};
+	}
+}
 
 const xqueryLinter = linter((view): Diagnostic[] => {
 	const code = view.state.doc.toString();
 	const { analysis, ast, parseError } = analyzeWithAst(code, "playground.xq");
+	const configPrefixes = getConfigPrefixes();
 	const diagnostics: Diagnostic[] = [];
 
 	if (parseError) {
@@ -207,7 +228,18 @@ const xqueryLinter = linter((view): Diagnostic[] => {
 	}
 
 	for (const d of findUndeclaredPrefixUsages(ast, analysis)) {
-		diagnostics.push({ from: d.offset, to: d.offset + d.length, severity: "error", message: d.message });
+		const nsUri = configPrefixes[d.prefix];
+		const actions = nsUri
+			? [
+					{
+						name: `Declare namespace ${d.prefix} = "${nsUri}"`,
+						apply(v: EditorView) {
+							v.dispatch({ changes: { from: 0, insert: `declare namespace ${d.prefix} = "${nsUri}";\n` } });
+						},
+					},
+				]
+			: undefined;
+		diagnostics.push({ from: d.offset, to: d.offset + d.length, severity: "error", message: d.message, actions });
 	}
 
 	if (ast) {
@@ -255,11 +287,6 @@ document.getElementById("share-btn")!.addEventListener("click", () => {
 	setTimeout(() => (btn.textContent = "Copy link"), 1500);
 });
 
-// ── Config panel ─────────────────────────────────────────────────────────────
-
-const configEl = document.getElementById("config-editor") as HTMLTextAreaElement;
-const configErrorEl = document.getElementById("config-error")!;
-
 configEl.value = getInitialConfig();
 
 function applyConfig() {
@@ -273,6 +300,7 @@ function applyConfig() {
 		url.searchParams.delete("config");
 	}
 	history.replaceState(null, "", url);
+	forceLinting(view);
 }
 
 applyConfig();
