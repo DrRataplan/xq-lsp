@@ -9,7 +9,7 @@ Language Server Protocol implementation for XQuery, providing autocompletion, ho
 - **Signature help** — active parameter hints inside function calls
 - **Go to definition** — jump to function or variable declarations, including across imported files
 - **Document symbols** — file outline of all declared functions and variables
-- **Diagnostics** — syntax errors as you type
+- **Diagnostics** — syntax errors, undeclared namespace prefixes, type mismatches, and unused symbols
 
 ## Configuration
 
