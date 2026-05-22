@@ -12,6 +12,25 @@ import {
 // Typed narrowing functions for xq-parser AST nodes.
 // Each returns a typed shape or null if the node is not the expected type.
 
+// ── Internal helpers ──────────────────────────────────────────────────────────
+
+function annotationNames(annotatedDecl: Node): string[] {
+	const names: string[] = [];
+	for (const ann of directChildrenOf(annotatedDecl, "Annotation")) {
+		const eqname = directChildOf(ann, "EQName");
+		const name = eqname ? firstTerminalValue(eqname) : null;
+		if (!name) continue;
+		const [, local] = splitName(name);
+		names.push(local);
+	}
+	return names;
+}
+
+function splitName(raw: string): [prefix: string, localName: string] {
+	const ci = raw.indexOf(":");
+	return [ci >= 0 ? raw.slice(0, ci) : "", ci >= 0 ? raw.slice(ci + 1) : raw];
+}
+
 // ── FunctionCall ──────────────────────────────────────────────────────────────
 
 export interface FunctionCallShape {
@@ -25,13 +44,31 @@ export function asFunctionCall(node: Node, analysis: FileAnalysis): FunctionCall
 	if (!fnEqname) return null;
 	const name = firstTerminalValue(fnEqname);
 	if (!name) return null;
-	const colonIdx = name.indexOf(":");
-	const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : "";
-	const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
+	const [prefix, localName] = splitName(name);
 	const namespaceUri = resolvePrefix(prefix, analysis);
 	const argList = directChildOf(node, "ArgumentList");
 	const args = argList ? directChildrenOf(argList, "Argument") : [];
 	return { qname: { prefix, localName, namespaceUri }, args };
+}
+
+// ── NamedFunctionRef ──────────────────────────────────────────────────────────
+
+export interface NamedFunctionRefShape {
+	qname: QName;
+	arity: number;
+}
+
+export function asNamedFunctionRef(node: Node, analysis: FileAnalysis): NamedFunctionRefShape | null {
+	if (node.type !== "NamedFunctionRef") return null;
+	const eqname = directChildOf(node, "EQName");
+	if (!eqname) return null;
+	const name = firstTerminalValue(eqname);
+	if (!name) return null;
+	const [prefix, localName] = splitName(name);
+	const namespaceUri = resolvePrefix(prefix, analysis);
+	const arityNode = directChildOf(node, "IntegerLiteral");
+	const arity = arityNode ? parseInt(firstTerminalValue(arityNode) ?? "0", 10) : 0;
+	return { qname: { prefix, localName, namespaceUri }, arity };
 }
 
 // ── VarRef ────────────────────────────────────────────────────────────────────
@@ -42,12 +79,201 @@ export function asVarRef(node: Node, analysis: FileAnalysis): QName | null {
 	if (!varNameNode) return null;
 	const rawName = firstTerminalValue(varNameNode);
 	if (!rawName) return null;
-	const colonIdx = rawName.indexOf(":");
-	const prefix = colonIdx >= 0 ? rawName.slice(0, colonIdx) : "";
-	const localName = colonIdx >= 0 ? rawName.slice(colonIdx + 1) : rawName;
+	const [prefix, localName] = splitName(rawName);
 	// Variables don't use the default function namespace — unqualified vars have empty URI
 	const namespaceUri = prefix ? resolvePrefix(prefix, analysis) : "";
 	return { prefix, localName, namespaceUri };
+}
+
+// ── VarDecl ───────────────────────────────────────────────────────────────────
+
+/** Resolved QName and the name node (for offset/length) for a VarDecl, or null. */
+export function asVarDecl(node: Node, analysis: FileAnalysis): { qname: QName; nameNode: Node } | null {
+	if (node.type !== "VarDecl") return null;
+	const nameNode = directChildOf(node, "VarName");
+	if (!nameNode) return null;
+	const rawName = firstTerminalValue(nameNode);
+	if (!rawName) return null;
+	const [prefix, localName] = splitName(rawName);
+	const namespaceUri = prefix ? resolvePrefix(prefix, analysis) : "";
+	return { qname: { prefix, localName, namespaceUri }, nameNode };
+}
+
+// ── FunctionDecl ──────────────────────────────────────────────────────────────
+
+export interface FunctionDeclShape {
+	nameNode: Node;
+	qname: QName;
+	params: Array<{ nameNode: Node; qname: QName }>;
+	body: Node | null; // FunctionBody node; null for external functions
+}
+
+/** Inner shape of a FunctionDecl node: name, resolved params, and function body. */
+export function asFunctionDecl(node: Node, analysis: FileAnalysis): FunctionDeclShape | null {
+	if (node.type !== "FunctionDecl") return null;
+	const nameNode = directChildOf(node, "EQName");
+	if (!nameNode) return null;
+	const rawName = firstTerminalValue(nameNode);
+	if (!rawName) return null;
+	const [prefix, localName] = splitName(rawName);
+	const namespaceUri = resolvePrefix(prefix, analysis);
+	const paramList = directChildOf(node, "ParamList");
+	const paramNodes = paramList ? directChildrenOf(paramList, "Param") : [];
+	const params = paramNodes.flatMap((p) => {
+		const pNameNode = directChildOf(p, "EQName");
+		const pName = pNameNode ? firstTerminalValue(pNameNode) : null;
+		if (!pName || !pNameNode) return [];
+		const [pPrefix, pLocalName] = splitName(pName);
+		const pNsUri = pPrefix ? resolvePrefix(pPrefix, analysis) : "";
+		return [{ nameNode: pNameNode, qname: { prefix: pPrefix, localName: pLocalName, namespaceUri: pNsUri } }];
+	});
+	return { nameNode, qname: { prefix, localName, namespaceUri }, params, body: directChildOf(node, "FunctionBody") ?? null };
+}
+
+// ── AnnotatedDecl wrappers ────────────────────────────────────────────────────
+
+/** QName, name node, arity, and annotation local-names for an AnnotatedDecl containing a FunctionDecl, or null. */
+export function asFunctionDeclaration(
+	node: Node,
+	analysis: FileAnalysis,
+): { qname: QName; nameNode: Node; arity: number; annotations: string[] } | null {
+	if (node.type !== "AnnotatedDecl") return null;
+	const fnDeclNode = directChildOf(node, "FunctionDecl");
+	if (!fnDeclNode) return null;
+	const fn = asFunctionDecl(fnDeclNode, analysis);
+	if (!fn) return null;
+	return { qname: fn.qname, nameNode: fn.nameNode, arity: fn.params.length, annotations: annotationNames(node) };
+}
+
+/** Resolved QName, name node, and annotation local-names for an AnnotatedDecl containing a VarDecl, or null. */
+export function asVariableDeclaration(
+	node: Node,
+	analysis: FileAnalysis,
+): { qname: QName; nameNode: Node; annotations: string[] } | null {
+	if (node.type !== "AnnotatedDecl") return null;
+	const varDeclNode = directChildOf(node, "VarDecl");
+	if (!varDeclNode) return null;
+	const inner = asVarDecl(varDeclNode, analysis);
+	if (!inner) return null;
+	return { ...inner, annotations: annotationNames(node) };
+}
+
+// ── PositionalVar ─────────────────────────────────────────────────────────────
+
+/** Resolved QName and name node for a PositionalVar ("at $pos") node, or null. */
+export function asPositionalVar(node: Node, analysis: FileAnalysis): { nameNode: Node; qname: QName } | null {
+	if (node.type !== "PositionalVar") return null;
+	const nameNode = directChildOf(node, "VarName");
+	if (!nameNode) return null;
+	const rawName = firstTerminalValue(nameNode);
+	if (!rawName) return null;
+	const [prefix, localName] = splitName(rawName);
+	const namespaceUri = prefix ? resolvePrefix(prefix, analysis) : "";
+	return { nameNode, qname: { prefix, localName, namespaceUri } };
+}
+
+// ── Variable-binding clauses ──────────────────────────────────────────────────
+
+export interface BindingShape {
+	nameNode: Node;
+	qname: QName;
+	/** Expression evaluated before this binding enters scope (the "in" / ":=" expr). */
+	initExpr?: Node;
+	/** For ForBinding: the positional variable from the "at $pos" clause, if present. */
+	positionalVar?: { nameNode: Node; qname: QName };
+}
+
+/**
+ * Extracts the variable binding from a clause node.  Handles:
+ *   ForBinding, LetBinding — core FLWOR bindings
+ *   CountClause            — `count $i`
+ *   GroupingSpec           — `group by $x := expr` (only when `:=` is present)
+ *   TumblingWindowClause, SlidingWindowClause — main window variable `$w`
+ * Returns null for unrecognised nodes or GroupingSpec without `:=`.
+ */
+export function asBinding(node: Node, analysis: FileAnalysis): BindingShape | null {
+	function varFromName(nameNode: Node): { nameNode: Node; qname: QName } | null {
+		const rawName = firstTerminalValue(nameNode);
+		if (!rawName) return null;
+		const [prefix, localName] = splitName(rawName);
+		const namespaceUri = prefix ? resolvePrefix(prefix, analysis) : "";
+		return { nameNode, qname: { prefix, localName, namespaceUri } };
+	}
+
+	switch (node.type) {
+		case "ForBinding": {
+			const nameNode = directChildOf(node, "VarName");
+			if (!nameNode) return null;
+			const v = varFromName(nameNode);
+			if (!v) return null;
+			const posVarNode = directChildOf(node, "PositionalVar");
+			const positionalVar = posVarNode ? asPositionalVar(posVarNode, analysis) ?? undefined : undefined;
+			return { ...v, initExpr: directChildOf(node, "ExprSingle") ?? undefined, positionalVar };
+		}
+		case "LetBinding": {
+			const nameNode = directChildOf(node, "VarName");
+			if (!nameNode) return null;
+			const v = varFromName(nameNode);
+			if (!v) return null;
+			return { ...v, initExpr: directChildOf(node, "ExprSingle") ?? undefined };
+		}
+		case "CountClause": {
+			const nameNode = directChildOf(node, "VarName");
+			if (!nameNode) return null;
+			const v = varFromName(nameNode);
+			return v ?? null;
+		}
+		case "GroupingSpec": {
+			// Only a new binding when the spec has its own ":= expr"
+			const initExpr = directChildOf(node, "ExprSingle");
+			if (!initExpr) return null;
+			const groupVar = directChildOf(node, "GroupingVariable");
+			const nameNode = groupVar ? directChildOf(groupVar, "VarName") : null;
+			if (!nameNode) return null;
+			const v = varFromName(nameNode);
+			if (!v) return null;
+			return { ...v, initExpr };
+		}
+		case "TumblingWindowClause":
+		case "SlidingWindowClause": {
+			const nameNode = directChildOf(node, "VarName");
+			if (!nameNode) return null;
+			const v = varFromName(nameNode);
+			if (!v) return null;
+			return { ...v, initExpr: directChildOf(node, "ExprSingle") ?? undefined };
+		}
+		default:
+			return null;
+	}
+}
+
+// ── VarName ───────────────────────────────────────────────────────────────────
+
+/**
+ * Resolves the QName for a raw VarName node.
+ * Use this when a VarName appears directly in a parent (e.g. QuantifiedExpr)
+ * rather than inside a VarRef, ForBinding, or LetBinding.
+ */
+export function asVarName(node: Node, analysis: FileAnalysis): QName | null {
+	if (node.type !== "VarName") return null;
+	const rawName = firstTerminalValue(node);
+	if (!rawName) return null;
+	const [prefix, localName] = splitName(rawName);
+	return { prefix, localName, namespaceUri: prefix ? resolvePrefix(prefix, analysis) : "" };
+}
+
+// ── CatchClause ───────────────────────────────────────────────────────────────
+
+/**
+ * Returns the catch body for a CatchClause node, or null.
+ * XQuery 3.1 catch clauses have no explicit variable binding — the implicit
+ * $err:* variables are pre-declared and do not appear in the AST as bindings.
+ */
+export function asCatchClause(node: Node): { body: Node } | null {
+	if (node.type !== "CatchClause") return null;
+	const body = directChildOf(node, "EnclosedExpr");
+	if (!body) return null;
+	return { body };
 }
 
 // ── Literals ──────────────────────────────────────────────────────────────────

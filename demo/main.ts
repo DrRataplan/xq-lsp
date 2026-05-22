@@ -13,6 +13,7 @@ import builtinsArray from "../builtins/builtins-array.xq?raw";
 import { findUndeclaredPrefixUsages } from "../src/namespace-diagnostics.ts";
 import { checkTypes } from "../src/typechecker.ts";
 import { checkFunctionCalls } from "../src/functioncall-diagnostics.ts";
+import { checkUnused } from "../src/unused-diagnostics.ts";
 import { type FileAnalysis } from "../src/types.ts";
 import {
 	resolveFunctionAtOffset,
@@ -216,6 +217,9 @@ const xqueryLinter = linter((view): Diagnostic[] => {
 		}
 		for (const d of checkFunctionCalls(ast, analysis, imported)) {
 			diagnostics.push({ from: d.offset, to: d.offset + d.length, severity: "error", message: d.message });
+		}
+		for (const d of checkUnused(ast, analysis)) {
+			diagnostics.push({ from: d.offset, to: d.offset + d.length, severity: "hint", message: d.message });
 		}
 	}
 
