@@ -1,0 +1,44 @@
+[
+  {
+    "testCase": "orderBy66",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "orderBy67",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "orderBy69",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "orderbylocal-60",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0076",
+    "got": []
+  },
+  {
+    "testCase": "K2-OrderbyExprWithout-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0076",
+    "got": []
+  },
+  {
+    "testCase": "K2-OrderbyExprWithout-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0076",
+    "got": []
+  }
+]

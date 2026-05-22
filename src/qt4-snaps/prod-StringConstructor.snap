@@ -1,0 +1,26 @@
+[
+  {
+    "testCase": "string-constructor-027",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "string-constructor-028",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "string-constructor-037",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

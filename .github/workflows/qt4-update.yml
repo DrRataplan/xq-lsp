@@ -1,0 +1,72 @@
+name: Update QT4 testset
+
+on:
+    schedule:
+        - cron: "0 9 * * 1" # Mondays 09:00 UTC
+    workflow_dispatch:
+
+jobs:
+    check-and-update:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            pull-requests: write
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 26
+                  cache: npm
+            - run: npm ci
+
+            - name: Check for new QT4 commit
+              id: check
+              run: |
+                  CURRENT=$(cat qt4-testset-commit.txt | tr -d '[:space:]')
+                  LATEST=$(curl -sf \
+                    -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                    https://api.github.com/repos/qt4cg/qt4tests/commits/main | jq -r '.sha')
+                  echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+                  echo "latest=$LATEST"   >> "$GITHUB_OUTPUT"
+                  if [ "$CURRENT" != "$LATEST" ]; then
+                    echo "changed=true"  >> "$GITHUB_OUTPUT"
+                  else
+                    echo "changed=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Clone new QT4 testset
+              if: steps.check.outputs.changed == 'true'
+              run: |
+                  git clone --filter=blob:none --no-checkout \
+                    https://github.com/qt4cg/qt4tests.git /tmp/qt4tests
+                  cd /tmp/qt4tests && git checkout "${{ steps.check.outputs.latest }}"
+
+            - name: Update SHA and regenerate snapshots
+              if: steps.check.outputs.changed == 'true'
+              run: |
+                  echo "${{ steps.check.outputs.latest }}" > qt4-testset-commit.txt
+                  node --test --test-update-snapshots src/qt4-diagnostic.test.ts
+              env:
+                  QT4_TESTS_DIR: /tmp/qt4tests
+
+            - name: Create PR
+              if: steps.check.outputs.changed == 'true'
+              run: |
+                  SHORT="${{ steps.check.outputs.latest }}"
+                  SHORT="${SHORT:0:8}"
+                  BRANCH="update-qt4-testset-${SHORT}"
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git checkout -b "$BRANCH"
+                  git add qt4-testset-commit.txt src/qt4-snaps/
+                  git commit -m "chore: update QT4 testset to ${SHORT}"
+                  git push origin "$BRANCH"
+                  EXISTING=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number // empty')
+                  if [ -z "$EXISTING" ]; then
+                    gh pr create \
+                      --title "chore: update QT4 testset to ${SHORT}" \
+                      --body "Automated update of pinned QT4 test suite to [\`${SHORT}\`](https://github.com/qt4cg/qt4tests/commit/${{ steps.check.outputs.latest }})." \
+                      --base main
+                  fi
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

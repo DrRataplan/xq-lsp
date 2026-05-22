@@ -1,0 +1,34 @@
+[
+  {
+    "testCase": "id-transform-expr-051",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "id-transform-expr-052",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "id-transform-expr-053",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "id-transform-expr-054",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  }
+]

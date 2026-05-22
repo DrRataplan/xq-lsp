@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "fn-string-to-codepoints1args-7",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

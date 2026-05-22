@@ -1,0 +1,594 @@
+[
+  {
+    "testCase": "fn-load-xquery-module-001",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-002",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-003",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0002",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-004",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0002",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-005",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0003",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-006",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0003",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-007",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-008",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-009",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-010",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-011",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0005",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-012",
+    "outcome": "false-positive",
+    "expectedCode": "FOAR0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-013",
+    "outcome": "false-positive",
+    "expectedCode": "FOAR0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-014",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-015",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-016",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-017",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-018",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-019",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-020",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-021",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-022",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-023",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-025",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-026",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-027",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-028",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-029",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-030",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-031",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-032",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-033",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-034",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-035",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-036",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-037",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-040",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-041",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-042",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-043",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-044",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-045",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-046",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-060",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0005",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-061",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-062",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-063",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-064",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-065",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-066",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-067",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-068",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-069",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-070",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-071",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0003",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-072",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-073",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-074",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-075",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-076",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-077",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-903",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-904",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-905",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-906",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-907",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-908",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-909",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-910",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-911",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-912",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-913",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-914",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0006",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-load-xquery-module-915",
+    "outcome": "false-positive",
+    "expectedCode": "FOQM0006",
+    "got": [
+      "XPST0017"
+    ]
+  }
+]

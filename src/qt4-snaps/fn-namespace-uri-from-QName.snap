@@ -1,0 +1,18 @@
+[
+  {
+    "testCase": "NamespaceURIFromQNameFunc009",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "NamespaceURIFromQNameFunc010",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

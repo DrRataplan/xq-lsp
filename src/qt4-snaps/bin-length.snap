@@ -1,0 +1,42 @@
+[
+  {
+    "testCase": "EXPath-binary-length-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-length-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-length1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-length2",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-length3",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "array-get-006",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

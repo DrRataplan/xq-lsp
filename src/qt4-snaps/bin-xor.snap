@@ -1,0 +1,98 @@
+[
+  {
+    "testCase": "EXPath-binary-bitwise-xor-001",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/binary}differing-length-arguments",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-bitwise-xor-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-bitwise-xor-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-bitwise-xor-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-bitwise-xor-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-bitwise-xor-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-xor1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-xor2",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-xor3",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-xor4",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-xor5",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "bin-xor6",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/binary}differing-length-arguments",
+    "got": [
+      "XQST0081"
+    ]
+  }
+]

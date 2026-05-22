@@ -1,0 +1,42 @@
+[
+  {
+    "testCase": "format-date-en132",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "format-date-en133",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "format-date-en134",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "format-date-inpt-er1",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "format-date-inpt-er3",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

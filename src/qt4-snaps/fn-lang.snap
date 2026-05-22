@@ -1,0 +1,34 @@
+[
+  {
+    "testCase": "K-NodeLangFunc-4",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-NodeLangFunc-3",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "K2-NodeLangFunc-5",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "K2-NodeLangFunc-6",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  }
+]

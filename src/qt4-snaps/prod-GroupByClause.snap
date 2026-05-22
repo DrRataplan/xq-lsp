@@ -1,0 +1,96 @@
+[
+  {
+    "testCase": "group-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "group-005",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "group-008",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "group-009",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "group-009a",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "group-014",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0094",
+    "got": []
+  },
+  {
+    "testCase": "group-020",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "group-025",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "use-case-groupby-Q1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "use-case-groupby-Q2",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "use-case-groupby-Q4",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "use-case-groupby-Q8",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

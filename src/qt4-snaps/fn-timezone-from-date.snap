@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "fn-timezone-from-date-12",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

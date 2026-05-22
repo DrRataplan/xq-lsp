@@ -1,0 +1,26 @@
+[
+  {
+    "testCase": "relational-data-q3",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "relational-data-q5-1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "relational-data-q5-2",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

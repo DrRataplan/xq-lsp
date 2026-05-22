@@ -1,0 +1,66 @@
+[
+  {
+    "testCase": "hof-901",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "hof-902",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "hof-903",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "hof-904",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "hof-917",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "inline-function-10",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "inline-function-12",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "inline-function-12a",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0039",
+    "got": []
+  },
+  {
+    "testCase": "inline-function-13",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0039",
+    "got": []
+  },
+  {
+    "testCase": "inline-function-16",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  }
+]

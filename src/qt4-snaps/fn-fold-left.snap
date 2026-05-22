@@ -1,0 +1,18 @@
+[
+  {
+    "testCase": "fold-left-008",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fold-left-018",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

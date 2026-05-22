@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "id-function-call-002",
+    "outcome": "false-positive",
+    "expectedCode": "XUST0001",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

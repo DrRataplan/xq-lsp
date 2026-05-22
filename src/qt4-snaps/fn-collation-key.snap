@@ -1,0 +1,274 @@
+[
+  {
+    "testCase": "collation-key-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-007",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-008",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-009u",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-009l",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-010",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-011",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-012",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-013",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-014",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-015",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-101",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-102",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-103",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-104",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-105",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-201",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-202",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-203",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-204",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-205",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-206",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-404",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-405",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-406",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-407",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-408",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-409",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "collation-key-901",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0017"
+    ]
+  }
+]

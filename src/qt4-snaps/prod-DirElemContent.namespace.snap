@@ -1,0 +1,274 @@
+[
+  {
+    "testCase": "Constr-namespace-4",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0071",
+    "got": []
+  },
+  {
+    "testCase": "Constr-namespace-5",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0071",
+    "got": []
+  },
+  {
+    "testCase": "Constr-namespace-6",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "Constr-namespace-7",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "Constr-namespace-8",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "Constr-namespace-9",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "Constr-namespace-11",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "Constr-namespace-15",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "Constr-namespace-24",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "Constr-namespace-25",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "Constr-namespace-29",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "Constr-namespace-30",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-7",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-9",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-15",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-16",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-17",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-18",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-26",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-27",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-33",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-34",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-35",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-36",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-37",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-41",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-53",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-58",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-71",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-72",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-73",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-74",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0022",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-77",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-78",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-79",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "DirectConElemNamespace-5",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "Constr-inscope-7",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "Constr-inscope-15",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "K2-ConInScopeNamespace-1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

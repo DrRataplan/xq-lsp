@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "tree-queries-results-q6",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

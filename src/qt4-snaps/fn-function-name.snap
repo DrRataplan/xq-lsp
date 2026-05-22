@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "fn-function-name-002",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "fn-function-name-004",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

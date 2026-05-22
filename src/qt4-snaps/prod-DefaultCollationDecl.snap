@@ -1,0 +1,32 @@
+[
+  {
+    "testCase": "defaultcolldecl-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0038",
+    "got": []
+  },
+  {
+    "testCase": "defaultcolldecl-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0038",
+    "got": []
+  },
+  {
+    "testCase": "K-CollationProlog-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0038",
+    "got": []
+  },
+  {
+    "testCase": "K-CollationProlog-4",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0038",
+    "got": []
+  },
+  {
+    "testCase": "K-CollationProlog-5",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0038",
+    "got": []
+  }
+]

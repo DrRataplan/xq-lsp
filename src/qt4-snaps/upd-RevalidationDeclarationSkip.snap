@@ -1,0 +1,26 @@
+[
+  {
+    "testCase": "removeType-valskip-ins-007",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "removeType-valskip-ins-008",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "removeType-valskip-ren-006",
+    "outcome": "false-positive",
+    "expectedCode": "XUDY0024",
+    "got": [
+      "XQST0081"
+    ]
+  }
+]

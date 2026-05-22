@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "map-merge-012",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "Steps-leading-lone-slash-14",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

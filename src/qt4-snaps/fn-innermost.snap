@@ -1,0 +1,78 @@
+[
+  {
+    "testCase": "fn-innermost-002",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "fn-innermost-004",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "fn-innermost-006",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-innermost-017",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "fn-innermost-018",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "fn-innermost-019",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "fn-innermost-020",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "fn-innermost-021",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "fn-innermost-022",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "fn-innermost-059",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  }
+]

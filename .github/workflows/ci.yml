@@ -34,7 +34,14 @@ jobs:
                   node-version: 26
                   cache: npm
             - run: npm ci
+            - name: Download QT4 test suite
+              run: |
+                  SHA=$(cat qt4-testset-commit.txt)
+                  git clone --filter=blob:none --no-checkout https://github.com/qt4cg/qt4tests.git /tmp/qt4tests
+                  cd /tmp/qt4tests && git checkout "$SHA"
             - run: npm run test:coverage
+              env:
+                  QT4_TESTS_DIR: /tmp/qt4tests
             - name: Upload coverage to Coveralls
               uses: coverallsapp/github-action@v2
               with:

@@ -1,0 +1,112 @@
+[
+  {
+    "testCase": "namespaceDecl-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0033",
+    "got": []
+  },
+  {
+    "testCase": "namespaceDecl-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "namespaceDecl-4",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "namespaceDecl-5",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "namespaceDecl-7",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "namespaceDecl-26",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "namespaceDecl-27",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "namespaceDecl-28",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "K2-NamespaceProlog-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0033",
+    "got": []
+  },
+  {
+    "testCase": "K2-NamespaceProlog-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0033",
+    "got": []
+  },
+  {
+    "testCase": "K2-NamespaceProlog-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0033",
+    "got": []
+  },
+  {
+    "testCase": "K2-NamespaceProlog-4",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-NamespaceProlog-6",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "K2-NamespaceProlog-7",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "K2-NamespaceProlog-9",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-NamespaceProlog-10",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-NamespaceProlog-15",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  }
+]

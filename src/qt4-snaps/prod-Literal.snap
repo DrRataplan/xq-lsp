@@ -1,0 +1,68 @@
+[
+  {
+    "testCase": "K-Literals-31a",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "K2-Literals-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0090",
+    "got": []
+  },
+  {
+    "testCase": "K2-Literals-16",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0090",
+    "got": []
+  },
+  {
+    "testCase": "K2-Literals-17",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0090",
+    "got": []
+  },
+  {
+    "testCase": "K2-Literals-18",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0090",
+    "got": []
+  },
+  {
+    "testCase": "K2-Literals-19",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0090",
+    "got": []
+  },
+  {
+    "testCase": "K2-Literals-28",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "K2-Literals-39",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "cbcl-literals-004",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0090",
+    "got": []
+  },
+  {
+    "testCase": "cbcl-literals-008",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0090",
+    "got": []
+  }
+]

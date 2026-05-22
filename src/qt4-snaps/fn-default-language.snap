@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "default-language-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  }
+]

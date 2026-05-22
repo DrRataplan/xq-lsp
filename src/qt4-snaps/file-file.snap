@@ -1,0 +1,1274 @@
+[
+  {
+    "testCase": "EXPath-file-exists-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-exists-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-exists-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-exists-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-exists-005",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-exists-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-exists-007",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-exists-008",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-exists-009",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-exists-011",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-exists-012",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-isDir-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-isDir-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-isDir-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-isDir-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-isDir-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-isDir-006",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-isDir-007",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-isFile-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-isFile-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-isFile-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-isFile-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-isFile-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-isFile-006",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-last-modified-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-last-modified-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-last-modified-003",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}not-found",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-size-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-size-004",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}not-found",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-size-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-append2-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-append2-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-append2-003",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendText2-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendText2-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendText2-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendText2-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendText2-005",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}is-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendText2-006",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}no-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendText3-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendText3-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendText3-003",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}unknown-encoding",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendText3-004",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}is-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendText3-005",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}no-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendText3-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendBinary2-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendBinary2-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendBinary2-003",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}is-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-appendBinary2-004",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}no-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-copy-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-copy-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-copy-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-copy-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-copy-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-copy-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-copy-007",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-createDir-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-createDir-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-createDir-003",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}exists",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-createDir-004",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}exists",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-createDir-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-createTempFile-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-createTempFile-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-createTempDir-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-createTempDir-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-delete-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-delete-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-delete-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-delete-004",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}is-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-delete-005",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}is-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-list-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-list-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-list-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-list-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-list-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-list-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-list-007",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-list-011",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}no-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-list-014",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-list-018",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-list-019",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-move-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-move-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-move-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-move-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-move-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readBinary-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readBinary-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readBinary-003",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}not-found",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readBinary-004",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}is-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readBinary2-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readBinary2-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readBinary2-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readBinary3-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readBinary3-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readBinary3-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readBinary3-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readBinary3-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readText1-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readText1-002",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}not-found",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readText1-003",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}is-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readText2-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readText2-002",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}not-found",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readText2-003",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}is-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readText2-004",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}unknown-encoding",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readText2-005",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}io-error",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-008",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-009",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}not-found",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-010",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}is-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-011",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}not-found",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-012",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}is-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-013",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}unknown-encoding",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-014",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-readTextLines1-015",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}io-error",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeText2-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeText2-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeText2-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeText2-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeText2-005",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}is-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeText2-006",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}no-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeText3-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeText3-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeText3-003",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}unknown-encoding",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeText3-004",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}is-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeText3-005",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}no-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeBinary2-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeBinary2-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeBinary2-003",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}is-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeBinary2-004",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}no-dir",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeBinary3-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeBinary3-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeBinary3-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeBinary3-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeBinary3-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-writeBinary3-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-name1-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-name1-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-name1-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-name1-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-name1-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-name1-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-parent-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-children-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-children-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-children-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-children-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-pathToNative-004",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/file}not-found",
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-pathToNative-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-pathToNative-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-pathToUri-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-pathToUri-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-baseDir-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  },
+  {
+    "testCase": "EXPath-file-currentDir-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XQST0081"
+    ]
+  }
+]

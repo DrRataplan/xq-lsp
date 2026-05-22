@@ -1,0 +1,50 @@
+[
+  {
+    "testCase": "K2-NodeTest-19",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K2-NodeTest-20",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K2-NodeTest-22",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-NodeTest-23",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-NodeTest-24",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-NodeTest-25",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-NodeTest-26",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-NodeTest-27",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  }
+]

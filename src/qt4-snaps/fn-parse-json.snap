@@ -1,0 +1,1002 @@
+[
+  {
+    "testCase": "fn-parse-json-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-007",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-008",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-009",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-010",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-011",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-012",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-013",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-014",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-015",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-016",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-017",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-018",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-019",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-020",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-021",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-022",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-023",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-024",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-025",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-026",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-027",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-028",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-029",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-030",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-031",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-032",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-033",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-034",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-035",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-036",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-037",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-038",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-039",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-040",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-041",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-042",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-050",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-051",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-052",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-053",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-054",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-055",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-056",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-057",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-058",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-059",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-060",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-062",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-063",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-065",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-066",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-101",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-102",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-103",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-104",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-105",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-106",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-107",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-108",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0003",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-109",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0003",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-110",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0003",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-111",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-112",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-113",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-114",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-115",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-901",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-902",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-903",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-904",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-905",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-906",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-907",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-908",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-909",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-910",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-911",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-912",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-913",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-914",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-915",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-916",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-917",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-918",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-920",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-921",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-922",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-923",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-924",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-925",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-926",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-927",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-928",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-929",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-930",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-931",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-932",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-933",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-934",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-935",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-936",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0003",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-938",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-939",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-940",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0005",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-941",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-942",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-943",
+    "outcome": "false-positive",
+    "expectedCode": "Q{}USER9999",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-944",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-945",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-946",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-947",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-948",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-949",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-950",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-951",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-952",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-953",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-954",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  },
+  {
+    "testCase": "fn-parse-json-955",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0001",
+    "got": [
+      "XPST0017"
+    ]
+  }
+]

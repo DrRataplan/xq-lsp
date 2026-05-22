@@ -1,0 +1,18 @@
+[
+  {
+    "testCase": "fn-iri-to-uri1args-5",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-IRIToURIfunc-3",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]
