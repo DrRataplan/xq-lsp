@@ -1,8 +1,8 @@
 import type { Node } from "xq-parser";
 import type { FileAnalysis } from "./types.ts";
 import { qnameKey } from "./types.ts";
-import { findAll, directChildOf, directChildrenOf, firstTerminalValue, resolvePrefix } from "./analyzer.ts";
-import { asFunctionCall, asVarRef } from "./ast-nodes.ts";
+import { findAll, directChildOf, firstTerminalValue, resolvePrefix } from "./analyzer.ts";
+import { asFunctionCall, asVarRef, asVarDecl, asFunctionDeclaration } from "./ast-nodes.ts";
 
 export interface UnusedDiagnostic {
 	message: string;
@@ -11,17 +11,6 @@ export interface UnusedDiagnostic {
 	length: number;
 }
 
-/** True when the AnnotatedDecl carries a %private annotation. */
-function isPrivateAnnotated(annotated: Node): boolean {
-	for (const ann of directChildrenOf(annotated, "Annotation")) {
-		const eqname = directChildOf(ann, "EQName");
-		const name = eqname ? firstTerminalValue(eqname) : null;
-		if (!name) continue;
-		const localName = name.includes(":") ? name.slice(name.indexOf(":") + 1) : name;
-		if (localName === "private") return true;
-	}
-	return false;
-}
 
 /**
  * Walk the AST and report declared functions and module-level variables that
@@ -69,62 +58,44 @@ export function checkUnused(ast: Node, analysis: FileAnalysis): UnusedDiagnostic
 	// ── Check declared functions ─────────────────────────────────────────────
 
 	for (const annotated of findAll(ast, "AnnotatedDecl")) {
-		const decl = directChildOf(annotated, "FunctionDecl");
-		if (!decl) continue;
+		const fn = asFunctionDeclaration(annotated, analysis);
+		if (!fn) continue;
 
 		// Only %private functions are local to the module; public ones may be
 		// called by other modules that import this one.
-		if (!isPrivateAnnotated(annotated)) continue;
+		if (!fn.annotations.includes("private")) continue;
 
-		const eqname = directChildOf(decl, "EQName");
-		if (!eqname) continue;
-		const name = firstTerminalValue(eqname);
-		if (!name) continue;
-
-		const colonIdx = name.indexOf(":");
-		const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
-
-		if (localName.startsWith("_")) continue;
+		if (fn.qname.localName.startsWith("_")) continue;
 
 		// Find the corresponding FunctionSymbol to get the resolved qname key
-		const sym = analysis.functions.find((f) => f.qname.localName === localName);
+		const sym = analysis.functions.find((f) => f.qname.localName === fn.qname.localName);
 		if (!sym) continue;
-		const key = qnameKey(sym.qname);
 
-		if (usedFunctions.has(key)) continue;
+		if (usedFunctions.has(qnameKey(sym.qname))) continue;
 
 		out.push({
-			message: `Function '${name}' is declared but never used`,
+			message: `Function '${fn.rawName}' is declared but never used`,
 			code: "xq-lsp:unused-function",
-			offset: eqname.start ?? 0,
-			length: firstTerminalValue(eqname)?.length ?? 0,
+			offset: fn.nameNode.start ?? 0,
+			length: fn.rawName.length,
 		});
 	}
 
 	// ── Check declared module variables ─────────────────────────────────────
 
 	for (const varDecl of findAll(ast, "VarDecl")) {
-		const varNameNode = directChildOf(varDecl, "VarName");
-		if (!varNameNode) continue;
-		const name = firstTerminalValue(varNameNode);
-		if (!name) continue;
+		const decl = asVarDecl(varDecl, analysis);
+		if (!decl) continue;
+		const { qname, nameNode, rawName } = decl;
 
-		const colonIdx = name.indexOf(":");
-		const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
-
-		if (localName.startsWith("_")) continue;
-
-		const sym = analysis.moduleVariables.find((v) => v.qname.localName === localName);
-		if (!sym) continue;
-		const key = qnameKey(sym.qname);
-
-		if (usedVariables.has(key)) continue;
+		if (qname.localName.startsWith("_")) continue;
+		if (usedVariables.has(qnameKey(qname))) continue;
 
 		out.push({
-			message: `Variable '$${name}' is declared but never used`,
+			message: `Variable '$${rawName}' is declared but never used`,
 			code: "xq-lsp:unused-variable",
-			offset: varNameNode.start ?? 0,
-			length: name.length,
+			offset: nameNode.start ?? 0,
+			length: rawName.length,
 		});
 	}
 

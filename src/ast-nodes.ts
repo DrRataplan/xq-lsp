@@ -50,6 +50,54 @@ export function asVarRef(node: Node, analysis: FileAnalysis): QName | null {
 	return { prefix, localName, namespaceUri };
 }
 
+// ── VarDecl ───────────────────────────────────────────────────────────────────
+
+/** Resolved QName, the name node (for offset/length), and the raw name text for a VarDecl, or null. */
+export function asVarDecl(
+	node: Node,
+	analysis: FileAnalysis,
+): { qname: QName; nameNode: Node; rawName: string } | null {
+	if (node.type !== "VarDecl") return null;
+	const nameNode = directChildOf(node, "VarName");
+	if (!nameNode) return null;
+	const rawName = firstTerminalValue(nameNode);
+	if (!rawName) return null;
+	const colonIdx = rawName.indexOf(":");
+	const prefix = colonIdx >= 0 ? rawName.slice(0, colonIdx) : "";
+	const localName = colonIdx >= 0 ? rawName.slice(colonIdx + 1) : rawName;
+	const namespaceUri = prefix ? resolvePrefix(prefix, analysis) : "";
+	return { qname: { prefix, localName, namespaceUri }, nameNode, rawName };
+}
+
+// ── FunctionDecl (inside AnnotatedDecl) ──────────────────────────────────────
+
+/** Resolved QName, name node, raw name text, and annotation local-names for an AnnotatedDecl, or null. */
+export function asFunctionDeclaration(
+	node: Node,
+	analysis: FileAnalysis,
+): { qname: QName; nameNode: Node; rawName: string; annotations: string[] } | null {
+	if (node.type !== "AnnotatedDecl") return null;
+	const decl = directChildOf(node, "FunctionDecl");
+	if (!decl) return null;
+	const nameNode = directChildOf(decl, "EQName");
+	if (!nameNode) return null;
+	const rawName = firstTerminalValue(nameNode);
+	if (!rawName) return null;
+	const colonIdx = rawName.indexOf(":");
+	const prefix = colonIdx >= 0 ? rawName.slice(0, colonIdx) : "";
+	const localName = colonIdx >= 0 ? rawName.slice(colonIdx + 1) : rawName;
+	const namespaceUri = resolvePrefix(prefix, analysis);
+	const annotations: string[] = [];
+	for (const ann of directChildrenOf(node, "Annotation")) {
+		const eqname = directChildOf(ann, "EQName");
+		const name = eqname ? firstTerminalValue(eqname) : null;
+		if (!name) continue;
+		const annLocal = name.includes(":") ? name.slice(name.indexOf(":") + 1) : name;
+		annotations.push(annLocal);
+	}
+	return { qname: { prefix, localName, namespaceUri }, nameNode, rawName, annotations };
+}
+
 // ── Literals ──────────────────────────────────────────────────────────────────
 
 export type LiteralKind = "string" | "integer" | "decimal" | "double";
