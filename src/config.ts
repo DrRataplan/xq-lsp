@@ -2,13 +2,15 @@ import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
 import fontoxpath from "fontoxpath";
-const { evaluateXPathToStrings } = fontoxpath;
+const { evaluateXPathToStrings, evaluateXPathToMap } = fontoxpath;
 
 export interface LspConfig {
 	globs: string[];
 	/** When false, auto-import code actions omit the `at "path"` location hint. Default: true. */
 	generateLocationHints: boolean;
 	lib: string[];
+	/** Maps prefix names to namespace URIs, from the `prefixes` key in lsp-config.xq. Default: {}. */
+	prefixes: Record<string, string>;
 }
 
 function parseConfig(text: string): { globs: string[]; generateLocationHints: boolean } {
@@ -41,6 +43,23 @@ function parseLib(text: string): string[] {
 	}
 }
 
+function parsePrefixes(text: string): Record<string, string> {
+	// Evaluate the config and look up the "prefixes" key, which should be a map
+	// from prefix names to namespace URIs:
+	//   map { "prefixes": map { "tei": "http://www.tei-c.org/ns/1.0" } }
+	try {
+		const map = evaluateXPathToMap(`(${text.trim()})?prefixes`, null, null, {});
+		// evaluateXPathToMap returns a plain JS object with string values
+		const result: Record<string, string> = {};
+		for (const [k, v] of Object.entries(map)) {
+			if (typeof v === "string") result[k] = v;
+		}
+		return result;
+	} catch {
+		return {};
+	}
+}
+
 export function findConfig(fromUri: string): { config: LspConfig; configDir: string } | null {
 	let dir: string;
 	try {
@@ -54,7 +73,7 @@ export function findConfig(fromUri: string): { config: LspConfig; configDir: str
 		try {
 			const text = fs.readFileSync(configPath, "utf-8");
 			const parsed = parseConfig(text);
-			return { config: { ...parsed, lib: parseLib(text) }, configDir: dir };
+			return { config: { ...parsed, lib: parseLib(text), prefixes: parsePrefixes(text) }, configDir: dir };
 		} catch {
 			/* not found here, try parent */
 		}

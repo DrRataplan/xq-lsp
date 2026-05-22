@@ -45,7 +45,10 @@ function checkQNameNode(
  *
  * Returns an empty array when `ast` is null (parse failure).
  */
-export function findUndeclaredPrefixUsages(ast: Node | null, analysis: FileAnalysis): NamespaceDiagnostic[] {
+export function findUndeclaredPrefixUsages(
+	ast: Node | null,
+	analysis: FileAnalysis,
+): NamespaceDiagnostic[] {
 	if (!ast) return [];
 	const out: NamespaceDiagnostic[] = [];
 

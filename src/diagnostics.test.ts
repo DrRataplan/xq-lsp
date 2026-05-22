@@ -1137,3 +1137,49 @@ try { 1 } catch * { 0 }
 		assert.ok(ds.some((d) => d.code === "xq-lsp:unused-variable"), `expected $local:unused to be flagged`);
 	});
 });
+
+// ── config-prefixes ───────────────────────────────────────────────────────────
+
+describe("config-prefixes", () => {
+	function withTmpDir(fn: (dir: string) => void): void {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xq-lsp-test-"));
+		try {
+			fn(dir);
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
+	}
+
+	test("findConfig: parses prefixes map from config", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "lsp-config.xq"),
+				`map { "prefixes": map { "tei": "http://www.tei-c.org/ns/1.0", "dc": "http://purl.org/dc/elements/1.1/" } }`,
+			);
+			const result = findConfig(pathToFileURL(path.join(dir, "main.xq")).toString());
+			assert.ok(result, "expected config to be found");
+			assert.deepEqual(result.config.prefixes, {
+				tei: "http://www.tei-c.org/ns/1.0",
+				dc: "http://purl.org/dc/elements/1.1/",
+			});
+		});
+	});
+
+	test("findConfig: prefixes defaults to {} when key absent", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(path.join(dir, "lsp-config.xq"), `map { "glob": "**/*.xq" }`);
+			const result = findConfig(pathToFileURL(path.join(dir, "main.xq")).toString());
+			assert.ok(result, "expected config to be found");
+			assert.deepEqual(result.config.prefixes, {});
+		});
+	});
+
+	test("findUndeclaredPrefixUsages: undeclared prefix in config prefixMap is still reported (quickfix uses it)", () => {
+		const src = `<tei:body/>`;
+		const { analysis, ast } = analyzeWithAst(src, "file:///main.xq");
+		const ds = findUndeclaredPrefixUsages(ast, analysis);
+		const d = ds.find((d) => d.prefix === "tei");
+		assert.ok(d, `expected XQST0081 for 'tei', got ${JSON.stringify(ds)}`);
+		assert.equal(d!.code, "XQST0081");
+	});
+});
