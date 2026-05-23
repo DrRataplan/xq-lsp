@@ -150,22 +150,6 @@
     "got": []
   },
   {
-    "testCase": "K2-DirectConElemNamespace-41",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "K2-DirectConElemNamespace-53",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "K2-DirectConElemNamespace-71",
     "outcome": "false-negative",
     "expectedCode": "XQST0022",
@@ -188,13 +172,5 @@
     "outcome": "false-negative",
     "expectedCode": "XQST0022",
     "got": []
-  },
-  {
-    "testCase": "K2-ConInScopeNamespace-1",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
   }
 ]

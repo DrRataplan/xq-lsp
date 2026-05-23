@@ -1,32 +1,8 @@
 [
   {
-    "testCase": "fn-root-16",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "K-NodeRootFunc-3",
     "outcome": "false-positive",
     "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "K2-NodeRootFunc-6",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "K2-NodeRootFunc-7",
-    "outcome": "false-positive",
-    "expectedCode": null,
     "got": [
       "XPTY0004"
     ]

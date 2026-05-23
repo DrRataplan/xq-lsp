@@ -68,6 +68,8 @@ const ATOMIC_SUBTYPES: Record<string, string[]> = {
 		"xs:float",
 		"xs:double",
 		"xs:duration",
+		"xs:dayTimeDuration",
+		"xs:yearMonthDuration",
 		"xs:dateTime",
 		"xs:date",
 		"xs:time",
@@ -84,6 +86,7 @@ const ATOMIC_SUBTYPES: Record<string, string[]> = {
 	"xs:float": ["xs:decimal", "xs:integer"],
 	// xs:anyURI promotes to xs:string in function-call context per XPath 3.1 §2.6.5
 	"xs:string": ["xs:normalizedString", "xs:token", "xs:language", "xs:Name", "xs:NCName", "xs:NMTOKEN", "xs:anyURI"],
+	"xs:duration": ["xs:dayTimeDuration", "xs:yearMonthDuration"],
 };
 
 function isAtomicSubtype(from: string, to: string): boolean {
@@ -95,6 +98,9 @@ function isAtomicSubtype(from: string, to: string): boolean {
 function isNodeSubtype(from: string | undefined, to: string | undefined): boolean {
 	if (!from || !to) return true;
 	if (to === "node") return true;
+	// Generic node() (produced by path expressions) could be any specific kind at runtime;
+	// only flag when we can prove it's definitely incompatible.
+	if (from === "node") return true;
 	return from === to;
 }
 
@@ -178,6 +184,17 @@ export function inferExprType(
 		case "AbbrevForwardStep":
 		case "AbbrevReverseStep":
 			return NODE_STEP;
+		case "CompDocConstructor":
+			return { kind: "node", name: "document-node", occurrence: "" };
+		case "CompElemConstructor":
+		case "DirElemConstructor":
+			return { kind: "node", name: "element", occurrence: "" };
+		case "CompAttrConstructor":
+			return { kind: "node", name: "attribute", occurrence: "" };
+		case "CompTextConstructor":
+			return { kind: "node", name: "text", occurrence: "" };
+		case "CompCommentConstructor":
+			return { kind: "node", name: "comment", occurrence: "" };
 	}
 
 	const ntChildren = nt.children.filter((c) => !isTerminal(c));

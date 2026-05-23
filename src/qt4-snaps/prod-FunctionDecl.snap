@@ -1,13 +1,5 @@
 [
   {
-    "testCase": "function-declaration-004",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "function-declaration-022",
     "outcome": "false-negative",
     "expectedCode": "XQST0034",

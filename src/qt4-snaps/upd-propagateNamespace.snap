@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "propagateNamespaces05",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "propagateNamespaces06",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

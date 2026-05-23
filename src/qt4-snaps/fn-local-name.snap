@@ -1,13 +1,5 @@
 [
   {
-    "testCase": "fn-local-name-6",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "fn-local-name-77",
     "outcome": "false-positive",
     "expectedCode": null,

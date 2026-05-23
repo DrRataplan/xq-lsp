@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "K2-NamespaceURIForPrefixFunc-1",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "K2-NamespaceURIForPrefixFunc-3",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

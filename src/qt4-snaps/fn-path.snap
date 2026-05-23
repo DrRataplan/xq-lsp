@@ -22,13 +22,5 @@
     "got": [
       "XPST0003"
     ]
-  },
-  {
-    "testCase": "path017",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
   }
 ]
