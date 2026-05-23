@@ -16,24 +16,22 @@ Tests use Node's built-in test runner (`node:test`) — no framework needed. Typ
 
 ### QT4 diagnostic coverage tests
 
-`src/qt4-diagnostic.test.ts` runs the W3C QT4 test suite against the diagnostic pipeline to catch false positives (we flag valid queries) and false negatives (we miss static errors). It requires a local checkout of the testset:
+`src/qt4-diagnostic.test.ts` runs the W3C QT4 test suite against the diagnostic pipeline to catch false positives (we flag valid queries) and false negatives (we miss static errors). The testset lives in the `qt4tests/` git submodule — initialize it once after cloning:
 
 ```sh
-# one-time: clone at the pinned commit
-SHA=$(cat qt4-testset-commit.txt)
-git clone --filter=blob:none --no-checkout https://github.com/qt4cg/qt4tests.git /tmp/qt4tests
-cd /tmp/qt4tests && git checkout "$SHA"
+# one-time: initialize the submodule
+git submodule update --init
 
 # run (skipped automatically when QT4_TESTS_DIR is unset)
-QT4_TESTS_DIR=/tmp/qt4tests node --test src/qt4-diagnostic.test.ts
+QT4_TESTS_DIR=qt4tests node --test src/qt4-diagnostic.test.ts
 
 # regenerate snapshots after changing diagnostic logic or updating the testset pin
-QT4_TESTS_DIR=/tmp/qt4tests node --test --test-update-snapshots src/qt4-diagnostic.test.ts
+QT4_TESTS_DIR=qt4tests node --test --test-update-snapshots src/qt4-diagnostic.test.ts
 ```
 
-Snapshots live in `src/qt4-snaps/` — one JSON file per QT4 test-set, listing every failing case with its outcome (`false-positive` or `false-negative`), the expected error code, and what codes we actually emitted. CI downloads the testset at the pinned SHA automatically.
+Snapshots live in `src/qt4-snaps/` — one JSON file per QT4 test-set, listing every failing case with its outcome (`false-positive` or `false-negative`), the expected error code, and what codes we actually emitted. CI checks out the submodule automatically via `submodules: true` on `actions/checkout`.
 
-The pinned commit is in `qt4-testset-commit.txt`. A weekly CI workflow (`qt4-update.yml`) checks for new upstream commits and opens a PR that bumps the pin and regenerates snapshots.
+The pinned commit is the submodule pointer in `.gitmodules`. A weekly CI workflow (`qt4-update.yml`) checks for new upstream commits and opens a PR that advances the submodule and regenerates snapshots.
 
 ## Architecture
 
