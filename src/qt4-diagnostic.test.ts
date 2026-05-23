@@ -61,6 +61,26 @@ function childEls(parent: slimdom.Element, localName?: string): slimdom.Element[
 	return out;
 }
 
+// ── Environment namespace extraction ─────────────────────────────────────────
+
+type NsBinding = { prefix: string; uri: string };
+type EnvMap = Map<string, NsBinding[]>;
+
+function extractEnvNamespaces(envEl: slimdom.Element): NsBinding[] {
+	return childEls(envEl, "namespace")
+		.map((n) => ({ prefix: n.getAttribute("prefix") ?? "", uri: n.getAttribute("uri") ?? "" }))
+		.filter((ns) => ns.prefix !== "");
+}
+
+function buildEnvMap(root: slimdom.Element): EnvMap {
+	const map: EnvMap = new Map();
+	for (const envEl of childEls(root, "environment")) {
+		const name = envEl.getAttribute("name");
+		if (name) map.set(name, extractEnvNamespaces(envEl));
+	}
+	return map;
+}
+
 // ── Dependency filtering ──────────────────────────────────────────────────────
 
 interface Dep {
@@ -145,6 +165,7 @@ if (QT4_DIR) {
 	// Parse catalog
 	const catalogXml = fs.readFileSync(path.join(QT4_DIR, "catalog.xml"), "utf8");
 	const catalogDoc = slimdom.parseXmlDocument(catalogXml);
+	const catalogEnvMap = buildEnvMap(catalogDoc.documentElement as slimdom.Element);
 	const testSetFiles = Array.from(catalogDoc.getElementsByTagNameNS(NS, "test-set"))
 		.map((el) => (el as slimdom.Element).getAttribute("file"))
 		.filter((f): f is string => f !== null);
@@ -173,6 +194,7 @@ if (QT4_DIR) {
 		const root = doc.documentElement;
 		const tsDepsList = getDeps(root);
 		const slug = tsFile.replace(/[/\\]/g, "-").replace(/\.xml$/, "");
+		const tsEnvMap = buildEnvMap(root);
 
 		for (const tc of childEls(root, "test-case")) {
 			const name = tc.getAttribute("name") ?? "";
@@ -187,12 +209,24 @@ if (QT4_DIR) {
 			const { expected, code: expectedCode } = getExpected(resultEl);
 			if (expected === "ambiguous") continue;
 
+			const tcEnvEl = childEls(tc, "environment")[0];
+			let envNamespaces: NsBinding[] = [];
+			if (tcEnvEl) {
+				const ref = tcEnvEl.getAttribute("ref");
+				if (ref) {
+					envNamespaces = tsEnvMap.get(ref) ?? catalogEnvMap.get(ref) ?? [];
+				} else {
+					envNamespaces = extractEnvNamespaces(tcEnvEl);
+				}
+			}
+
 			allInputs.push({
 				testSetSlug: slug,
 				testCase: name,
 				query: testEl.textContent ?? "",
 				expected,
 				expectedCode,
+				envNamespaces,
 			});
 
 			if (!seenSlugs.has(slug)) {

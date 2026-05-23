@@ -11,6 +11,7 @@ export interface TestInput {
 	query: string;
 	expected: "static-error" | "no-static-error";
 	expectedCode: string | null;
+	envNamespaces: Array<{ prefix: string; uri: string }>;
 }
 
 export interface TestOutput {
@@ -23,9 +24,14 @@ export interface TestOutput {
 
 const BUILTINS = new Map([["builtin:fn", getBuiltins()]]);
 
-function runDiagnostics(query: string): string[] {
+function runDiagnostics(query: string, envNamespaces: Array<{ prefix: string; uri: string }>): string[] {
 	try {
 		const { analysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq");
+		for (const ns of envNamespaces) {
+			if (ns.prefix && !analysis.namespaceDecls.some((d) => d.prefix === ns.prefix)) {
+				analysis.namespaceDecls.push({ prefix: ns.prefix, namespaceUri: ns.uri });
+			}
+		}
 		const codes: string[] = [];
 		if (parseError) codes.push("XPST0003");
 		if (ast) {
@@ -41,7 +47,7 @@ function runDiagnostics(query: string): string[] {
 
 const batch = workerData as TestInput[];
 const results: TestOutput[] = batch.map((tc) => {
-	const got = runDiagnostics(tc.query);
+	const got = runDiagnostics(tc.query, tc.envNamespaces);
 	const hasError = got.length > 0;
 	const outcome =
 		tc.expected === "static-error"

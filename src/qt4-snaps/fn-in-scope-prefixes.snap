@@ -118,13 +118,5 @@
     "got": [
       "XPTY0004"
     ]
-  },
-  {
-    "testCase": "K2-InScopePrefixesFunc-19",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
   }
 ]

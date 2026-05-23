@@ -27,6 +27,7 @@ const BUILTIN_PREFIXES: Record<string, string> = {
 	math: XMLNS_MATH,
 	map: XMLNS_MAP,
 	array: XMLNS_ARRAY,
+	xml: "http://www.w3.org/XML/1998/namespace",
 };
 
 /**
