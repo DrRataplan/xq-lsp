@@ -1,40 +1,8 @@
 [
   {
-    "testCase": "fn-document-uri-4",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "fn-document-uri-5",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "K-DocumentURIFunc-2",
     "outcome": "false-negative",
     "expectedCode": "XPST0017",
     "got": []
-  },
-  {
-    "testCase": "K2-DocumentURIFunc-5",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "K2-DocumentURIFunc-8",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
   }
 ]

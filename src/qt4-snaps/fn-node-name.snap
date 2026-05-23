@@ -1,69 +1,5 @@
 [
   {
-    "testCase": "fn-node-name-14",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "fn-node-name-15",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "fn-node-name-16",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "fn-node-name-17",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "fn-node-name-18",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "fn-node-name-19",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "fn-node-name-20",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "fn-node-name-21",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "K-NodeNameFunc-1",
     "outcome": "false-negative",
     "expectedCode": "XPST0017",
@@ -89,14 +25,6 @@
     "testCase": "K3-NodeNameFunc-4",
     "outcome": "false-positive",
     "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "cbcl-node-name-001",
-    "outcome": "false-positive",
-    "expectedCode": null,
     "got": [
       "XPTY0004"
     ]

@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "id-replace-expr-045",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "id-replace-expr-045-no-inherit",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]
