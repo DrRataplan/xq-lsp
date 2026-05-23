@@ -59,40 +59,96 @@ export function parseType(typeStr: string): XQueryType {
 
 // ── Type compatibility ────────────────────────────────────────────────────────
 
-const ATOMIC_SUBTYPES: Record<string, string[]> = {
-	"xs:anyAtomicType": [
-		"xs:string",
-		"xs:boolean",
-		"xs:integer",
-		"xs:decimal",
-		"xs:float",
-		"xs:double",
-		"xs:duration",
-		"xs:dayTimeDuration",
-		"xs:yearMonthDuration",
-		"xs:dateTime",
-		"xs:date",
-		"xs:time",
-		"xs:anyURI",
-		"xs:QName",
-		"xs:NOTATION",
-		"xs:hexBinary",
-		"xs:base64Binary",
-	],
-	"xs:numeric": ["xs:integer", "xs:decimal", "xs:float", "xs:double"],
-	"xs:decimal": ["xs:integer"],
-	// Numeric type promotion per XPath 3.1 §B.1: integer/decimal/float promote to double; integer/decimal promote to float
-	"xs:double": ["xs:float", "xs:decimal", "xs:integer"],
-	"xs:float": ["xs:decimal", "xs:integer"],
-	// xs:anyURI promotes to xs:string in function-call context per XPath 3.1 §2.6.5
-	"xs:string": ["xs:normalizedString", "xs:token", "xs:language", "xs:Name", "xs:NCName", "xs:NMTOKEN", "xs:anyURI"],
-	"xs:duration": ["xs:dayTimeDuration", "xs:yearMonthDuration"],
+// Parent pointer for each xs:* type in the XSD / XPath 3.1 type hierarchy.
+// xs:numeric is a union type (decimal|float|double) handled separately below.
+// Promotion rules (§3.1.5) are also encoded here: anyURI→string, float→double,
+// decimal/integer→float, decimal/integer→double.
+const ATOMIC_TYPE_PARENT: Record<string, string> = {
+	// xs:anyAtomicType subtypes
+	"xs:untypedAtomic":      "xs:anyAtomicType",
+	"xs:boolean":            "xs:anyAtomicType",
+	"xs:float":              "xs:anyAtomicType",
+	"xs:double":             "xs:anyAtomicType",
+	"xs:decimal":            "xs:anyAtomicType",
+	"xs:duration":           "xs:anyAtomicType",
+	"xs:dateTime":           "xs:anyAtomicType",
+	"xs:date":               "xs:anyAtomicType",
+	"xs:time":               "xs:anyAtomicType",
+	"xs:gYearMonth":         "xs:anyAtomicType",
+	"xs:gYear":              "xs:anyAtomicType",
+	"xs:gMonthDay":          "xs:anyAtomicType",
+	"xs:gDay":               "xs:anyAtomicType",
+	"xs:gMonth":             "xs:anyAtomicType",
+	"xs:hexBinary":          "xs:anyAtomicType",
+	"xs:base64Binary":       "xs:anyAtomicType",
+	"xs:anyURI":             "xs:anyAtomicType",
+	"xs:QName":              "xs:anyAtomicType",
+	"xs:NOTATION":           "xs:anyAtomicType",
+	"xs:string":             "xs:anyAtomicType",
+	// xs:string subtypes
+	"xs:normalizedString":   "xs:string",
+	"xs:token":              "xs:normalizedString",
+	"xs:language":           "xs:token",
+	"xs:NMTOKEN":            "xs:token",
+	"xs:Name":               "xs:token",
+	"xs:NCName":             "xs:Name",
+	"xs:ID":                 "xs:NCName",
+	"xs:IDREF":              "xs:NCName",
+	"xs:ENTITY":             "xs:NCName",
+	// xs:decimal subtypes
+	"xs:integer":            "xs:decimal",
+	"xs:long":               "xs:integer",
+	"xs:int":                "xs:long",
+	"xs:short":              "xs:int",
+	"xs:byte":               "xs:short",
+	"xs:nonPositiveInteger": "xs:integer",
+	"xs:negativeInteger":    "xs:nonPositiveInteger",
+	"xs:nonNegativeInteger": "xs:integer",
+	"xs:positiveInteger":    "xs:nonNegativeInteger",
+	"xs:unsignedLong":       "xs:nonNegativeInteger",
+	"xs:unsignedInt":        "xs:unsignedLong",
+	"xs:unsignedShort":      "xs:unsignedInt",
+	"xs:unsignedByte":       "xs:unsignedShort",
+	// xs:duration subtypes
+	"xs:yearMonthDuration":  "xs:duration",
+	"xs:dayTimeDuration":    "xs:duration",
+	// xs:dateTime subtypes (XSD 1.1 / XPath 3.1)
+	"xs:dateTimeStamp":      "xs:dateTime",
+};
+
+// Type promotion rules from XPath 3.1 §3.1.5: in function-call context a value
+// of one type may be promoted to another.  Listed as direct promotions only;
+// transitive cases fall out of the parent-walk in isAtomicSubtype.
+const ATOMIC_PROMOTION: Record<string, string> = {
+	"xs:anyURI": "xs:string",  // anyURI promotes to string
+	"xs:float":  "xs:double",  // float promotes to double
+	"xs:decimal": "xs:float",  // decimal (and integer) promote to float …
+	// … and further to double via the float→double entry above
 };
 
 function isAtomicSubtype(from: string, to: string): boolean {
 	if (from === to) return true;
-	const subs = ATOMIC_SUBTYPES[to];
-	return subs !== undefined && subs.includes(from);
+	// xs:anyAtomicType accepts any atomic type.
+	if (to === "xs:anyAtomicType") return from in ATOMIC_TYPE_PARENT || from === "xs:anyAtomicType";
+	// xs:numeric is a union type equivalent to xs:decimal | xs:float | xs:double.
+	if (to === "xs:numeric") {
+		return isAtomicSubtype(from, "xs:decimal") || isAtomicSubtype(from, "xs:float") || isAtomicSubtype(from, "xs:double");
+	}
+	// Walk up the parent chain (subtype substitution).
+	let cur: string | undefined = ATOMIC_TYPE_PARENT[from];
+	while (cur !== undefined) {
+		if (cur === to) return true;
+		cur = ATOMIC_TYPE_PARENT[cur];
+	}
+	// Type promotion: check if `from` (or any ancestor) promotes to something
+	// that is a subtype-or-equal to `to`.
+	let probe: string | undefined = from;
+	while (probe !== undefined) {
+		const promoted = ATOMIC_PROMOTION[probe];
+		if (promoted !== undefined && isAtomicSubtype(promoted, to)) return true;
+		probe = ATOMIC_TYPE_PARENT[probe];
+	}
+	return false;
 }
 
 function isNodeSubtype(from: string | undefined, to: string | undefined): boolean {

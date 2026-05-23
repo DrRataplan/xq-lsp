@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "fn-prefix-from-qname-11",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]
