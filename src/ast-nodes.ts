@@ -21,8 +21,7 @@ function annotationNames(annotatedDecl: Node): string[] {
 		const eqname = directChildOf(ann, "EQName");
 		const name = eqname ? firstTerminalValue(eqname) : null;
 		if (!name) continue;
-		const local = splitLocalName(name);
-		names.push(local);
+		names.push(parseEQName(name).localName);
 	}
 	return names;
 }
@@ -31,15 +30,6 @@ function resolveQName(raw: string, analysis: FileAnalysis, defaultNs: string): Q
 	const { prefix, localName, uri } = parseEQName(raw);
 	const namespaceUri = uri ?? resolvePrefix(prefix, analysis);
 	return { prefix, localName, namespaceUri };
-}
-
-function splitLocalName(raw: string): string {
-	if (raw.startsWith("Q{")) {
-		const close = raw.indexOf("}");
-		if (close >= 0) return raw.slice(close + 1);
-	}
-	const ci = raw.indexOf(":");
-	return ci >= 0 ? raw.slice(ci + 1) : raw;
 }
 
 // ── FunctionCall ──────────────────────────────────────────────────────────────
