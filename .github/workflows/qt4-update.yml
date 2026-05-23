@@ -34,12 +34,14 @@ jobs:
                     echo "changed=false" >> "$GITHUB_OUTPUT"
                   fi
 
-            - name: Clone new QT4 testset
+            - name: Download new QT4 testset
               if: steps.check.outputs.changed == 'true'
-              run: |
-                  git clone --filter=blob:none --no-checkout \
-                    https://github.com/qt4cg/qt4tests.git /tmp/qt4tests
-                  cd /tmp/qt4tests && git checkout "${{ steps.check.outputs.latest }}"
+              uses: actions/checkout@v4
+              with:
+                  repository: qt4cg/qt4tests
+                  ref: ${{ steps.check.outputs.latest }}
+                  path: /tmp/qt4tests
+                  token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Update SHA and regenerate snapshots
               if: steps.check.outputs.changed == 'true'
