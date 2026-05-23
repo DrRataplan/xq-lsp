@@ -13,6 +13,8 @@ jobs:
             pull-requests: write
         steps:
             - uses: actions/checkout@v4
+              with:
+                  submodules: true
             - uses: actions/setup-node@v4
               with:
                   node-version: 26
@@ -22,7 +24,7 @@ jobs:
             - name: Check for new QT4 commit
               id: check
               run: |
-                  CURRENT=$(cat qt4-testset-commit.txt | tr -d '[:space:]')
+                  CURRENT=$(git -C qt4tests rev-parse HEAD)
                   LATEST=$(curl -sf \
                     -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                     https://api.github.com/repos/qt4cg/qt4tests/commits/main | jq -r '.sha')
@@ -34,20 +36,15 @@ jobs:
                     echo "changed=false" >> "$GITHUB_OUTPUT"
                   fi
 
-            - name: Download new QT4 testset
-              if: steps.check.outputs.changed == 'true'
-              uses: actions/checkout@v4
-              with:
-                  repository: qt4cg/qt4tests
-                  ref: ${{ steps.check.outputs.latest }}
-                  path: qt4tests
-                  token: ${{ secrets.GITHUB_TOKEN }}
-
-            - name: Update SHA and regenerate snapshots
+            - name: Advance submodule to latest
               if: steps.check.outputs.changed == 'true'
               run: |
-                  echo "${{ steps.check.outputs.latest }}" > qt4-testset-commit.txt
-                  node --test --test-update-snapshots src/qt4-diagnostic.test.ts
+                  git -C qt4tests fetch origin
+                  git -C qt4tests checkout "${{ steps.check.outputs.latest }}"
+
+            - name: Regenerate snapshots
+              if: steps.check.outputs.changed == 'true'
+              run: node --test --test-update-snapshots src/qt4-diagnostic.test.ts
               env:
                   QT4_TESTS_DIR: ${{ github.workspace }}/qt4tests
 
@@ -60,7 +57,7 @@ jobs:
                   git config user.name "github-actions[bot]"
                   git config user.email "github-actions[bot]@users.noreply.github.com"
                   git checkout -b "$BRANCH"
-                  git add qt4-testset-commit.txt src/qt4-snaps/
+                  git add qt4tests src/qt4-snaps/
                   git commit -m "chore: update QT4 testset to ${SHORT}"
                   git push origin "$BRANCH"
                   EXISTING=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number // empty')
