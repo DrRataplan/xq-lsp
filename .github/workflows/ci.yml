@@ -42,11 +42,11 @@ jobs:
               with:
                   repository: qt4cg/qt4tests
                   ref: ${{ steps.qt4sha.outputs.sha }}
-                  path: /tmp/qt4tests
+                  path: qt4tests
                   token: ${{ secrets.GITHUB_TOKEN }}
             - run: npm run test:coverage
               env:
-                  QT4_TESTS_DIR: /tmp/qt4tests
+                  QT4_TESTS_DIR: ${{ github.workspace }}/qt4tests
             - name: Upload coverage to Coveralls
               uses: coverallsapp/github-action@v2
               with:
