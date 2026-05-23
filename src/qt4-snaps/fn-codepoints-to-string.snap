@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "fn-codepoints-to-string1args-3",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

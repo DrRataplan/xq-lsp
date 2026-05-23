@@ -36,14 +36,6 @@
     "got": []
   },
   {
-    "testCase": "XPTY0004_10",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "XQST0022_1",
     "outcome": "false-negative",
     "expectedCode": "XQST0022",
