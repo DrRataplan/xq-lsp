@@ -1,0 +1,3 @@
+[submodule "qt4tests"]
+	path = qt4tests
+	url = https://github.com/qt4cg/qt4tests.git
