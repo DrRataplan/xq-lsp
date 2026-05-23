@@ -1,13 +1,5 @@
 [
   {
-    "testCase": "orderBy69",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
     "testCase": "orderbylocal-60",
     "outcome": "false-negative",
     "expectedCode": "XQST0076",

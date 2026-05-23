@@ -4,13 +4,5 @@
     "outcome": "false-negative",
     "expectedCode": "XQST0094",
     "got": []
-  },
-  {
-    "testCase": "group-025",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
   }
 ]

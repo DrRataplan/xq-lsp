@@ -102,6 +102,14 @@ declare function fn:error(
  : @param $label A label for the trace output
  : @return The input value
  :)
+declare function fn:trace($value as item()*) as item()* external;
+
+(:~
+ : Returns the value of the first argument unchanged and emits a diagnostic trace message.
+ : @param $value The value to return unchanged
+ : @param $label A label for the trace output
+ : @return The input value
+ :)
 declare function fn:trace($value as item()*, $label as xs:string) as item()* external;
 
 (: ── Numeric functions ──────────────────────────────────────────────────────── :)
@@ -1438,3 +1446,46 @@ declare function fn:serialize($arg as item()*) as xs:string external;
  : @return The serialized string
  :)
 declare function fn:serialize($arg as item()*, $params as item()?) as xs:string external;
+
+(: ── XQuery 3.0 additions ────────────────────────────────────────────────────── :)
+
+declare function fn:parse-xml($arg as xs:string?) as document-node(element(*))? external;
+
+declare function fn:parse-xml-fragment($arg as xs:string?) as document-node()? external;
+
+declare function fn:format-integer($value as xs:integer?, $picture as xs:string) as xs:string external;
+declare function fn:format-integer($value as xs:integer?, $picture as xs:string, $lang as xs:string) as xs:string external;
+
+(: ── XQuery 3.1 additions ────────────────────────────────────────────────────── :)
+
+declare function fn:json-doc($href as xs:string?) as item()? external;
+declare function fn:json-doc($href as xs:string?, $options as map(*)) as item()? external;
+
+declare function fn:parse-json($json-text as xs:string?) as item()? external;
+declare function fn:parse-json($json-text as xs:string?, $options as map(*)) as item()? external;
+
+declare function fn:json-to-xml($json-text as xs:string?) as document-node()? external;
+declare function fn:json-to-xml($json-text as xs:string?, $options as map(*)) as document-node()? external;
+
+declare function fn:xml-to-json($input as node()?) as xs:string? external;
+declare function fn:xml-to-json($input as node()?, $options as map(*)) as xs:string? external;
+
+declare function fn:parse-ietf-date($value as xs:string?) as xs:dateTime? external;
+
+declare function fn:collation-key($key as xs:string) as xs:base64Binary external;
+declare function fn:collation-key($key as xs:string, $collation as xs:string) as xs:base64Binary external;
+
+declare function fn:contains-token($input as xs:string*, $token as xs:string) as xs:boolean external;
+declare function fn:contains-token($input as xs:string*, $token as xs:string, $collation as xs:string) as xs:boolean external;
+
+declare function fn:random-number-generator() as map(xs:string, item()) external;
+declare function fn:random-number-generator($seed as xs:anyAtomicType?) as map(xs:string, item()) external;
+
+declare function fn:transform($options as map(xs:string, item()*)) as map(xs:string, item()*) external;
+
+declare function fn:load-xquery-module($uri as xs:string) as map(xs:string, item()*) external;
+declare function fn:load-xquery-module($uri as xs:string, $options as map(xs:string, item()*)) as map(xs:string, item()*) external;
+
+(: ── XQuery Update Facility ──────────────────────────────────────────────────── :)
+
+declare function fn:put($node as node(), $uri as xs:string) as empty-sequence() external;

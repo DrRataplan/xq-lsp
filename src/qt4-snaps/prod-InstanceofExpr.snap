@@ -6,14 +6,6 @@
     "got": []
   },
   {
-    "testCase": "instanceof131",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
     "testCase": "K-SeqExprInstanceOf-49",
     "outcome": "false-negative",
     "expectedCode": "XPST0081",

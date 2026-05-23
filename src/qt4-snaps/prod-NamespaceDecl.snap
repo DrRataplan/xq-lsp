@@ -24,30 +24,6 @@
     "got": []
   },
   {
-    "testCase": "namespaceDecl-26",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "namespaceDecl-27",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "namespaceDecl-28",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
     "testCase": "K2-NamespaceProlog-1",
     "outcome": "false-negative",
     "expectedCode": "XQST0033",

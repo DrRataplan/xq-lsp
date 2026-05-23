@@ -8,30 +8,6 @@
     ]
   },
   {
-    "testCase": "default_namespace-023",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "default_namespace-024",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "default_namespace-025",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
     "testCase": "defaultnamespacedeclerr-1",
     "outcome": "false-negative",
     "expectedCode": "XQST0066",

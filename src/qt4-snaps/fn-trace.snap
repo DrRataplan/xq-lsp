@@ -1,26 +1,8 @@
 [
   {
-    "testCase": "fn-trace-22",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "fn-trace-23",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "fn-trace-24",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
+    "testCase": "K-TraceFunc-2",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
   }
 ]
