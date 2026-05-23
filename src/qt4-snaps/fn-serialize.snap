@@ -1,35 +1,10 @@
 [
   {
-    "testCase": "serialize-xml-001",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-002",
-    "outcome": "false-positive",
-    "expectedCode": "SENR0001",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
     "testCase": "serialize-xml-003",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-003b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -37,16 +12,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-004b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -54,16 +20,7 @@
     "outcome": "false-positive",
     "expectedCode": "SEPM0017",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-005b",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0017",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -71,16 +28,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-006b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -88,7 +36,6 @@
     "outcome": "false-positive",
     "expectedCode": "SEPM0017",
     "got": [
-      "XPST0017",
       "XQST0081"
     ]
   },
@@ -97,24 +44,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-007b",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0017",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-007c",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -122,16 +52,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-008b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -139,32 +60,7 @@
     "outcome": "false-positive",
     "expectedCode": "SEPM0017",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-009b",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0017",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-010",
-    "outcome": "false-positive",
-    "expectedCode": "SENR0001",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-011",
-    "outcome": "false-positive",
-    "expectedCode": "SENR0001",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -176,28 +72,11 @@
     ]
   },
   {
-    "testCase": "serialize-xml-013",
-    "outcome": "false-positive",
-    "expectedCode": "SENR0001",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
     "testCase": "serialize-xml-014",
     "outcome": "false-positive",
     "expectedCode": "SEPM0017",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-014b",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0017",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -205,16 +84,7 @@
     "outcome": "false-positive",
     "expectedCode": "SEPM0017",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-015b",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0017",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -222,16 +92,7 @@
     "outcome": "false-positive",
     "expectedCode": "SEPM0017",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-016b",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0017",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -239,16 +100,7 @@
     "outcome": "false-positive",
     "expectedCode": "XPTY0004",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-017b",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -256,16 +108,7 @@
     "outcome": "false-positive",
     "expectedCode": "XPTY0004",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-018b",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -273,16 +116,7 @@
     "outcome": "false-positive",
     "expectedCode": "SEPM0019",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-019b",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0019",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -290,16 +124,7 @@
     "outcome": "false-positive",
     "expectedCode": "SEPM0017",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-020b",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0017",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -307,16 +132,7 @@
     "outcome": "false-positive",
     "expectedCode": "SEPM0017",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-021b",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0017",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -324,16 +140,7 @@
     "outcome": "false-positive",
     "expectedCode": "SEPM0017",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-022b",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0017",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -341,16 +148,7 @@
     "outcome": "false-positive",
     "expectedCode": "SEPM0017",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-023b",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0017",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -358,16 +156,7 @@
     "outcome": "false-positive",
     "expectedCode": "SEPM0018",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-024b",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0018",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -375,16 +164,7 @@
     "outcome": "false-positive",
     "expectedCode": "SEPM0019",
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-025b",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0019",
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -392,16 +172,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-026b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -409,16 +180,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-027b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -426,16 +188,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-028b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -443,16 +196,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-029b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -460,16 +204,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-030b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -477,16 +212,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-031b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -494,16 +220,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-032b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -511,16 +228,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-033b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -528,272 +236,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
       "XQST0081"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-034b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-101",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-102",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-103",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-104",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-105",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-106",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-106a",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-107",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-107a",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-108",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-109",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-110",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-119",
-    "outcome": "false-positive",
-    "expectedCode": "XQDY0137",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-120",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-120b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-123",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0016",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-124",
-    "outcome": "false-positive",
-    "expectedCode": "XQDY0137",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-125",
-    "outcome": "false-positive",
-    "expectedCode": "XQDY0137",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-126",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-127",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-127a",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-128",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-129",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-130",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-131",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-131a",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-132",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-133",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-134",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-134b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-137",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-137b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
     ]
   },
   {
@@ -806,70 +249,6 @@
   },
   {
     "testCase": "serialize-xml-138b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-139",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-139b",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-140",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-140b",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-141",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-141b",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-142",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-142b",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
@@ -925,231 +304,7 @@
     ]
   },
   {
-    "testCase": "serialize-html-001",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-html-001b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-html-002",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-html-002b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-html-003",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-001",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-002",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-003",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-004",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
     "testCase": "serialize-json-005",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-006",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-007",
-    "outcome": "false-positive",
-    "expectedCode": "SERE0023",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-008",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-008b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-009",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-009b",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-010",
-    "outcome": "false-positive",
-    "expectedCode": "SERE0022",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-011",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-012",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-013",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-014",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-015",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-101",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-102",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-103",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-104",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-105",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-106",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-107",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
@@ -1165,71 +320,7 @@
     ]
   },
   {
-    "testCase": "serialize-json-109",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
     "testCase": "serialize-json-110",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-111",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-112",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-113",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-114",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-115",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-116",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-117",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
@@ -1253,134 +344,6 @@
     ]
   },
   {
-    "testCase": "serialize-json-120",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-121",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-122",
-    "outcome": "false-positive",
-    "expectedCode": "SERE0020",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-123",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-124",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-125",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-126",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-127",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-128",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-130",
-    "outcome": "false-positive",
-    "expectedCode": "SERE0023",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-131",
-    "outcome": "false-positive",
-    "expectedCode": "SERE0023",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-132",
-    "outcome": "false-positive",
-    "expectedCode": "SERE0023",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-133",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-134",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-json-135",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-adaptive-001",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
     "testCase": "serialize-adaptive-002",
     "outcome": "false-positive",
     "expectedCode": null,
@@ -1390,14 +353,6 @@
   },
   {
     "testCase": "serialize-adaptive-003",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "serialize-adaptive-004",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [

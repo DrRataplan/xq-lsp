@@ -14,21 +14,5 @@
     "got": [
       "XQST0081"
     ]
-  },
-  {
-    "testCase": "nscons-029",
-    "outcome": "false-positive",
-    "expectedCode": "SENR0001",
-    "got": [
-      "XPST0017"
-    ]
-  },
-  {
-    "testCase": "nscons-030",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
   }
 ]
