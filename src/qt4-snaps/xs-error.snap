@@ -30,13 +30,5 @@
     "got": [
       "XPTY0004"
     ]
-  },
-  {
-    "testCase": "xs-error-018",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
   }
 ]

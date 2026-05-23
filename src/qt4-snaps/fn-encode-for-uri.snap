@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "fn-encode-for-uri1args-6",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]
