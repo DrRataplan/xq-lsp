@@ -1,37 +1,5 @@
 [
   {
-    "testCase": "array-filter-005",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "array-filter-006",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "array-filter-007",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "array-filter-009",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "array-filter-013",
     "outcome": "false-positive",
     "expectedCode": "XPTY0004",
