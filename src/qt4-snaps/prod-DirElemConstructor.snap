@@ -6,6 +6,12 @@
     "got": []
   },
   {
+    "testCase": "Constr-elem-matchtag-2a",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0118",
+    "got": []
+  },
+  {
     "testCase": "K2-DirectConElem-15",
     "outcome": "false-negative",
     "expectedCode": "XQST0118",

@@ -316,6 +316,7 @@ function extractNamespaceDecls(ast: Node): NamespaceDecl[] {
 	return results;
 }
 
+
 function extractImports(ast: Node): ImportInfo[] {
 	const results: ImportInfo[] = [];
 	for (const mi of findAll(ast, "ModuleImport")) {

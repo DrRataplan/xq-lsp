@@ -158,14 +158,6 @@
     ]
   },
   {
-    "testCase": "try-catch-err-code-variable-13",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
     "testCase": "try-catch-err-code-variable-14",
     "outcome": "false-positive",
     "expectedCode": null,

@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "K2-Serialization-12",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  }
-]
+[]
