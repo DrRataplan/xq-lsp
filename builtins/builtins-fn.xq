@@ -1423,3 +1423,18 @@ declare function fn:element-with-id($arg as xs:string*) as element()* external;
  : @param $arg ID strings @param $node Node in the target document
  :)
 declare function fn:element-with-id($arg as xs:string*, $node as node()) as element()* external;
+
+(:~
+ : Serializes a sequence of items as a string.
+ : @param $arg The sequence of items to serialize
+ : @return The serialized string
+ :)
+declare function fn:serialize($arg as item()*) as xs:string external;
+
+(:~
+ : Serializes a sequence of items as a string using the given serialization parameters.
+ : @param $arg The sequence of items to serialize
+ : @param $params Serialization parameters (map or element)
+ : @return The serialized string
+ :)
+declare function fn:serialize($arg as item()*, $params as item()?) as xs:string external;
