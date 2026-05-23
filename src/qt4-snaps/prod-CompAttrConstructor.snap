@@ -1,13 +1,5 @@
 [
   {
-    "testCase": "Constr-compattr-name-4",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
     "testCase": "Constr-compattr-id-1",
     "outcome": "false-positive",
     "expectedCode": null,

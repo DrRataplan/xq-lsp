@@ -1,34 +1,10 @@
 [
   {
-    "testCase": "eqname-002",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
-    "testCase": "eqname-003",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
     "testCase": "eqname-004",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
       "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "eqname-015",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
     ]
   },
   {
@@ -40,30 +16,6 @@
     ]
   },
   {
-    "testCase": "eqname-020",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
-    "testCase": "eqname-021",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
-    "testCase": "eqname-022",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
     "testCase": "eqname-023",
     "outcome": "false-positive",
     "expectedCode": null,
@@ -72,44 +24,22 @@
     ]
   },
   {
-    "testCase": "eqname-024",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
+    "testCase": "eqname-908",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
   },
   {
-    "testCase": "eqname-029",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
+    "testCase": "eqname-909",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0046",
+    "got": []
   },
   {
-    "testCase": "eqname-029p",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
-    "testCase": "eqname-030",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
-    "testCase": "eqname-031",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
+    "testCase": "eqname-909p",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
   },
   {
     "testCase": "eqname-910",

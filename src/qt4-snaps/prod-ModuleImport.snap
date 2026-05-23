@@ -78,6 +78,18 @@
     "got": []
   },
   {
+    "testCase": "modules-34",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "modules-35",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
     "testCase": "modules-44",
     "outcome": "false-negative",
     "expectedCode": "XQST0048",

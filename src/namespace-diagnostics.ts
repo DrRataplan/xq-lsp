@@ -23,6 +23,7 @@ function checkQName(
 	if (!node) return;
 	const name = firstTerminalValue(node);
 	if (!name) return;
+	if (name.startsWith("Q{")) return; // URIQualifiedName: URI is inline, no prefix needed
 	const colonIdx = name.indexOf(":");
 	if (colonIdx <= 0) return;
 	const prefix = name.slice(0, colonIdx);

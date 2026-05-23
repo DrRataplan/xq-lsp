@@ -6,6 +6,7 @@ import {
 	directChildrenOf,
 	firstTerminalValue,
 	sequenceTypeText,
+	parseEQName,
 	resolvePrefix,
 } from "./analyzer.ts";
 
@@ -20,15 +21,25 @@ function annotationNames(annotatedDecl: Node): string[] {
 		const eqname = directChildOf(ann, "EQName");
 		const name = eqname ? firstTerminalValue(eqname) : null;
 		if (!name) continue;
-		const [, local] = splitName(name);
+		const local = splitLocalName(name);
 		names.push(local);
 	}
 	return names;
 }
 
-function splitName(raw: string): [prefix: string, localName: string] {
+function resolveQName(raw: string, analysis: FileAnalysis, defaultNs: string): QName {
+	const { prefix, localName, uri } = parseEQName(raw);
+	const namespaceUri = uri ?? resolvePrefix(prefix, analysis);
+	return { prefix, localName, namespaceUri };
+}
+
+function splitLocalName(raw: string): string {
+	if (raw.startsWith("Q{")) {
+		const close = raw.indexOf("}");
+		if (close >= 0) return raw.slice(close + 1);
+	}
 	const ci = raw.indexOf(":");
-	return [ci >= 0 ? raw.slice(0, ci) : "", ci >= 0 ? raw.slice(ci + 1) : raw];
+	return ci >= 0 ? raw.slice(ci + 1) : raw;
 }
 
 // ── FunctionCall ──────────────────────────────────────────────────────────────
@@ -44,8 +55,8 @@ export function asFunctionCall(node: Node, analysis: FileAnalysis): FunctionCall
 	if (!fnEqname) return null;
 	const name = firstTerminalValue(fnEqname);
 	if (!name) return null;
-	const [prefix, localName] = splitName(name);
-	const namespaceUri = resolvePrefix(prefix, analysis);
+	const { prefix, localName, uri } = parseEQName(name);
+	const namespaceUri = uri ?? resolvePrefix(prefix, analysis);
 	const argList = directChildOf(node, "ArgumentList");
 	const args = argList ? directChildrenOf(argList, "Argument") : [];
 	return { qname: { prefix, localName, namespaceUri }, args };
@@ -64,8 +75,8 @@ export function asNamedFunctionRef(node: Node, analysis: FileAnalysis): NamedFun
 	if (!eqname) return null;
 	const name = firstTerminalValue(eqname);
 	if (!name) return null;
-	const [prefix, localName] = splitName(name);
-	const namespaceUri = resolvePrefix(prefix, analysis);
+	const { prefix, localName, uri } = parseEQName(name);
+	const namespaceUri = uri ?? resolvePrefix(prefix, analysis);
 	const arityNode = directChildOf(node, "IntegerLiteral");
 	const arity = arityNode ? parseInt(firstTerminalValue(arityNode) ?? "0", 10) : 0;
 	return { qname: { prefix, localName, namespaceUri }, arity };
@@ -79,9 +90,9 @@ export function asVarRef(node: Node, analysis: FileAnalysis): QName | null {
 	if (!varNameNode) return null;
 	const rawName = firstTerminalValue(varNameNode);
 	if (!rawName) return null;
-	const [prefix, localName] = splitName(rawName);
+	const { prefix, localName, uri } = parseEQName(rawName);
 	// Variables don't use the default function namespace — unqualified vars have empty URI
-	const namespaceUri = prefix ? resolvePrefix(prefix, analysis) : "";
+	const namespaceUri = uri ?? (prefix ? resolvePrefix(prefix, analysis) : "");
 	return { prefix, localName, namespaceUri };
 }
 
@@ -94,8 +105,8 @@ export function asVarDecl(node: Node, analysis: FileAnalysis): { qname: QName; n
 	if (!nameNode) return null;
 	const rawName = firstTerminalValue(nameNode);
 	if (!rawName) return null;
-	const [prefix, localName] = splitName(rawName);
-	const namespaceUri = prefix ? resolvePrefix(prefix, analysis) : "";
+	const { prefix, localName, uri } = parseEQName(rawName);
+	const namespaceUri = uri ?? (prefix ? resolvePrefix(prefix, analysis) : "");
 	return { qname: { prefix, localName, namespaceUri }, nameNode };
 }
 
@@ -115,16 +126,16 @@ export function asFunctionDecl(node: Node, analysis: FileAnalysis): FunctionDecl
 	if (!nameNode) return null;
 	const rawName = firstTerminalValue(nameNode);
 	if (!rawName) return null;
-	const [prefix, localName] = splitName(rawName);
-	const namespaceUri = resolvePrefix(prefix, analysis);
+	const { prefix, localName, uri } = parseEQName(rawName);
+	const namespaceUri = uri ?? resolvePrefix(prefix, analysis);
 	const paramList = directChildOf(node, "ParamList");
 	const paramNodes = paramList ? directChildrenOf(paramList, "Param") : [];
 	const params = paramNodes.flatMap((p) => {
 		const pNameNode = directChildOf(p, "EQName");
 		const pName = pNameNode ? firstTerminalValue(pNameNode) : null;
 		if (!pName || !pNameNode) return [];
-		const [pPrefix, pLocalName] = splitName(pName);
-		const pNsUri = pPrefix ? resolvePrefix(pPrefix, analysis) : "";
+		const { prefix: pPrefix, localName: pLocalName, uri: pUri } = parseEQName(pName);
+		const pNsUri = pUri ?? (pPrefix ? resolvePrefix(pPrefix, analysis) : "");
 		return [{ nameNode: pNameNode, qname: { prefix: pPrefix, localName: pLocalName, namespaceUri: pNsUri } }];
 	});
 	return { nameNode, qname: { prefix, localName, namespaceUri }, params, body: directChildOf(node, "FunctionBody") ?? null };
@@ -167,8 +178,8 @@ export function asPositionalVar(node: Node, analysis: FileAnalysis): { nameNode:
 	if (!nameNode) return null;
 	const rawName = firstTerminalValue(nameNode);
 	if (!rawName) return null;
-	const [prefix, localName] = splitName(rawName);
-	const namespaceUri = prefix ? resolvePrefix(prefix, analysis) : "";
+	const { prefix, localName, uri } = parseEQName(rawName);
+	const namespaceUri = uri ?? (prefix ? resolvePrefix(prefix, analysis) : "");
 	return { nameNode, qname: { prefix, localName, namespaceUri } };
 }
 
@@ -195,8 +206,8 @@ export function asBinding(node: Node, analysis: FileAnalysis): BindingShape | nu
 	function varFromName(nameNode: Node): { nameNode: Node; qname: QName } | null {
 		const rawName = firstTerminalValue(nameNode);
 		if (!rawName) return null;
-		const [prefix, localName] = splitName(rawName);
-		const namespaceUri = prefix ? resolvePrefix(prefix, analysis) : "";
+		const { prefix, localName, uri } = parseEQName(rawName);
+		const namespaceUri = uri ?? (prefix ? resolvePrefix(prefix, analysis) : "");
 		return { nameNode, qname: { prefix, localName, namespaceUri } };
 	}
 
@@ -258,8 +269,8 @@ export function asVarName(node: Node, analysis: FileAnalysis): QName | null {
 	if (node.type !== "VarName") return null;
 	const rawName = firstTerminalValue(node);
 	if (!rawName) return null;
-	const [prefix, localName] = splitName(rawName);
-	return { prefix, localName, namespaceUri: prefix ? resolvePrefix(prefix, analysis) : "" };
+	const { prefix, localName, uri } = parseEQName(rawName);
+	return { prefix, localName, namespaceUri: uri ?? (prefix ? resolvePrefix(prefix, analysis) : "") };
 }
 
 // ── CatchClause ───────────────────────────────────────────────────────────────
@@ -320,10 +331,8 @@ export function asTypedBinding(node: Node, text: string, analysis: FileAnalysis)
 	}
 	const rawName = nameNode ? firstTerminalValue(nameNode) : null;
 	if (!rawName) return null;
-	const colonIdx = rawName.indexOf(":");
-	const prefix = colonIdx >= 0 ? rawName.slice(0, colonIdx) : "";
-	const localName = colonIdx >= 0 ? rawName.slice(colonIdx + 1) : rawName;
-	const namespaceUri = prefix ? resolvePrefix(prefix, analysis) : "";
+	const { prefix, localName, uri } = parseEQName(rawName);
+	const namespaceUri = uri ?? (prefix ? resolvePrefix(prefix, analysis) : "");
 	const typeDecl = directChildOf(node, "TypeDeclaration");
 	const seqType = typeDecl ? directChildOf(typeDecl, "SequenceType") : null;
 	return {
