@@ -66,13 +66,5 @@
     "got": [
       "XPST0003"
     ]
-  },
-  {
-    "testCase": "fn-innermost-059",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
   }
 ]

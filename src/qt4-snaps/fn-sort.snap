@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "fn-sort-spec-6",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0017"
-    ]
-  }
-]
+[]
