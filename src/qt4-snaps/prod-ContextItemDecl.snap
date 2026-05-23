@@ -1,13 +1,5 @@
 [
   {
-    "testCase": "contextDecl-030",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "contextDecl-046",
     "outcome": "false-negative",
     "expectedCode": "XQST0099",

@@ -1,13 +1,5 @@
 [
   {
-    "testCase": "XMark-Q10",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "XMark-All",
     "outcome": "false-positive",
     "expectedCode": null,

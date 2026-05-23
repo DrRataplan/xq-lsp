@@ -10,21 +10,5 @@
     "outcome": "false-negative",
     "expectedCode": "XPST0003",
     "got": []
-  },
-  {
-    "testCase": "predicates-35",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "predicates-36",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
   }
 ]

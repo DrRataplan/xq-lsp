@@ -1,21 +1,5 @@
 [
   {
-    "testCase": "orderBy66",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "orderBy67",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "orderBy69",
     "outcome": "false-positive",
     "expectedCode": null,

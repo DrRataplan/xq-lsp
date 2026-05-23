@@ -154,14 +154,14 @@ describe("inferExprType", () => {
 		assert.ok(errors[0].message.includes("xs:integer"), `message: ${errors[0].message}`);
 	});
 
-	test("path expression inferred as node", () => {
+	test("path expression passed to atomic param: no error (atomization applies)", () => {
+		// XQuery function conversion rules atomize nodes to atomic values, so this is valid.
 		const src = `declare function local:f($x as xs:string) { $x }; local:f(//foo)`;
 		const { ast } = analyzeWithAst(src, "file:///test.xq");
 		assert.ok(ast);
 		const analysis = analyze(src, "file:///test.xq");
 		const errors = checkTypes(ast, src, analysis, new Map());
-		assert.equal(errors.length, 1);
-		assert.ok(errors[0].message.includes("node"), `message: ${errors[0].message}`);
+		assert.equal(errors.length, 0, `unexpected errors: ${JSON.stringify(errors)}`);
 	});
 });
 
@@ -298,15 +298,15 @@ describe("checkTypes", () => {
 		assert.equal(ast, null, "expected null ast for invalid XQuery");
 	});
 
-	test("builtin function type checking via imported analyses", () => {
+	test("builtin function type checking: node passed to xs:string? is not flagged (atomization applies)", () => {
 		const src = `fn:string-length(//foo)`;
 		const { ast } = analyzeWithAst(src, "file:///test.xq");
 		assert.ok(ast);
 		const analysis = analyze(src, "file:///test.xq");
 		const builtins = getBuiltins();
-		// fn:string-length expects xs:string? — passing a node should be flagged
+		// XQuery atomizes the node to its string value — not a static error.
 		const errors = checkTypes(ast, src, analysis, new Map([["builtin:fn", builtins]]));
-		assert.equal(errors.length, 1, `expected 1 error, got ${errors.length}: ${JSON.stringify(errors)}`);
+		assert.equal(errors.length, 0, `unexpected errors: ${JSON.stringify(errors)}`);
 	});
 
 	test("no error for subsequence with integer arguments (numeric promotion)", () => {
