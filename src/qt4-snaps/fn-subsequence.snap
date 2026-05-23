@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "K2-SeqSubsequenceFunc-10",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "cbcl-subsequence-007",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

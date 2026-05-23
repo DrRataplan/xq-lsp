@@ -1,21 +1,5 @@
 [
   {
-    "testCase": "fn-normalize-unicode1args-7",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "fn-normalize-unicode2args-6",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "fn-normalize-unicode-11",
     "outcome": "false-positive",
     "expectedCode": null,

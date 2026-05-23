@@ -325,14 +325,14 @@ function typeCheckCall(
 		// XQuery function conversion rules (§3.1.5): nodes are atomized to atomic values,
 		// so a node argument where an atomic type is expected is not a static error.
 		if (inferredType.kind === "node" && declaredType.kind === "atomic") continue;
-		// TODO: atomic-to-atomic mismatches (e.g. xs:integer where xs:string? is expected)
-		// are dynamic errors in XQuery, not static ones — no conformant implementation
-		// raises XPTY0004 statically for these. The QT4 test suite has ~48 such false
-		// positives (e.g. compare(123,456), abs("a string")). However, flagging these IS
-		// still useful for user-defined functions and clear mistakes. A targeted fix would
-		// suppress these checks only for built-in functions, or only when the inferred type
-		// comes from a literal and the declared type is a "peer" atomic type (not a
-		// supertype like xs:anyAtomicType). Left as a future improvement.
+		// Atomic-to-atomic: XQuery allows implicit conversions between atomic types at
+		// runtime (e.g. string→numeric coercion), so we don't raise XPTY0004 statically
+		// for these — they are dynamic errors, not static ones.
+		// TODO: it should be possible to detect clear errors here (e.g. passing a string
+		// literal where xs:numeric is expected with no applicable conversion), but that
+		// requires modeling which conversions are actually allowed per §3.1.5 without
+		// generating false positives for legitimate implicit coercions.
+		if (inferredType.kind === "atomic" && declaredType.kind === "atomic") continue;
 		if (!isAssignable(inferredType, declaredType)) {
 			errors.push({
 				message: `Argument ${i + 1} of ${formatQName(call.qname)}: expected ${param.type}, got ${formatType(inferredType)} [XPTY0004]`,
