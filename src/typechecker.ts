@@ -228,8 +228,14 @@ export function inferExprType(
 			const qname = asVarRef(node, analysis);
 			return qname ? (varTypes.get(qnameKey(qname)) ?? UNKNOWN) : UNKNOWN;
 		}
-		case "FunctionCall":
+		case "FunctionCall": {
+			// Partial application — one or more ArgumentPlaceholder nodes ('?') are present.
+			// The result is a function type we don't fully infer yet; return UNKNOWN to avoid
+			// misidentifying it as the function's plain return type.
+			const argList = directChildOf(node, "ArgumentList");
+			if (argList && findAll(argList, "ArgumentPlaceholder").length > 0) return UNKNOWN;
 			return inferFunctionReturn(node, analysis, allFns);
+		}
 		case "PathExpr":
 		case "RelativePathExpr":
 			if (isPathExpr(node)) return NODE_STEP;
@@ -319,6 +325,14 @@ function typeCheckCall(
 		// XQuery function conversion rules (§3.1.5): nodes are atomized to atomic values,
 		// so a node argument where an atomic type is expected is not a static error.
 		if (inferredType.kind === "node" && declaredType.kind === "atomic") continue;
+		// TODO: atomic-to-atomic mismatches (e.g. xs:integer where xs:string? is expected)
+		// are dynamic errors in XQuery, not static ones — no conformant implementation
+		// raises XPTY0004 statically for these. The QT4 test suite has ~48 such false
+		// positives (e.g. compare(123,456), abs("a string")). However, flagging these IS
+		// still useful for user-defined functions and clear mistakes. A targeted fix would
+		// suppress these checks only for built-in functions, or only when the inferred type
+		// comes from a literal and the declared type is a "peer" atomic type (not a
+		// supertype like xs:anyAtomicType). Left as a future improvement.
 		if (!isAssignable(inferredType, declaredType)) {
 			errors.push({
 				message: `Argument ${i + 1} of ${formatQName(call.qname)}: expected ${param.type}, got ${formatType(inferredType)} [XPTY0004]`,
