@@ -1,21 +1,5 @@
 [
   {
-    "testCase": "UseCaseR31-001",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "UseCaseR31-002",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "UseCaseR31-022",
     "outcome": "false-positive",
     "expectedCode": null,

@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "xmp-queries-results-q4",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "xmp-queries-results-q10",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

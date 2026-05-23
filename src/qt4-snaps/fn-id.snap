@@ -6,13 +6,5 @@
     "got": [
       "XPTY0004"
     ]
-  },
-  {
-    "testCase": "K2-SeqIDFunc-13",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
   }
 ]

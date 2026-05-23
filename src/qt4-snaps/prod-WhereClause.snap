@@ -18,41 +18,9 @@
     "got": []
   },
   {
-    "testCase": "WhereExpr022",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "WhereExpr024",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "WhereExpr025",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "K2-WhereExpr-1",
     "outcome": "false-negative",
     "expectedCode": "XPST0003",
     "got": []
-  },
-  {
-    "testCase": "cbcl-left-outer-join-004",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
   }
 ]

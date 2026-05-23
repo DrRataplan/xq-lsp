@@ -30,14 +30,6 @@
     "got": []
   },
   {
-    "testCase": "K2-LetExprWithout-20",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "let-arr-015a",
     "outcome": "false-positive",
     "expectedCode": "FOAY0001",

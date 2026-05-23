@@ -88,14 +88,6 @@
     ]
   },
   {
-    "testCase": "eqname-017",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "eqname-018",
     "outcome": "false-positive",
     "expectedCode": null,

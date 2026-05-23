@@ -8,35 +8,11 @@
     ]
   },
   {
-    "testCase": "generate-id-010",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "generate-id-011",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
       "XPST0003"
-    ]
-  },
-  {
-    "testCase": "generate-id-012",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "generate-id-013",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
     ]
   }
 ]

@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "fn-indexof-mix-args-018",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "fn-indexof-mix-args-019",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

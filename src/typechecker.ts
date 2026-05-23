@@ -243,6 +243,9 @@ function typeCheckCall(
 		if (!expr) continue;
 		const inferredType = inferExprType(expr, varTypes, analysis, allFns);
 		if (inferredType.kind === "unknown") continue;
+		// XQuery function conversion rules (§3.1.5): nodes are atomized to atomic values,
+		// so a node argument where an atomic type is expected is not a static error.
+		if (inferredType.kind === "node" && declaredType.kind === "atomic") continue;
 		if (!isAssignable(inferredType, declaredType)) {
 			errors.push({
 				message: `Argument ${i + 1} of ${formatQName(call.qname)}: expected ${param.type}, got ${formatType(inferredType)} [XPTY0004]`,

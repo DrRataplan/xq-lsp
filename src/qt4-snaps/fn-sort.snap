@@ -1,18 +1,9 @@
 [
   {
-    "testCase": "fn-sort-spec-5",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
     "testCase": "fn-sort-spec-6",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPTY0004",
       "XPST0017"
     ]
   }
