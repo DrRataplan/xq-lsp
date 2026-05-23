@@ -1,29 +1,5 @@
 [
   {
-    "testCase": "hof-901",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "hof-902",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "hof-903",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "hof-904",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
     "testCase": "inline-function-10",
     "outcome": "false-negative",
     "expectedCode": "XPST0008",

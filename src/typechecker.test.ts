@@ -500,6 +500,19 @@ describe("checkTypes", () => {
 		assert.equal(errors.length, 1, `expected exactly 1 error, got: ${JSON.stringify(errors)}`);
 		assert.ok(errors[0].message.includes("needs-node"), errors[0].message);
 	});
+
+	test("atomic-to-atomic type mismatch is not flagged as static error (dynamic coercion)", () => {
+		// fn:abs expects xs:numeric?; xs:string("1") returns xs:string.
+		// XQuery allows runtime coercions between atomic types, so this is never XPTY0004
+		// statically — the spec makes such mismatches dynamic errors only.
+		const src = `fn:abs(xs:string("1"))`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		const builtins = getBuiltins();
+		const errors = checkTypes(ast, src, analysis, new Map([["builtin:fn", builtins]]));
+		assert.equal(errors.length, 0, `unexpected errors: ${JSON.stringify(errors)}`);
+	});
 });
 
 // ── formatType ────────────────────────────────────────────────────────────────
