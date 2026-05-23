@@ -3,6 +3,7 @@ import type { FileAnalysis, FunctionSymbol } from "./types.ts";
 import { formatQName } from "./types.ts";
 import {
 	resolvePrefix,
+	parseEQName,
 	nodeStackAtOffset,
 	directChildOf,
 	directChildrenOf,
@@ -38,10 +39,8 @@ export function resolveFunction(
 	fns: FunctionSymbol[],
 	arity?: number,
 ): FunctionSymbol | undefined {
-	const colonIdx = word.indexOf(":");
-	const prefix = colonIdx >= 0 ? word.slice(0, colonIdx) : "";
-	const localName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
-	const uri = resolvePrefix(prefix, currentAnalysis);
+	const { prefix, localName, uri: directUri } = parseEQName(word);
+	const uri = directUri ?? resolvePrefix(prefix, currentAnalysis);
 	const matches = fns.filter((f) => f.qname.namespaceUri === uri && f.qname.localName === localName);
 	if (arity !== undefined) return matches.find((f) => f.arity === arity) ?? matches[0];
 	return matches[0];

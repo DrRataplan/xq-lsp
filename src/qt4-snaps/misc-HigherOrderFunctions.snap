@@ -56,11 +56,9 @@
     "got": []
   },
   {
-    "testCase": "inline-function-16",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
+    "testCase": "inline-function-15",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0039",
+    "got": []
   }
 ]

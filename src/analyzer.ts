@@ -193,11 +193,23 @@ function resolveNamespaceUri(prefix: string, prefixMap: Map<string, string>): st
 	return prefixMap.get(prefix) ?? `urn:xq-lsp:undeclared:${prefix}`;
 }
 
+/**
+ * Split a raw EQName terminal into its components, handling both the
+ * conventional `prefix:local` form and the `Q{uri}local` URIQualifiedName form.
+ * For `Q{uri}local` the uri is returned directly and needs no prefix lookup.
+ */
+export function parseEQName(raw: string): { prefix: string; localName: string; uri?: string } {
+	if (raw.startsWith("Q{")) {
+		const close = raw.indexOf("}");
+		if (close >= 0) return { prefix: "", localName: raw.slice(close + 1), uri: raw.slice(2, close) };
+	}
+	const ci = raw.indexOf(":");
+	return ci >= 0 ? { prefix: raw.slice(0, ci), localName: raw.slice(ci + 1) } : { prefix: "", localName: raw };
+}
+
 function makeQName(name: string, prefixMap: Map<string, string>, defaultNs: string): QName {
-	const colonIdx = name.indexOf(":");
-	const prefix = colonIdx >= 0 ? name.slice(0, colonIdx) : "";
-	const localName = colonIdx >= 0 ? name.slice(colonIdx + 1) : name;
-	const namespaceUri = prefix ? resolveNamespaceUri(prefix, prefixMap) : defaultNs;
+	const { prefix, localName, uri } = parseEQName(name);
+	const namespaceUri = uri ?? (prefix ? resolveNamespaceUri(prefix, prefixMap) : defaultNs);
 	return { prefix, localName, namespaceUri };
 }
 

@@ -4,7 +4,7 @@ import { Location } from "vscode-languageserver/node.js";
 import type { Position } from "vscode-languageserver/node.js";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 import type { FileAnalysis } from "./types.ts";
-import { resolvePrefix } from "./analyzer.ts";
+import { resolvePrefix, parseEQName } from "./analyzer.ts";
 
 function wordAt(text: string, offset: number): { word: string; start: number } {
 	let start = offset;
@@ -34,10 +34,8 @@ export function getDefinition(
 	const hasDollar = start > 0 && text[start - 1] === "$";
 
 	if (hasDollar) {
-		const colonIdx = word.indexOf(":");
-		const varPrefix = colonIdx >= 0 ? word.slice(0, colonIdx) : "";
-		const varLocalName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
-		const varNsUri = varPrefix ? resolvePrefix(varPrefix, current) : "";
+		const { prefix: varPrefix, localName: varLocalName, uri: varDirectUri } = parseEQName(word);
+		const varNsUri = varDirectUri ?? (varPrefix ? resolvePrefix(varPrefix, current) : "");
 		const allVars = [...current.moduleVariables, ...current.localBindings];
 		const v = allVars.find((v) => v.qname.namespaceUri === varNsUri && v.qname.localName === varLocalName);
 		if (!v) return null;
@@ -46,10 +44,8 @@ export function getDefinition(
 	}
 
 	// Function definition — resolve by namespace URI, search current file then all imports
-	const colonIdx = word.indexOf(":");
-	const wordPrefix = colonIdx >= 0 ? word.slice(0, colonIdx) : "";
-	const wordLocalName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
-	const targetUri = resolvePrefix(wordPrefix, current);
+	const { prefix: wordPrefix, localName: wordLocalName, uri: wordDirectUri } = parseEQName(word);
+	const targetUri = wordDirectUri ?? resolvePrefix(wordPrefix, current);
 
 	const localFn = current.functions.find(
 		(f) => f.qname.namespaceUri === targetUri && f.qname.localName === wordLocalName,

@@ -8,7 +8,7 @@ import type { Hover, SignatureHelp, DocumentSymbol, Range } from "vscode-languag
 import type { TextDocument } from "vscode-languageserver-textdocument";
 import type { FileAnalysis } from "./types.ts";
 import { formatQName } from "./types.ts";
-import { resolvePrefix } from "./analyzer.ts";
+import { resolvePrefix, parseEQName } from "./analyzer.ts";
 import {
 	wordAt,
 	allFunctions,
@@ -39,10 +39,8 @@ export function getHover(
 	// Check if hovering over a $ variable
 	const hasDollar = start > 0 && text[start - 1] === "$";
 	if (hasDollar) {
-		const colonIdx = word.indexOf(":");
-		const varPrefix = colonIdx >= 0 ? word.slice(0, colonIdx) : "";
-		const varLocalName = colonIdx >= 0 ? word.slice(colonIdx + 1) : word;
-		const varNsUri = varPrefix ? resolvePrefix(varPrefix, current) : "";
+		const { prefix: varPrefix, localName: varLocalName, uri: varDirectUri } = parseEQName(word);
+		const varNsUri = varDirectUri ?? (varPrefix ? resolvePrefix(varPrefix, current) : "");
 		const allVars = [
 			...current.moduleVariables,
 			...current.localBindings,

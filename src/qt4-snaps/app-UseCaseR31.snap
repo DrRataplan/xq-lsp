@@ -24,14 +24,6 @@
     ]
   },
   {
-    "testCase": "UseCaseR31-027",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
     "testCase": "UseCaseR31-028",
     "outcome": "false-positive",
     "expectedCode": null,
