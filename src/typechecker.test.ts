@@ -56,6 +56,18 @@ describe("parseType", () => {
 	test("unknown type string returns unknown", () => {
 		assert.equal(parseType("foobar").kind, "unknown");
 	});
+
+	test("xs:integer+ has occurrence +", () => {
+		const t = parseType("xs:integer+");
+		assert.equal(t.kind, "atomic");
+		assert.equal(t.occurrence, "+");
+	});
+
+	test("element()+ has occurrence +", () => {
+		const t = parseType("element()+");
+		assert.equal(t.kind, "node");
+		assert.equal(t.occurrence, "+");
+	});
 });
 
 // ── isAssignable ─────────────────────────────────────────────────────────────
@@ -122,6 +134,37 @@ describe("isAssignable", () => {
 		assert.equal(isAssignable(str, dbl), false);
 	});
 
+	test("integer is assignable to xs:numeric (union type)", () => {
+		const num: XQueryType = { kind: "atomic", name: "xs:numeric", occurrence: "" };
+		assert.equal(isAssignable(int, num), true);
+	});
+
+	test("long is assignable to xs:numeric (transitive via integer→decimal)", () => {
+		const lng: XQueryType = { kind: "atomic", name: "xs:long", occurrence: "" };
+		const num: XQueryType = { kind: "atomic", name: "xs:numeric", occurrence: "" };
+		assert.equal(isAssignable(lng, num), true);
+	});
+
+	test("string is not assignable to xs:numeric", () => {
+		const num: XQueryType = { kind: "atomic", name: "xs:numeric", occurrence: "" };
+		assert.equal(isAssignable(str, num), false);
+	});
+
+	test("generic node() is assignable to element() (path expr result)", () => {
+		assert.equal(isAssignable(node, elem), true);
+	});
+
+	test("element() is not assignable to attribute() (specific node kinds are disjoint)", () => {
+		const attr: XQueryType = { kind: "atomic", name: "xs:string", occurrence: "" };
+		const attrNode: XQueryType = { kind: "node", name: "attribute", occurrence: "" };
+		assert.equal(isAssignable(elem, attrNode), false);
+	});
+
+	test("map type is assignable to map type (catch-all)", () => {
+		const map: XQueryType = { kind: "map", name: "map(*)", occurrence: "" };
+		assert.equal(isAssignable(map, map), true);
+	});
+
 	test("unknown on left: always assignable (no false positives)", () => {
 		assert.equal(isAssignable(unknown, node), true);
 	});
@@ -162,6 +205,15 @@ describe("inferExprType", () => {
 		const analysis = analyze(src, "file:///test.xq");
 		const errors = checkTypes(ast, src, analysis, new Map());
 		assert.equal(errors.length, 0, `unexpected errors: ${JSON.stringify(errors)}`);
+	});
+
+	test("bare axis step as argument inferred as node (no false positive)", () => {
+		// child::* is an AxisStep — should infer node()* and not error against node() param.
+		const src = `declare function local:f($x as node()) { $x }; local:f(child::*)`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		assert.equal(checkTypes(ast, src, analysis, new Map()).length, 0);
 	});
 });
 
@@ -296,6 +348,90 @@ describe("checkTypes", () => {
 		`; // truncated — invalid XQuery
 		const { ast } = analyzeWithAst(src, "file:///test.xq");
 		assert.equal(ast, null, "expected null ast for invalid XQuery");
+	});
+
+	test("document constructor inferred as document-node(), not flagged for node() param", () => {
+		const src = `declare function local:f($x as node()) { $x }; local:f(document { "x" })`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		assert.equal(checkTypes(ast, src, analysis, new Map()).length, 0);
+	});
+
+	test("element constructor inferred as element(), not flagged for node() param", () => {
+		const src = `declare function local:f($x as node()) { $x }; local:f(<a/>)`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		assert.equal(checkTypes(ast, src, analysis, new Map()).length, 0);
+	});
+
+	test("direct element constructor inferred as element()", () => {
+		const src = `declare function local:f($x as element()) { $x }; local:f(<root/>)`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		assert.equal(checkTypes(ast, src, analysis, new Map()).length, 0);
+	});
+
+	test("computed attribute constructor inferred as attribute(), not flagged for node() param", () => {
+		const src = `declare function local:f($x as node()) { $x }; local:f(attribute a { "v" })`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		assert.equal(checkTypes(ast, src, analysis, new Map()).length, 0);
+	});
+
+	test("computed text constructor inferred as text(), not flagged for node() param", () => {
+		const src = `declare function local:f($x as node()) { $x }; local:f(text { "hello" })`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		assert.equal(checkTypes(ast, src, analysis, new Map()).length, 0);
+	});
+
+	test("computed comment constructor inferred as comment(), not flagged for node() param", () => {
+		const src = `declare function local:f($x as node()) { $x }; local:f(comment { "x" })`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		assert.equal(checkTypes(ast, src, analysis, new Map()).length, 0);
+	});
+
+	test("module-level typed variable is visible in query body type checks", () => {
+		const src = `
+			declare variable $x as xs:string := "hello";
+			declare function local:f($a as node()) { $a };
+			local:f($x)
+		`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		const errors = checkTypes(ast, src, analysis, new Map());
+		assert.equal(errors.length, 1, `expected 1 error, got: ${JSON.stringify(errors)}`);
+	});
+
+	test("inline function inside function body gets isolated scope", () => {
+		const src = `
+			declare function local:outer($x as xs:string) {
+				let $fn := function($n as node()) { $n }
+				return $fn(<a/>)
+			};
+			()
+		`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		assert.equal(checkTypes(ast, src, analysis, new Map()).length, 0);
+	});
+
+	test("partial function application is not flagged against function-typed param", () => {
+		const src = `fn:filter((1,2,3), fn:string-length#1)`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		const builtins = getBuiltins();
+		assert.equal(checkTypes(ast, src, analysis, new Map([["builtin:fn", builtins]])).length, 0);
 	});
 
 	test("builtin function type checking: node passed to xs:string? is not flagged (atomization applies)", () => {
