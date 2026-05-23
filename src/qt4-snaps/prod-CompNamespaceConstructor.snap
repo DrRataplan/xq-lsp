@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "nscons-003",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
-    "testCase": "nscons-004",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  }
-]
+[]

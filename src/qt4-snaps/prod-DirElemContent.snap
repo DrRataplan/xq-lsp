@@ -18,13 +18,5 @@
     "got": [
       "XPTY0004"
     ]
-  },
-  {
-    "testCase": "cbcl-ns-fixup-1",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
   }
 ]

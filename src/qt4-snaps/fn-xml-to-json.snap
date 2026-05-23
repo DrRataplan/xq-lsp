@@ -220,8 +220,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0017",
-      "XQST0081"
+      "XPST0017"
     ]
   },
   {
@@ -229,8 +228,7 @@
     "outcome": "false-positive",
     "expectedCode": "FOJS0006",
     "got": [
-      "XPST0017",
-      "XQST0081"
+      "XPST0017"
     ]
   },
   {
@@ -494,8 +492,7 @@
     "outcome": "false-positive",
     "expectedCode": "FOJS0006",
     "got": [
-      "XPST0017",
-      "XQST0081"
+      "XPST0017"
     ]
   },
   {
@@ -599,8 +596,7 @@
     "outcome": "false-positive",
     "expectedCode": "FOJS0006",
     "got": [
-      "XPST0017",
-      "XQST0081"
+      "XPST0017"
     ]
   },
   {

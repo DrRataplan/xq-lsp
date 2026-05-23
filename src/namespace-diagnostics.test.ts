@@ -80,6 +80,30 @@ describe("namespace-diagnostics: other", () => {
 		assert.ok(!diags(`(: undeclared:prefix in a comment :) 1`).some((d) => d.prefix === "undeclared"));
 	});
 
+	test("inline xmlns:prefix on element is in scope within that element", () => {
+		// m: declared on <root>, used on child elements inside it — no diagnostic
+		const src = `<root xmlns:m="http://www.w3.org/2005/xpath-functions/math"><m:pi/></root>`;
+		assert.equal(diags(src).filter((d) => d.prefix === "m").length, 0);
+	});
+
+	test("inline xmlns:prefix is out of scope on sibling elements", () => {
+		// m: declared only on <inner>, used on the sibling <m:pi/> — must be reported
+		const src = `<root><inner xmlns:m="http://www.w3.org/2005/xpath-functions/math"><m:ok/></inner><m:pi/></root>`;
+		const ds = diags(src).filter((d) => d.prefix === "m");
+		assert.equal(ds.length, 1, `expected exactly one XQST0081 for m:, got ${JSON.stringify(ds)}`);
+		// the diagnostic should point at <m:pi/>, not at <m:ok/>
+		assert.ok(src.lastIndexOf("m:pi") > 0);
+		assert.ok(ds[0].offset >= src.lastIndexOf("m:pi"), "diagnostic offset should be in the sibling, not the inner element");
+	});
+
+	test("inline xmlns:prefix is out of scope for function calls outside the declaring element", () => {
+		// m: declared only on <inner>, used as a function call outside it — must be reported
+		const src = `<root><inner xmlns:m="http://www.w3.org/2005/xpath-functions/math">{m:pi()}</inner>{m:pi()}</root>`;
+		const ds = diags(src).filter((d) => d.prefix === "m");
+		assert.equal(ds.length, 1, `expected exactly one XQST0081 for m:, got ${JSON.stringify(ds)}`);
+		assert.ok(ds[0].offset >= src.lastIndexOf("m:pi"), "diagnostic offset should be outside <inner>, not inside it");
+	});
+
 	test("returns empty array when ast is null (parse error)", () => {
 		const { ast } = analyzeWithAst("declare function local:broken(", "file:///broken.xq");
 		assert.equal(ast, null);

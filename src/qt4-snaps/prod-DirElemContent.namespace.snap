@@ -24,28 +24,10 @@
     "got": []
   },
   {
-    "testCase": "Constr-namespace-8",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
-    "testCase": "Constr-namespace-9",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
-    "testCase": "Constr-namespace-11",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
+    "testCase": "Constr-namespace-14",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
   },
   {
     "testCase": "Constr-namespace-15",
@@ -72,17 +54,21 @@
     "got": []
   },
   {
-    "testCase": "Constr-namespace-30",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
     "testCase": "K2-DirectConElemNamespace-1",
     "outcome": "false-negative",
     "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0118",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0118",
     "got": []
   },
   {
@@ -92,7 +78,19 @@
     "got": []
   },
   {
+    "testCase": "K2-DirectConElemNamespace-8",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
     "testCase": "K2-DirectConElemNamespace-9",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-10",
     "outcome": "false-negative",
     "expectedCode": "XPST0017",
     "got": []
@@ -126,22 +124,6 @@
     "outcome": "false-negative",
     "expectedCode": "XPST0081",
     "got": []
-  },
-  {
-    "testCase": "K2-DirectConElemNamespace-27",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
-    "testCase": "K2-DirectConElemNamespace-33",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
   },
   {
     "testCase": "K2-DirectConElemNamespace-34",
@@ -214,46 +196,6 @@
     "outcome": "false-negative",
     "expectedCode": "XQST0022",
     "got": []
-  },
-  {
-    "testCase": "K2-DirectConElemNamespace-77",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
-    "testCase": "K2-DirectConElemNamespace-78",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
-    "testCase": "K2-DirectConElemNamespace-79",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
-    "testCase": "DirectConElemNamespace-5",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  },
-  {
-    "testCase": "Constr-inscope-7",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
   },
   {
     "testCase": "Constr-inscope-15",
