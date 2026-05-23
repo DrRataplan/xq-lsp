@@ -1,11 +1,5 @@
 [
   {
-    "testCase": "fn-has-children-004",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
     "testCase": "fn-has-children-009",
     "outcome": "false-positive",
     "expectedCode": "XPTY0004",

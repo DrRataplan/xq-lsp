@@ -1,14 +1,1 @@
-[
-  {
-    "testCase": "fn-unparsed-text-lines-002",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "fn-unparsed-text-lines-006",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  }
-]
+[]

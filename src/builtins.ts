@@ -11,6 +11,7 @@ const BUILTIN_FILES = [
 	"builtins/builtins-math.xq",
 	"builtins/builtins-map.xq",
 	"builtins/builtins-array.xq",
+	"builtins/builtins-xs.xq",
 ];
 
 let _builtins: FileAnalysis | null = null;

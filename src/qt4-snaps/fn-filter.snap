@@ -1,17 +1,5 @@
 [
   {
-    "testCase": "fn-filter-002",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "fn-filter-004",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
     "testCase": "fn-filter-026",
     "outcome": "false-positive",
     "expectedCode": "XPTY0004",

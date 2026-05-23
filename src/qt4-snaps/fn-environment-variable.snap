@@ -1,14 +1,1 @@
-[
-  {
-    "testCase": "environment-variable-003",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "environment-variable-004",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  }
-]
+[]
