@@ -110,6 +110,12 @@
     "got": []
   },
   {
+    "testCase": "XQST0045-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
     "testCase": "XQST0045-3",
     "outcome": "false-negative",
     "expectedCode": "XQST0045",

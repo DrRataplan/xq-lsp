@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "Constr-compelem-baseuri-1",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  }
-]
+[]
