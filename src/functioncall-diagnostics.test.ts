@@ -103,6 +103,14 @@ describe("functioncall-diagnostics: ArrowExpr arity (XPST0017)", () => {
 		const ds = fnCallDiags(`"a" => fn:concat("b")`, withBuiltins);
 		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
 	});
+
+	test("arrow with variable specifier ($f => $g()) is silently skipped (no name to check)", () => {
+		// When the arrow specifier is a VarRef there is no EQName to resolve,
+		// so we skip the check rather than crashing.
+		const src = `let $f := fn:concat#2 return "a" => $f("b")`;
+		const ds = fnCallDiags(src, withBuiltins);
+		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
+	});
 });
 
 // ── xs: constructor arity errors ──────────────────────────────────────────────
