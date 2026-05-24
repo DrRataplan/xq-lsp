@@ -28,6 +28,7 @@ import {
 } from "./namespace-diagnostics.ts";
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
 import { checkUnused } from "./unused-diagnostics.ts";
+import { checkContextItemUsage } from "./context-item-diagnostics.ts";
 import { getRuntimeAnalyses } from "./runtimes.ts";
 
 const connection = createConnection(ProposedFeatures.all);
@@ -220,7 +221,22 @@ documents.onDidChangeContent((change) => {
 		source: "xquery-lsp",
 	}));
 
-	connection.sendDiagnostics({ uri: doc.uri, diagnostics: [...parseDiags, ...typeDiags, ...nsDiags, ...unusedDiags] });
+	const contextItemDiagRaw = hasAst && ast !== null ? checkContextItemUsage(ast) : [];
+	const contextItemDiags = contextItemDiagRaw.map((cd) => ({
+		severity: DiagnosticSeverity.Error,
+		range: {
+			start: doc.positionAt(cd.offset),
+			end: doc.positionAt(cd.offset + cd.length),
+		},
+		message: cd.message,
+		code: cd.code,
+		source: "xquery-lsp",
+	}));
+
+	connection.sendDiagnostics({
+		uri: doc.uri,
+		diagnostics: [...parseDiags, ...typeDiags, ...nsDiags, ...unusedDiags, ...contextItemDiags],
+	});
 });
 
 connection.onCompletion((params) => {
