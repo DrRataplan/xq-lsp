@@ -1,5 +1,5 @@
 import type { Node, NonTerminal } from "xq-parser";
-import type { TypeDiagnostic, FileAnalysis, FunctionSymbol } from "./types.ts";
+import type { TypeDiagnostic, FileAnalysis, FunctionSymbol, QName } from "./types.ts";
 import { formatQName } from "./types.ts";
 import { findAll, isTerminal, directChildrenOf, firstTerminalValue, parseEQName, resolvePrefix } from "./analyzer.ts";
 import { asFunctionCall, asNamedFunctionRef } from "./ast-nodes.ts";
@@ -15,22 +15,20 @@ function arityDescription(overloads: FunctionSymbol[]): string {
 	return overloads.some((f) => f.variadic) ? `${arities[0]} or more` : arities.length === 1 ? `${arities[0]}` : arities.join(" or ");
 }
 
-type QNameLike = { namespaceUri?: string; localName: string; prefix?: string };
-
 function checkArity(
-	qname: QNameLike,
+	qname: QName,
 	arity: number,
 	nodeStart: number,
 	allFns: FunctionSymbol[],
 	knownNamespaceUris: Set<string>,
 	errors: TypeDiagnostic[],
 ): void {
-	const ns = qname.namespaceUri ?? "";
-	const overloads = allFns.filter((f) => f.qname.namespaceUri === ns && f.qname.localName === qname.localName);
-	const name = formatQName({ prefix: qname.prefix ?? "", localName: qname.localName, namespaceUri: ns });
+	const { namespaceUri, localName } = qname;
+	const overloads = allFns.filter((f) => f.qname.namespaceUri === namespaceUri && f.qname.localName === localName);
+	const name = formatQName(qname);
 
 	if (overloads.length === 0) {
-		if (!knownNamespaceUris.has(ns)) return;
+		if (!knownNamespaceUris.has(namespaceUri)) return;
 		errors.push({ message: `${name} is not declared`, code: "XPST0017", offset: nodeStart, length: name.length });
 		return;
 	}
@@ -70,7 +68,7 @@ export function checkFunctionCalls(
 	for (const callNode of findAll(ast, "FunctionCall")) {
 		const call = asFunctionCall(callNode, analysis);
 		if (!call) continue;
-		checkArity(call.qname, call.args.length, callNode.start ?? 0, allFns, knownNamespaceUris, errors);
+		checkArity(call.qname, call.args.length, callNode.start, allFns, knownNamespaceUris, errors);
 	}
 
 	// ── NamedFunctionRef ─────────────────────────────────────────────────────────
@@ -78,7 +76,7 @@ export function checkFunctionCalls(
 	for (const refNode of findAll(ast, "NamedFunctionRef")) {
 		const ref = asNamedFunctionRef(refNode, analysis);
 		if (!ref) continue;
-		checkArity(ref.qname, ref.arity, refNode.start ?? 0, allFns, knownNamespaceUris, errors);
+		checkArity(ref.qname, ref.arity, refNode.start, allFns, knownNamespaceUris, errors);
 	}
 
 	// ── ArrowExpr ────────────────────────────────────────────────────────────────
@@ -86,26 +84,25 @@ export function checkFunctionCalls(
 	// implicit argument so effective arity = 1 + explicit ArgumentList args.
 
 	for (const arrowNode of findAll(ast, "ArrowExpr")) {
-		if (isTerminal(arrowNode)) continue;
 		const nt = arrowNode as NonTerminal;
 		for (let i = 0; i < nt.children.length; i++) {
 			const child = nt.children[i];
 			if (!isTerminal(child) || child.value !== "=>") continue;
-			const specifier = nt.children[i + 1];
-			const argList = nt.children[i + 2];
-			if (!specifier || isTerminal(specifier) || specifier.type !== "ArrowFunctionSpecifier") continue;
-			if (!argList || isTerminal(argList) || argList.type !== "ArgumentList") continue;
 
-			const eqname = directChildrenOf(specifier as NonTerminal, "EQName")[0];
-			if (!eqname || isTerminal(eqname)) continue;
-			const rawName = firstTerminalValue(eqname as NonTerminal);
+			// Parser always emits ArrowFunctionSpecifier + ArgumentList after "=>".
+			const specifier = nt.children[i + 1] as NonTerminal;
+			const argList = nt.children[i + 2] as NonTerminal;
+
+			const eqnameNode = directChildrenOf(specifier, "EQName")[0];
+			if (!eqnameNode) continue;
+			const rawName = firstTerminalValue(eqnameNode);
 			if (!rawName) continue;
 
 			const { prefix, localName, uri } = parseEQName(rawName);
 			const namespaceUri = uri ?? resolvePrefix(prefix, analysis);
-			const explicitArgs = directChildrenOf(argList as NonTerminal, "Argument").length;
+			const explicitArgs = directChildrenOf(argList, "Argument").length;
 
-			checkArity({ prefix, localName, namespaceUri }, 1 + explicitArgs, arrowNode.start ?? 0, allFns, knownNamespaceUris, errors);
+			checkArity({ prefix, localName, namespaceUri }, 1 + explicitArgs, arrowNode.start, allFns, knownNamespaceUris, errors);
 		}
 	}
 
