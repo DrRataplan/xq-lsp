@@ -14,12 +14,9 @@ import { findUndeclaredPrefixUsages } from "../src/namespace-diagnostics.ts";
 import { checkTypes } from "../src/typechecker.ts";
 import { checkFunctionCalls } from "../src/functioncall-diagnostics.ts";
 import { checkUnused } from "../src/unused-diagnostics.ts";
+import { checkContextItemUsage } from "../src/context-item-diagnostics.ts";
 import { type FileAnalysis } from "../src/types.ts";
-import {
-	resolveFunctionAtOffset,
-	resolveSignatureAtOffset,
-	functionSignature,
-} from "../src/hover-core.ts";
+import { resolveFunctionAtOffset, resolveSignatureAtOffset, functionSignature } from "../src/hover-core.ts";
 import { getCompletions } from "../src/completion-core.ts";
 import fontoxpath from "fontoxpath";
 
@@ -158,12 +155,7 @@ const signatureField = StateField.define({
 			const text = state.doc.toString();
 			const pos = state.selection.main.head;
 			const { analysis } = analyzeWithAst(text, "playground.xq");
-			const sig = resolveSignatureAtOffset(
-				text,
-				pos,
-				analysis,
-				new Map([["builtin:fn", getBuiltins()]]),
-			);
+			const sig = resolveSignatureAtOffset(text, pos, analysis, new Map([["builtin:fn", getBuiltins()]]));
 			if (!sig) return [];
 			const name = sig.fn.qname.prefix
 				? `${sig.fn.qname.prefix}:${sig.fn.qname.localName}`
@@ -234,7 +226,9 @@ const xqueryLinter = linter((view): Diagnostic[] => {
 					{
 						name: `Declare namespace ${d.prefix} = "${nsUri}"`,
 						apply(v: EditorView) {
-							v.dispatch({ changes: { from: 0, insert: `declare namespace ${d.prefix} = "${nsUri}";\n` } });
+							v.dispatch({
+								changes: { from: 0, insert: `declare namespace ${d.prefix} = "${nsUri}";\n` },
+							});
 						},
 					},
 				]
@@ -252,6 +246,9 @@ const xqueryLinter = linter((view): Diagnostic[] => {
 		}
 		for (const d of checkUnused(ast, analysis)) {
 			diagnostics.push({ from: d.offset, to: d.offset + d.length, severity: "hint", message: d.message });
+		}
+		for (const d of checkContextItemUsage(ast)) {
+			diagnostics.push({ from: d.offset, to: d.offset + d.length, severity: "error", message: d.message });
 		}
 	}
 
