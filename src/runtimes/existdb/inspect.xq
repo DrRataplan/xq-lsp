@@ -1,54 +1,49 @@
 module namespace inspect = "http://exist-db.org/xquery/inspection";
 
 (:~
- : Returns an element describing the signature and annotations of the given function reference.
- : @param $function The function reference to inspect
+ : Returns an XML fragment describing the function referenced by the passed
+ : function item.
+ : @param $function The function item to inspect
+ : @return the signature of the function
  :)
-declare function inspect:inspect-function($function as function(*)) as element() external;
+declare function inspect:inspect-function($function as function(*)) as node() external;
 
 (:~
- : Returns an element describing the module at the given location URI (file path or db URI).
- : @param $location The location of the XQuery module to inspect
+ : Compiles a library module from source (without importing it) and returns an
+ : XML fragment describing the module and the functions/variables contained in
+ : it.
+ : @param $location The location URI of the module to inspect
  :)
-declare function inspect:inspect-module($location as xs:anyURI) as element()? external;
+declare function inspect:inspect-module($location as xs:anyURI) as item()* external;
 
 (:~
- : Returns the location URI of the module with the given namespace URI, as loaded in the system.
- : @param $namespace-uri The namespace URI of the module
+ : Returns an XML fragment describing the library module identified by the
+ : given namespace URI and the functions/variables contained in it.
+ : @param $uri The namespace URI of the module to inspect
  :)
-declare function inspect:inspect-module-uri($namespace-uri as xs:anyURI) as xs:anyURI? external;
+declare function inspect:inspect-module-uri($uri as xs:anyURI) as item()* external;
 
 (:~
- : Returns all function references defined in the module at the given location.
- : @param $location The location of the XQuery module
- :)
-declare function inspect:module-functions($location as xs:anyURI) as function(*)* external;
-
-(:~
- : Returns all function references defined in the currently executing module.
+ : Returns a sequence of function items pointing to each public function in the
+ : module. If no $location is provided, then the current (calling) module is
+ : inspected.
+ : @return Sequence of function items containing all public functions in the module, or the empty sequence if the module is not known in the current context.
  :)
 declare function inspect:module-functions() as function(*)* external;
 
 (:~
- : Returns the annotation map for the given function reference.
- : @param $function The function reference
+ : Returns a sequence of function items pointing to each public function in the
+ : module. If no $location is provided, then the current (calling) module is
+ : inspected.
+ : @param $location The location URI of the module to be inspected.
+ : @return Sequence of function items containing all public functions in the module, or the empty sequence if the module is not known in the current context.
  :)
-declare function inspect:function-annotations($function as function(*)) as map(*)* external;
+declare function inspect:module-functions($location as xs:anyURI) as function(*)* external;
 
 (:~
- : Returns a string describing the XQuery type of the given item.
- : @param $item The item to inspect
+ : Returns a sequence of function items pointing to each public function in the
+ : specified module.
+ : @param $uri The URI of the module to be loaded.
+ : @return Sequence of function items containing all public functions in the module, or the empty sequence if the module is not known in the current context.
  :)
-declare function inspect:type($item as item()) as xs:string? external;
-
-(:~
- : Returns an element describing the static type of the given item.
- : @param $item The item to inspect
- :)
-declare function inspect:inspect-type($item as item()) as element()* external;
-
-(:~
- : Returns an element containing the full module description (like inspect:inspect-module but by namespace).
- : @param $module-uri The namespace URI of the module to dump
- :)
-declare function inspect:dump($module-uri as xs:anyURI) as element()? external;
+declare function inspect:module-functions-by-uri($uri as xs:anyURI) as function(*)* external;

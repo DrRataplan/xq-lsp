@@ -1,90 +1,163 @@
 module namespace range = "http://exist-db.org/xquery/range";
 
 (:~
- : Queries the range index for nodes matching the given value.
- : @param $nodes The nodes to query (must be indexed)
- : @param $operator The comparison operator ("eq", "ne", "lt", "gt", "le", "ge", "starts-with", "ends-with", "contains", "matches")
- : @param $value The value to compare against
+ : @return all nodes from the input node set whose node value is equal to the key.
  :)
-declare function range:eq($nodes as node()*, $value as xs:anyAtomicType) as node()* external;
+declare function range:contains() as node()* external;
 
 (:~
- : Queries the range index for nodes not equal to the given value.
- : @param $nodes The nodes to query
- : @param $value The value to compare against
+ : @return all nodes from the input node set whose node value is equal to the key.
  :)
-declare function range:ne($nodes as node()*, $value as xs:anyAtomicType) as node()* external;
+declare function range:ends-with() as node()* external;
 
 (:~
- : Queries the range index for nodes less than the given value.
- : @param $nodes The nodes to query
- : @param $value The value to compare against
+ : @return all nodes from the input node set whose node value is equal to the key.
  :)
-declare function range:lt($nodes as node()*, $value as xs:anyAtomicType) as node()* external;
+declare function range:eq() as node()* external;
 
 (:~
- : Queries the range index for nodes less than or equal to the given value.
- : @param $nodes The nodes to query
- : @param $value The value to compare against
+ : General field lookup function. Normally this will be used by the query
+ : optimizer.
+ : @param $operators The operators to use as strings: eq, lt, gt, contains ...
+ : @param $keys The keys to look up for each field.
+ : @return all nodes from the field set whose node value is equal to the key.
  :)
-declare function range:le($nodes as node()*, $value as xs:anyAtomicType) as node()* external;
+declare function range:field($fields as xs:string*, $operators as xs:string*, $keys as xs:anyAtomicType*) as node()* external;
 
 (:~
- : Queries the range index for nodes greater than the given value.
- : @param $nodes The nodes to query
- : @param $value The value to compare against
+ : Used by optimizer to optimize a contains() function call
+ : @return all nodes from the field set whose node value is equal to the key.
  :)
-declare function range:gt($nodes as node()*, $value as xs:anyAtomicType) as node()* external;
+declare function range:field-contains() as node()* external;
 
 (:~
- : Queries the range index for nodes greater than or equal to the given value.
- : @param $nodes The nodes to query
- : @param $value The value to compare against
+ : Used by optimizer to optimize a ends-with() function call
+ : @return all nodes from the field set whose node value is equal to the key.
  :)
-declare function range:ge($nodes as node()*, $value as xs:anyAtomicType) as node()* external;
+declare function range:field-ends-with() as node()* external;
 
 (:~
- : Queries the range index for nodes whose string value starts with the given string.
- : @param $nodes The nodes to query
- : @param $prefix The prefix string to match
+ : General field lookup function based on equality comparison. Normally this
+ : will be used by the query optimizer.
+ : @return all nodes from the field set whose node value is equal to the key.
  :)
-declare function range:starts-with($nodes as node()*, $prefix as xs:string) as node()* external;
+declare function range:field-eq() as node()* external;
 
 (:~
- : Queries the range index for nodes whose string value ends with the given string.
- : @param $nodes The nodes to query
- : @param $suffix The suffix string to match
+ : General field lookup function based on greater-than-equal comparison.
+ : Normally this will be used by the query optimizer.
+ : @return all nodes from the field set whose node value is equal to the key.
  :)
-declare function range:ends-with($nodes as node()*, $suffix as xs:string) as node()* external;
+declare function range:field-ge() as node()* external;
 
 (:~
- : Queries the range index for nodes whose string value contains the given substring.
- : @param $nodes The nodes to query
- : @param $substring The substring to match
+ : General field lookup function based on greater-than comparison. Normally
+ : this will be used by the query optimizer.
+ : @return all nodes from the field set whose node value is equal to the key.
  :)
-declare function range:contains($nodes as node()*, $substring as xs:string) as node()* external;
+declare function range:field-gt() as node()* external;
 
 (:~
- : Queries the range index for nodes whose string value matches the given regex.
- : @param $nodes The nodes to query
- : @param $pattern The regex pattern
+ : General field lookup function based on less-than-equal comparison. Normally
+ : this will be used by the query optimizer.
+ : @return all nodes from the field set whose node value is equal to the key.
  :)
-declare function range:matches($nodes as node()*, $pattern as xs:string) as node()* external;
+declare function range:field-le() as node()* external;
 
 (:~
- : Performs a general range index query using a field name and operator.
- : @param $nodes The nodes to query
- : @param $fields One or more field names to query
- : @param $operator The comparison operator ("eq", "lt", etc.)
- : @param $values The value(s) to compare against
+ : General field lookup function based on less-than comparison. Normally this
+ : will be used by the query optimizer.
+ : @return all nodes from the field set whose node value is equal to the key.
  :)
-declare function range:field($nodes as node()*, $fields as xs:string+, $operator as xs:string, $values as xs:anyAtomicType*) as node()* external;
+declare function range:field-lt() as node()* external;
 
 (:~
- : Returns the index keys from the range index over the given nodes.
- : @param $nodes The indexed nodes
- : @param $start-value The start value for iteration (empty sequence for beginning)
- : @param $function A callback function invoked per key
- : @param $max Maximum number of keys to return
+ : Used by optimizer to optimize a matches() function call
+ : @return all nodes from the field set whose node value matches the regular expression.
  :)
-declare function range:index-keys($nodes as node()*, $start-value as xs:anyAtomicType?, $function as function(*), $max as xs:integer) as item()* external;
+declare function range:field-matches() as node()* external;
+
+(:~
+ : General field lookup function based on non-equality comparison. Normally
+ : this will be used by the query optimizer.
+ : @return all nodes from the field set whose node value is not equal to the key.
+ :)
+declare function range:field-ne() as node()* external;
+
+(:~
+ : Used by optimizer to optimize a starts-with() function call
+ : @return all nodes from the field set whose node value is equal to the key.
+ :)
+declare function range:field-starts-with() as node()* external;
+
+(:~
+ : @return all nodes from the input node set whose node value is equal to the key.
+ :)
+declare function range:ge() as node()* external;
+
+(:~
+ : @return all nodes from the input node set whose node value is equal to the key.
+ :)
+declare function range:gt() as node()* external;
+
+(:~
+ : Retrieve all index keys contained in a range index which has been defined
+ : with a field name. Similar to util:index-keys, but works with fields.
+ : @param $field The field to use
+ : @param $function-reference The function reference as created by the util:function function. It can be an arbitrary user-defined function, but it should take exactly 2 arguments:
+ : @param $max-number-returned The maximum number of returned keys
+ : @return the results of the eval of the $function-reference
+ :)
+declare function range:index-keys-for-field($field as xs:string, $function-reference as function(*), $max-number-returned as xs:integer?) as item()* external;
+
+(:~
+ : Retrieve all index keys contained in a range index which has been defined
+ : with a field name. Similar to util:index-keys, but works with fields.
+ : @param $field The field to use
+ : @param $start-value Only index keys of the same type but being greater than $start-value will be reported for non-string types. For string types, only keys starting with the given prefix are reported.
+ : @param $function-reference The function reference as created by the util:function function. It can be an arbitrary user-defined function, but it should take exactly 2 arguments:
+ : @param $max-number-returned The maximum number of returned keys
+ : @return the results of the eval of the $function-reference
+ :)
+declare function range:index-keys-for-field(
+	$field as xs:string,
+	$start-value as xs:anyAtomicType?,
+	$function-reference as function(*),
+	$max-number-returned as xs:integer?
+) as item()* external;
+
+(:~
+ : @return all nodes from the input node set whose node value is equal to the key.
+ :)
+declare function range:le() as node()* external;
+
+(:~
+ : @return all nodes from the input node set whose node value is equal to the key.
+ :)
+declare function range:lt() as node()* external;
+
+(:~
+ : @param $nodes The node set to search using a range index which is defined on those nodes
+ : @param $regex The regular expression.
+ : @return all nodes from the input node set whose node value matches the regular expression. Regular expression syntax is limited to what Lucene supports. See http://lucene.apache.org/core/4_5_1/core/org/apache/lucene/util/automaton/RegExp.html
+ :)
+declare function range:matches($nodes as node()*, $regex as xs:string*) as node()* external;
+
+(:~
+ : @return all nodes from the input node set whose node value is not equal to the key.
+ :)
+declare function range:ne() as node()* external;
+
+(:~
+ : Calls Lucene's optimize method to merge all index segments into a single
+ : one. This is a costly operation and should not be used except for data sets
+ : which can be expected to remain unchanged for a while. The optimize will
+ : block the index for other write operations and may take some time. You need
+ : to be a user in group dba to call this function.
+ :)
+declare function range:optimize() as empty-sequence() external;
+
+(:~
+ : @return all nodes from the input node set whose node value is equal to the key.
+ :)
+declare function range:starts-with() as node()* external;

@@ -1,15 +1,24 @@
 module namespace console = "http://exist-db.org/xquery/console";
 
 (:~
- : Logs a message to the eXist-db console/log (at INFO level) and returns the empty sequence.
- : Useful for lightweight tracing without disrupting query output.
- : @param $message The message to log; any items are converted to strings
+ : Log items to the 'default' console channel.
+ : @param $items Values to log.
+ : @return Empty
  :)
-declare function console:log($message as item()*) as empty-sequence() external;
+declare function console:log($items as item()*) as empty-sequence() external;
 
 (:~
- : Logs a message to the eXist-db console at the given log level.
- : @param $level The log level: "debug", "info", "warn", or "error"
- : @param $message The message to log
+ : Log items to a specific console channel.
+ : @param $channel The channel to log to.
+ : @param $items Values to log.
+ : @return Empty
  :)
-declare function console:log($level as xs:string, $message as item()*) as empty-sequence() external;
+declare function console:log($channel as xs:string, $items as item()*) as empty-sequence() external;
+
+(:~
+ : Send a JSON message to a console channel.
+ : @param $channel The channel to send to.
+ : @param $items Value to send as JSON.
+ : @return Empty
+ :)
+declare function console:send($channel as xs:string, $items as item()?) as empty-sequence() external;

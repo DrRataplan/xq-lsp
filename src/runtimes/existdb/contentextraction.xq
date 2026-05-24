@@ -1,23 +1,31 @@
 module namespace contentextraction = "http://exist-db.org/xquery/contentextraction";
 
 (:~
- : Extracts text and metadata from the given binary document using Apache Tika.
- : Returns an element with the extracted metadata and text content.
- : @param $binary The binary content to extract from (xs:base64Binary)
+ : extracts the metadata
+ : @param $binary The binary data to extract from
+ : @return Extracted metadata
  :)
-declare function contentextraction:get-metadata($binary as xs:base64Binary) as element() external;
+declare function contentextraction:get-metadata($binary as xs:base64Binary) as document-node() external;
 
 (:~
- : Extracts text content and metadata from the given binary document.
- : Returns an element with both metadata and text content.
- : @param $binary The binary content
+ : extracts the metadata and contents
+ : @param $binary The binary data to extract from
+ : @return Extracted content and metadata
  :)
-declare function contentextraction:get-metadata-and-content($binary as xs:base64Binary) as element() external;
+declare function contentextraction:get-metadata-and-content($binary as xs:base64Binary) as document-node() external;
 
 (:~
- : Streams the extracted content from the given binary document to a ContentHandler.
- : Used for integration with SAX-based pipelines.
- : @param $binary The binary content
- : @param $handler The SAX ContentHandler (passed as an item())
+ : extracts the metadata
+ : @param $binary The binary data to extract from
+ : @param $callback The callback function. Expected signature:
+ : @param $namespaces Prefix/namespace mappings to be used for matching the paths. Pass an XML fragment with the following structure: <namespaces><namespace prefix="prefix" uri="uri"/></namespaces>.
+ : @param $userData Additional data which will be passed to the callback function.
+ : @return Returns empty sequence
  :)
-declare function contentextraction:stream-content($binary as xs:base64Binary, $handler as item()) as empty-sequence() external;
+declare function contentextraction:stream-content(
+	$binary as xs:base64Binary,
+	$paths as xs:string*,
+	$callback as function(*),
+	$namespaces as element()?,
+	$userData as item()*
+) as empty-sequence() external;
