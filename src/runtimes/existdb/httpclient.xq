@@ -6,7 +6,11 @@ module namespace httpclient = "http://exist-db.org/xquery/httpclient";
  : @param $persist If true, keep the HTTP connection alive for subsequent requests
  : @param $request-headers A sequence of header elements, or the empty sequence
  :)
-declare function httpclient:get($uri as xs:anyURI, $persist as xs:boolean, $request-headers as element()?) as element() external;
+declare function httpclient:get(
+	$uri as xs:anyURI,
+	$persist as xs:boolean,
+	$request-headers as element()?
+) as element() external;
 
 (:~
  : Sends an HTTP HEAD request to the given URI.
@@ -14,7 +18,11 @@ declare function httpclient:get($uri as xs:anyURI, $persist as xs:boolean, $requ
  : @param $persist If true, keep the HTTP connection alive
  : @param $request-headers A sequence of header elements, or the empty sequence
  :)
-declare function httpclient:head($uri as xs:anyURI, $persist as xs:boolean, $request-headers as element()?) as element() external;
+declare function httpclient:head(
+	$uri as xs:anyURI,
+	$persist as xs:boolean,
+	$request-headers as element()?
+) as element() external;
 
 (:~
  : Sends an HTTP POST request to the given URI with the given body.
@@ -23,7 +31,12 @@ declare function httpclient:head($uri as xs:anyURI, $persist as xs:boolean, $req
  : @param $persist If true, keep the HTTP connection alive
  : @param $request-headers A sequence of header elements, or the empty sequence
  :)
-declare function httpclient:post($uri as xs:anyURI, $content as item(), $persist as xs:boolean, $request-headers as element()?) as element() external;
+declare function httpclient:post(
+	$uri as xs:anyURI,
+	$content as item(),
+	$persist as xs:boolean,
+	$request-headers as element()?
+) as element() external;
 
 (:~
  : Sends an HTTP POST request with a named content type.
@@ -33,7 +46,13 @@ declare function httpclient:post($uri as xs:anyURI, $content as item(), $persist
  : @param $request-headers Request headers element
  : @param $content-type The Content-Type header value
  :)
-declare function httpclient:post($uri as xs:anyURI, $content as item(), $persist as xs:boolean, $request-headers as element()?, $content-type as xs:string) as element() external;
+declare function httpclient:post(
+	$uri as xs:anyURI,
+	$content as item(),
+	$persist as xs:boolean,
+	$request-headers as element()?,
+	$content-type as xs:string
+) as element() external;
 
 (:~
  : Sends an HTTP PUT request to the given URI.
@@ -42,7 +61,12 @@ declare function httpclient:post($uri as xs:anyURI, $content as item(), $persist
  : @param $persist If true, keep the HTTP connection alive
  : @param $request-headers Request headers element
  :)
-declare function httpclient:put($uri as xs:anyURI, $content as item(), $persist as xs:boolean, $request-headers as element()?) as element() external;
+declare function httpclient:put(
+	$uri as xs:anyURI,
+	$content as item(),
+	$persist as xs:boolean,
+	$request-headers as element()?
+) as element() external;
 
 (:~
  : Sends an HTTP DELETE request to the given URI.
@@ -50,7 +74,11 @@ declare function httpclient:put($uri as xs:anyURI, $content as item(), $persist 
  : @param $persist If true, keep the HTTP connection alive
  : @param $request-headers Request headers element
  :)
-declare function httpclient:delete($uri as xs:anyURI, $persist as xs:boolean, $request-headers as element()?) as element() external;
+declare function httpclient:delete(
+	$uri as xs:anyURI,
+	$persist as xs:boolean,
+	$request-headers as element()?
+) as element() external;
 
 (:~
  : Sends an HTTP OPTIONS request to the given URI.
@@ -58,7 +86,11 @@ declare function httpclient:delete($uri as xs:anyURI, $persist as xs:boolean, $r
  : @param $persist If true, keep the HTTP connection alive
  : @param $request-headers Request headers element
  :)
-declare function httpclient:options($uri as xs:anyURI, $persist as xs:boolean, $request-headers as element()?) as element() external;
+declare function httpclient:options(
+	$uri as xs:anyURI,
+	$persist as xs:boolean,
+	$request-headers as element()?
+) as element() external;
 
 (:~
  : Sends an HTTP PATCH request to the given URI.
@@ -67,7 +99,12 @@ declare function httpclient:options($uri as xs:anyURI, $persist as xs:boolean, $
  : @param $persist If true, keep the HTTP connection alive
  : @param $request-headers Request headers element
  :)
-declare function httpclient:patch($uri as xs:anyURI, $content as item(), $persist as xs:boolean, $request-headers as element()?) as element() external;
+declare function httpclient:patch(
+	$uri as xs:anyURI,
+	$content as item(),
+	$persist as xs:boolean,
+	$request-headers as element()?
+) as element() external;
 
 (:~
  : Clears all persistent HTTP connections maintained by the client.

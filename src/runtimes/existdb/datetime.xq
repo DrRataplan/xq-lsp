@@ -39,7 +39,11 @@ declare function datetime:format-dateTime($dateTime as xs:dateTime, $format as x
  : @param $format The format string
  : @param $locale The locale (e.g. "en", "nl", "de")
  :)
-declare function datetime:format-dateTime($dateTime as xs:dateTime, $format as xs:string, $locale as xs:string) as xs:string external;
+declare function datetime:format-dateTime(
+	$dateTime as xs:dateTime,
+	$format as xs:string,
+	$locale as xs:string
+) as xs:string external;
 
 (:~
  : Formats a date value using the given format string.
@@ -54,7 +58,11 @@ declare function datetime:format-date($date as xs:date, $format as xs:string) as
  : @param $format The format string
  : @param $locale The locale
  :)
-declare function datetime:format-date($date as xs:date, $format as xs:string, $locale as xs:string) as xs:string external;
+declare function datetime:format-date(
+	$date as xs:date,
+	$format as xs:string,
+	$locale as xs:string
+) as xs:string external;
 
 (:~
  : Formats a time value using the given format string.

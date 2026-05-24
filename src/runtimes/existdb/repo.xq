@@ -66,7 +66,11 @@ declare function repo:install-and-deploy($pkgName as xs:string, $publicRepoURL a
  : @param $publicRepoURL The URL of the public repo.
  : @return <status result="ok"/> if deployment was ok. Throws an error otherwise.
  :)
-declare function repo:install-and-deploy($pkgName as xs:string, $version as xs:string?, $publicRepoURL as xs:string) as element() external;
+declare function repo:install-and-deploy(
+	$pkgName as xs:string,
+	$version as xs:string?,
+	$publicRepoURL as xs:string
+) as element() external;
 
 (:~
  : Installs and deploys a package from a .xar archive file stored in the

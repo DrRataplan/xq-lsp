@@ -8,7 +8,11 @@ module namespace image = "http://exist-db.org/xquery/image";
  : @param $mimeType The mime-type of the image
  : @return the cropd image or an empty sequence if $image is invalid
  :)
-declare function image:crop($image as xs:base64Binary, $dimension as xs:integer*, $mimeType as xs:string) as xs:base64Binary? external;
+declare function image:crop(
+	$image as xs:base64Binary,
+	$dimension as xs:integer*,
+	$mimeType as xs:string
+) as xs:base64Binary? external;
 
 (:~
  : Gets the Height of the image passed in, returning an integer of the images
@@ -39,7 +43,11 @@ declare function image:scale($image as xs:base64Binary, $options as map(*)) as x
  : @param $media-type The mime-type of the image
  : @return the scaled image or an empty sequence if $image is invalid
  :)
-declare function image:scale($image as xs:base64Binary, $dimension as xs:integer*, $media-type as xs:string) as xs:base64Binary? external;
+declare function image:scale(
+	$image as xs:base64Binary,
+	$dimension as xs:integer*,
+	$media-type as xs:string
+) as xs:base64Binary? external;
 
 (:~
  : Generate thumbnails from the given database collection

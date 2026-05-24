@@ -70,7 +70,10 @@ declare function util:binary-doc-available($binary-resource as xs:string?) as xs
  : @param $algorithm The name of the algorithm to use for calculating the digest. Supports:
  : @return the digest of the content of the Binary Resource
  :)
-declare function util:binary-doc-content-digest($binary-resource as xs:string?, $algorithm as xs:string) as xs:hexBinary? external;
+declare function util:binary-doc-content-digest(
+	$binary-resource as xs:string?,
+	$algorithm as xs:string
+) as xs:hexBinary? external;
 
 (:~
  : Returns the contents of a binary resource as an xs:string value. The binary
@@ -89,7 +92,10 @@ declare function util:binary-to-string($binary-resource as xs:base64Binary?) as 
  : @param $encoding The encoding type. i.e. 'UTF-8'
  : @return the string containing the encoded binary resource
  :)
-declare function util:binary-to-string($binary-resource as xs:base64Binary?, $encoding as xs:string) as xs:string? external;
+declare function util:binary-to-string(
+	$binary-resource as xs:base64Binary?,
+	$encoding as xs:string
+) as xs:string? external;
 
 (:~
  : Invokes a first-class function reference created by util:function. The
@@ -240,7 +246,11 @@ declare function util:eval($expression as item(), $cache-flag as xs:boolean) as 
  : @param $cache-flag The flag for whether the compiled query should be cached. The cached query will be globally available within the db instance.
  : @param $external-variable External variables to be bound for the query that is being evaluated. Should be alternating variable QName and value.
  :)
-declare function util:eval($expression as item(), $cache-flag as xs:boolean, $external-variable as xs:anyType*) as item()* external;
+declare function util:eval(
+	$expression as item(),
+	$cache-flag as xs:boolean,
+	$external-variable as xs:anyType*
+) as item()* external;
 
 (:~
  : @param $cache-flag The flag for whether the compiled query should be cached. The cached query will be globally available within the db instance.
@@ -258,14 +268,21 @@ declare function util:eval(
  : Dynamically evaluates an XPath/XQuery expression and serializes the results
  : @param $default-serialization-params The default parameters for serialization, these may be overridden by any settings within the XQuery Prolog of the $expression.
  :)
-declare function util:eval-and-serialize($expression as item(), $default-serialization-params as item()?) as item()* external;
+declare function util:eval-and-serialize(
+	$expression as item(),
+	$default-serialization-params as item()?
+) as item()* external;
 
 (:~
  : Dynamically evaluates an XPath/XQuery expression and serializes the results
  : @param $default-serialization-params The default parameters for serialization, these may be overridden by any settings within the XQuery Prolog of the $expression.
  : @param $starting-loc the starting location within the results to return the values from
  :)
-declare function util:eval-and-serialize($expression as item(), $default-serialization-params as item()?, $starting-loc as xs:double?) as item()* external;
+declare function util:eval-and-serialize(
+	$expression as item(),
+	$default-serialization-params as item()?,
+	$starting-loc as xs:double?
+) as item()* external;
 
 (:~
  : Dynamically evaluates an XPath/XQuery expression and serializes the results
@@ -304,7 +321,11 @@ declare function util:eval-inline($inline-context as item()?, $expression as ite
  : @param $inline-context The inline context
  : @param $cache-flag The flag for whether the compiled query should be cached. The cached query will be globally available within the db instance.
  :)
-declare function util:eval-inline($inline-context as item()?, $expression as item(), $cache-flag as xs:boolean) as item()* external;
+declare function util:eval-inline(
+	$inline-context as item()?,
+	$expression as item(),
+	$cache-flag as xs:boolean
+) as item()* external;
 
 (:~
  : @param $inline-context The inline context
@@ -321,7 +342,11 @@ declare function util:eval-inline(
 (:~
  : @param $cache-flag The flag for whether the compiled query should be cached. The cached query will be globally available within the db instance.
  :)
-declare function util:eval-with-context($expression as item(), $context as node()?, $cache-flag as xs:boolean) as item()* external;
+declare function util:eval-with-context(
+	$expression as item(),
+	$context as node()?,
+	$cache-flag as xs:boolean
+) as item()* external;
 
 (:~
  : @param $cache-flag The flag for whether the compiled query should be cached. The cached query will be globally available within the db instance.
@@ -465,7 +490,11 @@ declare function util:hash() as item()* external;
  : @param $prefix The prefix to be assigned to the namespace
  : @param $location The location of the module
  :)
-declare function util:import-module($module-uri as xs:anyURI, $prefix as xs:string, $location as xs:anyURI*) as empty-sequence() external;
+declare function util:import-module(
+	$module-uri as xs:anyURI,
+	$prefix as xs:string,
+	$location as xs:anyURI*
+) as empty-sequence() external;
 
 (:~
  : Return the number of documents for an indexed value.
@@ -679,7 +708,11 @@ declare function util:qname-index-lookup($qname as xs:QName, $comparison-value a
  : @param $element-or-attribute true() to lookup an element, false to lookup an attribute
  : @return The result
  :)
-declare function util:qname-index-lookup($qname as xs:QName, $comparison-value as xs:anyAtomicType, $element-or-attribute as xs:boolean) as node()* external;
+declare function util:qname-index-lookup(
+	$qname as xs:QName,
+	$comparison-value as xs:anyAtomicType,
+	$element-or-attribute as xs:boolean
+) as node()* external;
 
 (:~
  : Returns a random number between 0.0 and 1.0
@@ -750,7 +783,10 @@ declare function util:string-to-binary($encoded-string as xs:string?) as xs:base
  : @param $encoding the encoding type. i.e. 'UTF-8'
  : @return the binary resource
  :)
-declare function util:string-to-binary($encoded-string as xs:string?, $encoding as xs:string) as xs:base64Binary? external;
+declare function util:string-to-binary(
+	$encoded-string as xs:string?,
+	$encoding as xs:string
+) as xs:base64Binary? external;
 
 (:~
  : Returns the current xs:date (with timezone) as reported by the Java method

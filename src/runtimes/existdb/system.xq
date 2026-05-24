@@ -12,7 +12,11 @@ module namespace system = "http://exist-db.org/xquery/system";
  : @param $code-block The code block to run as the identified user
  : @return the results of the code block executed
  :)
-declare function system:as-user($username as xs:string, $password as xs:string?, $code-block as item()*) as item()* external;
+declare function system:as-user(
+	$username as xs:string,
+	$password as xs:string?,
+	$code-block as item()*
+) as item()* external;
 
 (:~
  : Clear the global trace log.
@@ -75,7 +79,11 @@ declare function system:export-silently() as xs:boolean external;
  : @param $function The zero arity function to run as the identified user
  : @return the results of the code block executed
  :)
-declare function system:function-as-user($username as xs:string, $password as xs:string?, $function as function(*)) as item()* external;
+declare function system:function-as-user(
+	$username as xs:string,
+	$password as xs:string?,
+	$function as function(*)
+) as item()* external;
 
 (:~
  : Returns whether a function is available.
@@ -198,7 +206,11 @@ declare function system:kill-running-xquery() as empty-sequence() external;
  : @param $new-admin-pass Set the admin password to this new password.
  : @return the restore results
  :)
-declare function system:restore($dir-or-file as xs:string, $admin-pass as xs:string?, $new-admin-pass as xs:string?) as node() external;
+declare function system:restore(
+	$dir-or-file as xs:string,
+	$admin-pass as xs:string?,
+	$new-admin-pass as xs:string?
+) as node() external;
 
 (:~
  : Restore the database or a section of the database (admin user only).
@@ -242,7 +254,10 @@ declare function system:tracing-enabled() as item()* external;
  : @param $java-classname The full name of the Java class to execute. It must implement org.exist.storage.SystemTask
  : @param $task-parameters The XML fragment with the following structure: <parameters><param name="param-name1" value="param-value1"/></parameters>
  :)
-declare function system:trigger-system-task($java-classname as xs:string, $task-parameters as node()?) as empty-sequence() external;
+declare function system:trigger-system-task(
+	$java-classname as xs:string,
+	$task-parameters as node()?
+) as empty-sequence() external;
 
 (:~
  : This function is part of the unfinished index statistics module, which is
