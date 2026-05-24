@@ -1,55 +1,80 @@
 module namespace transform = "http://exist-db.org/xquery/transform";
 
 (:~
- : Transforms the given input node using the given XSLT stylesheet.
- : @param $input The source node to transform
- : @param $stylesheet The XSLT stylesheet (node or URI string)
- : @param $parameters A map of stylesheet parameters, or the empty sequence
+ : Applies an XSL stylesheet to the node tree passed as first argument. The
+ : parameters are the same as for the transform function. stream-transform can
+ : only be used within a servlet context. Instead of returning the transformed
+ : document fragment, it directly streams its output to the servlet's output
+ : stream. It should thus be the last statement in the XQuery.
+ : @param $stylesheet The XSL stylesheet
+ : @param $parameters The transformer parameters
  :)
-declare function transform:transform($input as node()?, $stylesheet as item(), $parameters as node()?) as node()? external;
+declare function transform:stream-transform($node-tree as node()*, $stylesheet as item(), $parameters as node()?) as empty-sequence() external;
 
 (:~
- : Transforms the given input node with additional JAXP transformer attributes.
- : @param $input The source node to transform
- : @param $stylesheet The XSLT stylesheet (node or URI string)
- : @param $parameters A map of stylesheet parameters, or the empty sequence
- : @param $attributes A map of transformer attributes, or the empty sequence
+ : Applies an XSL stylesheet to the node tree passed as first argument. The
+ : parameters are the same as for the transform function. stream-transform can
+ : only be used within a servlet context. Instead of returning the transformed
+ : document fragment, it directly streams its output to the servlet's output
+ : stream. It should thus be the last statement in the XQuery.
+ : @param $stylesheet The XSL stylesheet
+ : @param $parameters The transformer parameters
+ : @param $attributes Attributes to pass to the transformation factory
+ : @param $serialization-options The serialization options
  :)
-declare function transform:transform($input as node()?, $stylesheet as item(), $parameters as node()?, $attributes as map(*)?) as node()? external;
+declare function transform:stream-transform(
+	$node-tree as node()*,
+	$stylesheet as item(),
+	$parameters as node()?,
+	$attributes as node()?,
+	$serialization-options as xs:string?
+) as empty-sequence() external;
 
 (:~
- : Transforms the given input node with additional JAXP transformer attributes and serialization options.
- : @param $input The source node to transform
- : @param $stylesheet The XSLT stylesheet (node or URI string)
- : @param $parameters A map of stylesheet parameters, or the empty sequence
- : @param $attributes A map of transformer attributes, or the empty sequence
- : @param $serialization-options Additional serialization options as a string
+ : Applies an XSL stylesheet to the node tree passed as first argument. The
+ : stylesheet is specified in the second argument. This should either be an URI
+ : or a node. If it is an URI, it can either point to an external location or
+ : to an XSL stored in the db by using the 'xmldb:' scheme. Stylesheets are
+ : cached unless they were just created from an XML fragment and not from a
+ : complete document. Stylesheet parameters may be passed in the third argument
+ : using an XML fragment with the following structure: <parameters><param
+ : name="param-name1" value="param-value1"/> </parameters>. There are two
+ : special parameters named "exist:stop-on-warn" and "exist:stop-on-error". If
+ : set to value "yes", eXist will generate an XQuery error if the XSL processor
+ : reports a warning or error.
+ : @param $stylesheet The XSL stylesheet
+ : @param $parameters The transformer parameters
  :)
-declare function transform:transform($input as node()?, $stylesheet as item(), $parameters as node()?, $attributes as map(*)?, $serialization-options as xs:string?) as node()? external;
+declare function transform:transform($node-tree as node()*, $stylesheet as item(), $parameters as node()?) as node()? external;
 
 (:~
- : Transforms the given input and streams the result directly to the HTTP response.
- : @param $input The source node to transform
- : @param $stylesheet The XSLT stylesheet (node or URI string)
- : @param $parameters A map of stylesheet parameters, or the empty sequence
+ : Applies an XSL stylesheet to the node tree passed as first argument. The
+ : stylesheet is specified in the second argument. This should either be an URI
+ : or a node. If it is an URI, it can either point to an external location or
+ : to an XSL stored in the db by using the 'xmldb:' scheme. Stylesheets are
+ : cached unless they were just created from an XML fragment and not from a
+ : complete document. Stylesheet parameters may be passed in the third argument
+ : using an XML fragment with the following structure: <parameters><param
+ : name="param-name" value="param-value"/> </parameters>. There are two special
+ : parameters named "exist:stop-on-warn" and "exist:stop-on-error". If set to
+ : value "yes", eXist will generate an XQuery error if the XSL processor
+ : reports a warning or error. The fourth argument specifies attributes to be
+ : set on the used Java TransformerFactory with the following structure:
+ : <attributes><attr name="attr-name" value="attr-value"/></attributes>. The
+ : fifth argument specifies serialization options in the same way as if they
+ : were passed to "declare option exist:serialize" expression. An additional
+ : serialization option, "xinclude-path", is supported, which specifies a base
+ : path against which xincludes will be expanded (if there are xincludes in the
+ : document). A relative path will be relative to the current module load path.
+ : @param $stylesheet The XSL stylesheet
+ : @param $parameters The transformer parameters
+ : @param $attributes Attributes to pass to the transformation factory
+ : @param $serialization-options The serialization options
  :)
-declare function transform:stream-transform($input as node()?, $stylesheet as item(), $parameters as node()?) as empty-sequence() external;
-
-(:~
- : Transforms the given input and streams the result with transformer attributes.
- : @param $input The source node to transform
- : @param $stylesheet The XSLT stylesheet (node or URI string)
- : @param $parameters A map of stylesheet parameters, or the empty sequence
- : @param $attributes A map of transformer attributes, or the empty sequence
- :)
-declare function transform:stream-transform($input as node()?, $stylesheet as item(), $parameters as node()?, $attributes as map(*)?) as empty-sequence() external;
-
-(:~
- : Transforms the given input and streams the result with full options.
- : @param $input The source node to transform
- : @param $stylesheet The XSLT stylesheet (node or URI string)
- : @param $parameters A map of stylesheet parameters, or the empty sequence
- : @param $attributes A map of transformer attributes, or the empty sequence
- : @param $serialization-options Additional serialization options as a string
- :)
-declare function transform:stream-transform($input as node()?, $stylesheet as item(), $parameters as node()?, $attributes as map(*)?, $serialization-options as xs:string?) as empty-sequence() external;
+declare function transform:transform(
+	$node-tree as node()*,
+	$stylesheet as item(),
+	$parameters as node()?,
+	$attributes as node()?,
+	$serialization-options as xs:string?
+) as node()? external;
