@@ -111,7 +111,11 @@ declare function request:get-parameter($name as xs:string, $default-value as ite
  : @param $failonerror The fail on error flag. If the value is set to false, then the function will not fail if there is no request in scope.
  : @return a sequence of parameter values
  :)
-declare function request:get-parameter($name as xs:string, $default-value as item()*, $failonerror as xs:boolean*) as xs:string* external;
+declare function request:get-parameter(
+	$name as xs:string,
+	$default-value as item()*,
+	$failonerror as xs:boolean*
+) as xs:string* external;
 
 (:~
  : Returns a sequence containing the names of all parameters passed in the

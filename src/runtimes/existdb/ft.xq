@@ -119,7 +119,11 @@ declare function ft:index($documentPath as xs:string, $solrExression as node()) 
  : @param $solrExression XML syntax expected by Solr's add expression. Element should be called 'doc', e.g. <doc> <field name="field1">data1</field> <field name="field2" boost="value">data2</field> </doc>
  : @param $close If true, close the Lucene document. Subsequent calls to ft:index will thus add to a new Lucene document. If false, the document remains open and is not flushed to disk. Call the ft:close function to explicitely close and flush the current document.
  :)
-declare function ft:index($documentPath as xs:string, $solrExression as node(), $close as xs:boolean) as empty-sequence() external;
+declare function ft:index(
+	$documentPath as xs:string,
+	$solrExression as node(),
+	$close as xs:boolean
+) as empty-sequence() external;
 
 (:~
  : Similar to the util:index-keys functions, but returns index entries for a

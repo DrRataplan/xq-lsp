@@ -9,7 +9,11 @@ module namespace transform = "http://exist-db.org/xquery/transform";
  : @param $stylesheet The XSL stylesheet
  : @param $parameters The transformer parameters
  :)
-declare function transform:stream-transform($node-tree as node()*, $stylesheet as item(), $parameters as node()?) as empty-sequence() external;
+declare function transform:stream-transform(
+	$node-tree as node()*,
+	$stylesheet as item(),
+	$parameters as node()?
+) as empty-sequence() external;
 
 (:~
  : Applies an XSL stylesheet to the node tree passed as first argument. The
@@ -45,7 +49,11 @@ declare function transform:stream-transform(
  : @param $stylesheet The XSL stylesheet
  : @param $parameters The transformer parameters
  :)
-declare function transform:transform($node-tree as node()*, $stylesheet as item(), $parameters as node()?) as node()? external;
+declare function transform:transform(
+	$node-tree as node()*,
+	$stylesheet as item(),
+	$parameters as node()?
+) as node()? external;
 
 (:~
  : Applies an XSL stylesheet to the node tree passed as first argument. The

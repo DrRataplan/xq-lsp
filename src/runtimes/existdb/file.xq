@@ -122,4 +122,8 @@ declare function file:read-unicode($path as item(), $encoding as xs:string) as x
  : @param $collection Absolute path to the collection to synchronize to disk.
  : @param $targetPath The path or URI to the target directory. Relative paths resolve against EXIST_HOME.
  :)
-declare function file:sync($collection as xs:string, $targetPath as item(), $dateTimeOrOptionsMap as item()?) as document-node() external;
+declare function file:sync(
+	$collection as xs:string,
+	$targetPath as item(),
+	$dateTimeOrOptionsMap as item()?
+) as document-node() external;

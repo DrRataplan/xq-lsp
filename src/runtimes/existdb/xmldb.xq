@@ -9,7 +9,11 @@ module namespace xmldb = "http://exist-db.org/xquery/xmldb";
  : @param $user-id The user-id
  : @param $password The password
  :)
-declare function xmldb:authenticate($collection-uri as xs:string, $user-id as xs:string?, $password as xs:string?) as xs:boolean external;
+declare function xmldb:authenticate(
+	$collection-uri as xs:string,
+	$user-id as xs:string?,
+	$password as xs:string?
+) as xs:boolean external;
 
 (:~
  : Removes the user lock on the resource $resource in the collection
@@ -34,7 +38,10 @@ declare function xmldb:collection-available($collection-uri as xs:string) as xs:
  : @param $target-collection-uri The target URI
  : @return The path to the newly copied collection
  :)
-declare function xmldb:copy-collection($source-collection-uri as xs:string, $target-collection-uri as xs:string) as xs:string external;
+declare function xmldb:copy-collection(
+	$source-collection-uri as xs:string,
+	$target-collection-uri as xs:string
+) as xs:string external;
 
 (:~
  : Copy the collection $source-collection-uri to the collection
@@ -44,7 +51,11 @@ declare function xmldb:copy-collection($source-collection-uri as xs:string, $tar
  : @param $preserve Cause the copy process to preserve the following attributes of each source in the copy: modification time, file mode, user ID, and group ID, as allowed by permissions. Access Control Lists (ACLs) will also be preserved
  : @return The path to the newly copied collection
  :)
-declare function xmldb:copy-collection($source-collection-uri as xs:string, $target-collection-uri as xs:string, $preserve as xs:boolean) as xs:string external;
+declare function xmldb:copy-collection(
+	$source-collection-uri as xs:string,
+	$target-collection-uri as xs:string,
+	$preserve as xs:boolean
+) as xs:string external;
 
 (:~
  : Copy the resource $source-collection-uri/$source-resource-name to collection
@@ -90,7 +101,10 @@ declare function xmldb:copy-resource(
  : @param $new-collection The name of the new collection to create
  : @return the path to the new collection if successfully created, otherwise the empty sequence
  :)
-declare function xmldb:create-collection($target-collection-uri as xs:string, $new-collection as xs:string) as xs:string? external;
+declare function xmldb:create-collection(
+	$target-collection-uri as xs:string,
+	$new-collection as xs:string
+) as xs:string? external;
 
 (:~
  : Returns the creation date of the collection $collection-uri.
@@ -235,7 +249,11 @@ declare function xmldb:last-modified($collection-uri as item(), $resource as xs:
  : @param $user-id The user-id
  : @param $password The password
  :)
-declare function xmldb:login($collection-uri as xs:string, $user-id as xs:string?, $password as xs:string?) as xs:boolean external;
+declare function xmldb:login(
+	$collection-uri as xs:string,
+	$user-id as xs:string?,
+	$password as xs:string?
+) as xs:boolean external;
 
 (:~
  : Login the user, $user-id, and set it as the owner of the currently executing
@@ -299,7 +317,11 @@ declare function xmldb:reindex($collection-uri as xs:string, $doc-uri-or-mode as
  : @param $doc-uri The document URI
  : @param $mode Reindex scope: "all", "fulltext", or "vector"
  :)
-declare function xmldb:reindex($collection-uri as xs:string, $doc-uri as xs:string, $mode as xs:string) as xs:boolean external;
+declare function xmldb:reindex(
+	$collection-uri as xs:string,
+	$doc-uri as xs:string,
+	$mode as xs:string
+) as xs:boolean external;
 
 (:~
  : Removes the collection $collection-uri and its contents from the database.
@@ -320,7 +342,10 @@ declare function xmldb:remove($collection-uri as xs:string, $resource as xs:stri
  : @param $source-collection-uri The source collection URI
  : @param $new-collection-name The new collection name
  :)
-declare function xmldb:rename($source-collection-uri as xs:string, $new-collection-name as xs:string) as empty-sequence() external;
+declare function xmldb:rename(
+	$source-collection-uri as xs:string,
+	$new-collection-name as xs:string
+) as empty-sequence() external;
 
 (:~
  : Renames the resource $resource in collection $collection-uri with new name
@@ -329,7 +354,11 @@ declare function xmldb:rename($source-collection-uri as xs:string, $new-collecti
  : @param $resource The resource
  : @param $new-resource-name The new resource name
  :)
-declare function xmldb:rename($collection-uri as xs:string, $resource as xs:string, $new-resource-name as xs:string) as empty-sequence() external;
+declare function xmldb:rename(
+	$collection-uri as xs:string,
+	$resource as xs:string,
+	$new-resource-name as xs:string
+) as empty-sequence() external;
 
 (:~
  : Set the MIME type of the resource $resource-uri.
@@ -362,7 +391,11 @@ declare function xmldb:size($collection-uri as xs:string, $resource as xs:string
  : @param $resource-name The resource name
  : @param $contents The contents
  :)
-declare function xmldb:store($collection-uri as xs:string, $resource-name as xs:string?, $contents as item()) as item()* external;
+declare function xmldb:store(
+	$collection-uri as xs:string,
+	$resource-name as xs:string?,
+	$contents as item()
+) as item()* external;
 
 (:~
  : Stores a new resource into the database. The resource is stored in the
@@ -396,7 +429,11 @@ declare function xmldb:store(
  : @param $resource-name The resource name
  : @param $contents The contents
  :)
-declare function xmldb:store-as-binary($collection-uri as xs:string, $resource-name as xs:string?, $contents as item()) as item()* external;
+declare function xmldb:store-as-binary(
+	$collection-uri as xs:string,
+	$resource-name as xs:string?,
+	$contents as item()
+) as item()* external;
 
 declare function xmldb:store-files-from-pattern() as item()* external;
 

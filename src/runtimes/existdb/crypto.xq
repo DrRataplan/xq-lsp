@@ -6,7 +6,11 @@ module namespace crypto = "http://expath.org/ns/crypto";
  : @param $algorithm The hash algorithm: "MD5", "SHA-1", "SHA-256", "SHA-384", "SHA-512"
  : @param $provider The provider name, or empty string for the default provider
  :)
-declare function crypto:hash($message as xs:string, $algorithm as xs:string, $provider as xs:string) as xs:string external;
+declare function crypto:hash(
+	$message as xs:string,
+	$algorithm as xs:string,
+	$provider as xs:string
+) as xs:string external;
 
 (:~
  : Generates a hash of the given string and returns it in the given encoding.
@@ -15,7 +19,12 @@ declare function crypto:hash($message as xs:string, $algorithm as xs:string, $pr
  : @param $provider The provider name (empty string for default)
  : @param $encoding The output encoding: "hex" or "base64"
  :)
-declare function crypto:hash($message as xs:string, $algorithm as xs:string, $provider as xs:string, $encoding as xs:string) as xs:string external;
+declare function crypto:hash(
+	$message as xs:string,
+	$algorithm as xs:string,
+	$provider as xs:string,
+	$encoding as xs:string
+) as xs:string external;
 
 (:~
  : Generates an HMAC (hash-based message authentication code) for the given message.
@@ -24,7 +33,12 @@ declare function crypto:hash($message as xs:string, $algorithm as xs:string, $pr
  : @param $algorithm The HMAC algorithm: "HMAC-MD5", "HMAC-SHA-1", "HMAC-SHA-256", etc.
  : @param $encoding The output encoding: "hex" or "base64"
  :)
-declare function crypto:hmac($message as xs:string, $secret-key as xs:string, $algorithm as xs:string, $encoding as xs:string) as xs:string external;
+declare function crypto:hmac(
+	$message as xs:string,
+	$secret-key as xs:string,
+	$algorithm as xs:string,
+	$encoding as xs:string
+) as xs:string external;
 
 (:~
  : Encrypts data using the given algorithm and key.
@@ -33,7 +47,12 @@ declare function crypto:hmac($message as xs:string, $secret-key as xs:string, $a
  : @param $algorithm The encryption algorithm (e.g. "AES/CBC/PKCS5Padding")
  : @param $provider The provider name (empty string for default)
  :)
-declare function crypto:encrypt($data as item(), $secret-key as xs:string, $algorithm as xs:string, $provider as xs:string) as xs:string external;
+declare function crypto:encrypt(
+	$data as item(),
+	$secret-key as xs:string,
+	$algorithm as xs:string,
+	$provider as xs:string
+) as xs:string external;
 
 (:~
  : Decrypts data that was encrypted with crypto:encrypt.
@@ -42,7 +61,12 @@ declare function crypto:encrypt($data as item(), $secret-key as xs:string, $algo
  : @param $algorithm The encryption algorithm
  : @param $provider The provider name (empty string for default)
  :)
-declare function crypto:decrypt($data as xs:string, $secret-key as xs:string, $algorithm as xs:string, $provider as xs:string) as xs:string external;
+declare function crypto:decrypt(
+	$data as xs:string,
+	$secret-key as xs:string,
+	$algorithm as xs:string,
+	$provider as xs:string
+) as xs:string external;
 
 (:~
  : Generates an XML digital signature for the given input.
@@ -55,7 +79,16 @@ declare function crypto:decrypt($data as xs:string, $secret-key as xs:string, $a
  : @param $cryptographic-provider The cryptographic provider
  : @param $digest-property-id The ID of the signature properties element, or empty string
  :)
-declare function crypto:generate-signature($input as node(), $canonicalization-algorithm as xs:string, $digest-algorithm as xs:string, $signature-algorithm as xs:string, $signature-namespace-prefix as xs:string, $xpath-expression as xs:string, $cryptographic-provider as xs:string, $digest-property-id as xs:string) as node() external;
+declare function crypto:generate-signature(
+	$input as node(),
+	$canonicalization-algorithm as xs:string,
+	$digest-algorithm as xs:string,
+	$signature-algorithm as xs:string,
+	$signature-namespace-prefix as xs:string,
+	$xpath-expression as xs:string,
+	$cryptographic-provider as xs:string,
+	$digest-property-id as xs:string
+) as node() external;
 
 (:~
  : Validates an XML digital signature on the given input.

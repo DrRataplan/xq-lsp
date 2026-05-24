@@ -22,7 +22,11 @@ declare function range:eq() as node()* external;
  : @param $keys The keys to look up for each field.
  : @return all nodes from the field set whose node value is equal to the key.
  :)
-declare function range:field($fields as xs:string*, $operators as xs:string*, $keys as xs:anyAtomicType*) as node()* external;
+declare function range:field(
+	$fields as xs:string*,
+	$operators as xs:string*,
+	$keys as xs:anyAtomicType*
+) as node()* external;
 
 (:~
  : Used by optimizer to optimize a contains() function call
@@ -108,7 +112,11 @@ declare function range:gt() as node()* external;
  : @param $max-number-returned The maximum number of returned keys
  : @return the results of the eval of the $function-reference
  :)
-declare function range:index-keys-for-field($field as xs:string, $function-reference as function(*), $max-number-returned as xs:integer?) as item()* external;
+declare function range:index-keys-for-field(
+	$field as xs:string,
+	$function-reference as function(*),
+	$max-number-returned as xs:integer?
+) as item()* external;
 
 (:~
  : Retrieve all index keys contained in a range index which has been defined

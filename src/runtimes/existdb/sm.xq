@@ -73,7 +73,11 @@ declare function sm:clear-acl($path as xs:anyURI) as empty-sequence() external;
  : @param $password The User's password.
  : @param $groups Any supplementary groups of which the user should be a member.
  :)
-declare function sm:create-account($username as xs:string, $password as xs:string, $groups as xs:string*) as empty-sequence() external;
+declare function sm:create-account(
+	$username as xs:string,
+	$password as xs:string,
+	$groups as xs:string*
+) as empty-sequence() external;
 
 (:~
  : Creates a User Account.
@@ -145,7 +149,11 @@ declare function sm:create-group($group-name as xs:string, $description as xs:st
  : @param $managers The usernames of users that will be a manager of this group.
  : @param $description A description of the group.
  :)
-declare function sm:create-group($group-name as xs:string, $managers as xs:string+, $description as xs:string) as empty-sequence() external;
+declare function sm:create-group(
+	$group-name as xs:string,
+	$managers as xs:string+,
+	$description as xs:string
+) as empty-sequence() external;
 
 (:~
  : Finds groups whoose group name starts with a matching string
@@ -448,7 +456,11 @@ declare function sm:set-account-enabled($username as xs:string, $enabled as xs:b
  : @param $attribute The metadata attribute key.
  : @param $value The metadata value,
  :)
-declare function sm:set-account-metadata($username as xs:string, $attribute as xs:anyURI, $value as xs:string) as empty-sequence() external;
+declare function sm:set-account-metadata(
+	$username as xs:string,
+	$attribute as xs:anyURI,
+	$value as xs:string
+) as empty-sequence() external;
 
 (:~
  : Sets a metadata attribute value for a group
@@ -456,7 +468,11 @@ declare function sm:set-account-metadata($username as xs:string, $attribute as x
  : @param $attribute The metadata attribute key.
  : @param $value The metadata value,
  :)
-declare function sm:set-group-metadata($group-name as xs:string, $attribute as xs:anyURI, $value as xs:string) as empty-sequence() external;
+declare function sm:set-group-metadata(
+	$group-name as xs:string,
+	$attribute as xs:anyURI,
+	$value as xs:string
+) as empty-sequence() external;
 
 (:~
  : Sets the umask of a Users Account.

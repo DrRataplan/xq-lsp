@@ -8,14 +8,22 @@ declare function validation:clear-grammar-cache() as xs:integer external;
 
 declare function validation:jaxp($instance as item(), $cache-grammars as xs:boolean) as xs:boolean external;
 
-declare function validation:jaxp($instance as item(), $cache-grammars as xs:boolean, $catalogs as item()*) as xs:boolean external;
+declare function validation:jaxp(
+	$instance as item(),
+	$cache-grammars as xs:boolean,
+	$catalogs as item()*
+) as xs:boolean external;
 
 (:~
  : Parse document in validating mode, all defaults are filled in according to
  : the grammar (xsd).
  : @return the parsed document.
  :)
-declare function validation:jaxp-parse($instance as item(), $enable-grammar-cache as xs:boolean, $catalogs as item()*) as node() external;
+declare function validation:jaxp-parse(
+	$instance as item(),
+	$enable-grammar-cache as xs:boolean,
+	$catalogs as item()*
+) as node() external;
 
 (:~
  : An XML report is returned.
@@ -25,11 +33,19 @@ declare function validation:jaxp-report($instance as item(), $enable-grammar-cac
 (:~
  : An XML report is returned.
  :)
-declare function validation:jaxp-report($instance as item(), $enable-grammar-cache as xs:boolean, $catalogs as item()*) as node() external;
+declare function validation:jaxp-report(
+	$instance as item(),
+	$enable-grammar-cache as xs:boolean,
+	$catalogs as item()*
+) as node() external;
 
 declare function validation:jaxv($instance as item(), $grammars as item()+) as xs:boolean external;
 
-declare function validation:jaxv($instance as item(), $grammars as item()+, $language as xs:string) as xs:boolean external;
+declare function validation:jaxv(
+	$instance as item(),
+	$grammars as item()+,
+	$language as xs:string
+) as xs:boolean external;
 
 (:~
  : An XML report is returned.
@@ -39,7 +55,11 @@ declare function validation:jaxv-report($instance as item(), $grammars as item()
 (:~
  : An XML report is returned.
  :)
-declare function validation:jaxv-report($instance as item(), $grammars as item()+, $language as xs:string) as node() external;
+declare function validation:jaxv-report(
+	$instance as item(),
+	$grammars as item()+,
+	$language as xs:string
+) as node() external;
 
 declare function validation:jing($instance as item(), $grammar as item()) as xs:boolean external;
 

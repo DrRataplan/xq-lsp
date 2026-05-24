@@ -4,7 +4,10 @@ module namespace mail = "http://exist-db.org/xquery/mail";
  : Closes a mail folder.
  : @param $expunge A boolean that specifies whether to expunge the folder on close.
  :)
-declare function mail:close-mail-folder($mail-folder-handle as xs:long, $expunge as xs:boolean) as empty-sequence() external;
+declare function mail:close-mail-folder(
+	$mail-folder-handle as xs:long,
+	$expunge as xs:boolean
+) as empty-sequence() external;
 
 (:~
  : Closes a mail store.
@@ -57,7 +60,10 @@ declare function mail:get-message-list($mail-folder-handle as xs:long) as xs:lon
  : @param $include-headers A boolean specifying whether to include message headers
  : @return the list of all messages in a folder as XML
  :)
-declare function mail:get-message-list-as-xml($message-list-handle as xs:long, $include-headers as xs:boolean) as element()? external;
+declare function mail:get-message-list-as-xml(
+	$message-list-handle as xs:long,
+	$include-headers as xs:boolean
+) as element()? external;
 
 (:~
  : Returns a sequence of emails as XML. If there are no messages-numbers in the
@@ -66,7 +72,10 @@ declare function mail:get-message-list-as-xml($message-list-handle as xs:long, $
  : @param $message-numbers The messages to retrieve using the numbers from the message-list '//mail:message/@number'
  : @return the chosen messages as XML mail:messages/mail:message
  :)
-declare function mail:get-messages($message-list-handle as xs:long, $message-numbers as xs:integer*) as element()? external;
+declare function mail:get-messages(
+	$message-list-handle as xs:long,
+	$message-numbers as xs:integer*
+) as element()? external;
 
 (:~
  : Searches messages in a folder. Search terms are of the form <searchTerm
@@ -91,7 +100,10 @@ declare function mail:get-messages($message-list-handle as xs:long, $message-num
  : @param $search-parameters The xml fragment defining the search terms
  : @return an xs:long representing the message list handle.
  :)
-declare function mail:search-message-list($mail-folder-handle as xs:long, $search-parameters as element()) as xs:long? external;
+declare function mail:search-message-list(
+	$mail-folder-handle as xs:long,
+	$search-parameters as element()
+) as xs:long? external;
 
 (:~
  : Sends an email using javax.mail messaging libraries.
@@ -105,4 +117,8 @@ declare function mail:send-email($mail-handle as xs:long, $email as element()+) 
  : @param $server The SMTP server. If empty, then it tries to use the local sendmail program.
  : @return true if the email message was successfully sent
  :)
-declare function mail:send-email($email as element()+, $server as xs:string?, $charset as xs:string?) as xs:boolean+ external;
+declare function mail:send-email(
+	$email as element()+,
+	$server as xs:string?,
+	$charset as xs:string?
+) as xs:boolean+ external;
