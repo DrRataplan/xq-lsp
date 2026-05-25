@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "xs-notation-001",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "xs-notation-002",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

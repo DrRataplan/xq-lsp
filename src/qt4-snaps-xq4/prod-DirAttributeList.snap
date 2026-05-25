@@ -1,0 +1,58 @@
+[
+  {
+    "testCase": "Constr-attr-distnames-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0040",
+    "got": []
+  },
+  {
+    "testCase": "Constr-attr-distnames-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0040",
+    "got": []
+  },
+  {
+    "testCase": "Constr-attr-distnames-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0040",
+    "got": []
+  },
+  {
+    "testCase": "Constr-attr-distnames-4",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0040",
+    "got": []
+  },
+  {
+    "testCase": "Constr-attr-enclexpr-9",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-6a",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0118",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-68",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0071",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-69",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0071",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-75",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

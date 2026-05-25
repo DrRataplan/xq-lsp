@@ -1,0 +1,20 @@
+[
+  {
+    "testCase": "contextValueDecl-008",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0099",
+    "got": []
+  },
+  {
+    "testCase": "contextValueDecl-009",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0099",
+    "got": []
+  },
+  {
+    "testCase": "contextValueDecl-010",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0099",
+    "got": []
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "format-dateTime-inpt-er2",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "format-dateTime-inpt-er4",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

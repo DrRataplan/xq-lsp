@@ -19,6 +19,7 @@ export interface TestInput {
 	// catalog's declared uri so mismatches against the file's own `module
 	// namespace` decl can be caught the same way a resolved "at" hint would be.
 	moduleCatalog: Array<{ uri: string; text: string }>;
+	xqueryVersion: "3.1" | "4.0";
 }
 
 export interface TestOutput {
@@ -29,19 +30,18 @@ export interface TestOutput {
 	got: string[];
 }
 
-const BUILTINS = new Map([["builtin:fn", getBuiltins()]]);
-
 function collectCodes(
 	query: string,
 	envNamespaces: Array<{ prefix: string; uri: string }>,
 	envVariables: Array<{ prefix: string; localName: string }>,
 	moduleCatalog: Array<{ uri: string; text: string }>,
+	xqueryVersion: "3.1" | "4.0",
 ): string[] {
 	try {
-		const { analysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq");
-		const imports = new Map<string, FileAnalysis>(BUILTINS);
+		const { analysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq", xqueryVersion);
+		const imports = new Map<string, FileAnalysis>([["builtin:fn", getBuiltins(xqueryVersion)]]);
 		for (const m of moduleCatalog) {
-			const modAnalysis = analyzeWithAst(m.text, "file:///catalog-module.xq").analysis;
+			const modAnalysis = analyzeWithAst(m.text, "file:///catalog-module.xq", xqueryVersion).analysis;
 			// Multiple <module> catalog entries can share the same uri (alternate
 			// location-hint candidates for one namespace) — merge their symbols
 			// rather than letting the last one clobber the others.
@@ -90,7 +90,7 @@ function collectCodes(
 
 const batch = workerData as TestInput[];
 const results: TestOutput[] = batch.map((tc) => {
-	const got = collectCodes(tc.query, tc.envNamespaces, tc.envVariables, tc.moduleCatalog);
+	const got = collectCodes(tc.query, tc.envNamespaces, tc.envVariables, tc.moduleCatalog, tc.xqueryVersion);
 	const hasError = got.length > 0;
 	const outcome =
 		tc.expected === "static-error"

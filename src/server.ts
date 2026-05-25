@@ -46,8 +46,12 @@ const lastValidAnalysisCache = new Map<string, FileAnalysis>(); // last AST-path
 // Populated lazily on the first request for a given config root.
 const globAnalysesByConfigDir = new Map<string, Map<string, FileAnalysis>>();
 
+function xqueryVersionFor(uri: string): "3.1" | "4.0" {
+	return findConfig(uri)?.config.xqueryVersion ?? "3.1";
+}
+
 function analyzeDocument(doc: TextDocument): FileAnalysis {
-	const { analysis } = analyzeWithAst(doc.getText(), doc.uri);
+	const { analysis } = analyzeWithAst(doc.getText(), doc.uri, xqueryVersionFor(doc.uri));
 	analysisCache.set(doc.uri, analysis);
 	if (analysis.usedAstPath) lastValidAnalysisCache.set(doc.uri, analysis);
 	return analysis;
@@ -58,11 +62,13 @@ function analyzeDocumentFull(doc: TextDocument): {
 	parseDiagnostics: ReturnType<typeof buildParseDiagnostics>;
 	hasAst: boolean;
 	ast: import("xq-parser").Node | null;
+	xqueryVersion: "3.1" | "4.0";
 } {
-	const { analysis, ast, parseError } = analyzeWithAst(doc.getText(), doc.uri);
+	const xqueryVersion = xqueryVersionFor(doc.uri);
+	const { analysis, ast, parseError } = analyzeWithAst(doc.getText(), doc.uri, xqueryVersion);
 	analysisCache.set(doc.uri, analysis);
 	if (analysis.usedAstPath) lastValidAnalysisCache.set(doc.uri, analysis);
-	return { analysis, parseDiagnostics: buildParseDiagnostics(parseError), hasAst: ast !== null, ast };
+	return { analysis, parseDiagnostics: buildParseDiagnostics(parseError), hasAst: ast !== null, ast, xqueryVersion };
 }
 
 function buildParseDiagnostics(parseError: Error | null) {
@@ -157,7 +163,7 @@ function getGlobFileRecords(currentUri: string): () => FileRecord[] {
 				const fileUri = pathToFileURL(filePath).toString();
 				try {
 					const text = fs.readFileSync(filePath, "utf-8");
-					const { analysis } = analyzeWithAst(text, fileUri);
+					const { analysis } = analyzeWithAst(text, fileUri, config.xqueryVersion);
 					records.set(fileUri, { uri: fileUri, text, analysis: withPredeclaredNs(analysis, predeclaredNs) });
 				} catch {
 					/* unreadable file, skip */
@@ -174,7 +180,7 @@ function resolveContext(
 	rawAnalysis: FileAnalysis,
 ): { analysis: FileAnalysis; imported: Map<string, FileAnalysis> } {
 	const result = new Map<string, FileAnalysis>();
-	result.set("builtin:fn", getBuiltins());
+	result.set("builtin:fn", getBuiltins(xqueryVersionFor(currentUri)));
 	const { byNamespace: globAnalyses, lib } = getGlobAnalyses(currentUri);
 	const predeclaredNs = getRuntimePredeclaredNamespaces(lib);
 	const analysis = withPredeclaredNs(rawAnalysis, predeclaredNs);

@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "emptyorderdecl-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0069",
+    "got": []
+  },
+  {
+    "testCase": "K-EmptyOrderProlog-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0069",
+    "got": []
+  }
+]

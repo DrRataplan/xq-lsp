@@ -11,6 +11,13 @@ export interface LspConfig {
 	lib: string[];
 	/** Maps prefix names to namespace URIs, from the `prefixes` key in lsp-config.xq. Default: {}. */
 	prefixes: Record<string, string>;
+	/**
+	 * XQuery language version for parsing and diagnostics.
+	 * "3.1" (default) uses the XQuery 3.1 parser.
+	 * "4.0" enables the XQuery 4.0 parser and the XQuery 4.0 built-in function library.
+	 * Example: map { "xqueryVersion": "4.0" }
+	 */
+	xqueryVersion: "3.1" | "4.0";
 }
 
 function parseConfig(text: string): { globs: string[]; generateLocationHints: boolean } {
@@ -60,6 +67,16 @@ function parsePrefixes(text: string): Record<string, string> {
 	}
 }
 
+function parseXQueryVersion(text: string): "3.1" | "4.0" {
+	try {
+		const versions = evaluateXPathToStrings(`(${text.trim()})?xqueryVersion`, null, null, {});
+		if (versions[0] === "4.0") return "4.0";
+	} catch {
+		// ignore
+	}
+	return "3.1";
+}
+
 export function findConfig(fromUri: string): { config: LspConfig; configDir: string } | null {
 	let dir: string;
 	try {
@@ -73,7 +90,15 @@ export function findConfig(fromUri: string): { config: LspConfig; configDir: str
 		try {
 			const text = fs.readFileSync(configPath, "utf-8");
 			const parsed = parseConfig(text);
-			return { config: { ...parsed, lib: parseLib(text), prefixes: parsePrefixes(text) }, configDir: dir };
+			return {
+				config: {
+					...parsed,
+					lib: parseLib(text),
+					prefixes: parsePrefixes(text),
+					xqueryVersion: parseXQueryVersion(text),
+				},
+				configDir: dir,
+			};
 		} catch {
 			/* not found here, try parent */
 		}

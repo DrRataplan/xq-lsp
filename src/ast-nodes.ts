@@ -131,16 +131,45 @@ export interface FunctionDeclShape {
 	body: Node | null; // FunctionBody node; null for external functions
 }
 
+/** Extract a param's name node and QName from either a XQ31 Param or XQ4 ParamWithDefault node. */
+function paramNameNode(p: Node, analysis: FileAnalysis): { nameNode: Node; qname: QName } | null {
+	// XQ31: Param has EQName as direct child
+	// XQ4: ParamWithDefault has VarNameAndType → EQName
+	const directEqname = directChildOf(p, "EQName");
+	const eqnameNode = directEqname ?? (() => {
+		const vnt = directChildOf(p, "VarNameAndType");
+		return vnt ? directChildOf(vnt, "EQName") : undefined;
+	})();
+	if (!eqnameNode) return null;
+	const pName = firstTerminalValue(eqnameNode);
+	if (!pName) return null;
+	const { prefix, localName, uri } = parseEQName(pName);
+	const namespaceUri = uri ?? (prefix ? resolvePrefix(prefix, analysis) : "");
+	return { nameNode: eqnameNode, qname: { prefix, localName, namespaceUri } };
+}
+
 /** Inner shape of a FunctionDecl node: name, resolved params, and function body. */
 export function asFunctionDecl(node: Node, analysis: FileAnalysis): FunctionDeclShape | null {
 	if (node.type !== "FunctionDecl") return null;
-	const nameNode = directChildOf(node, "EQName");
+	// XQ31 uses EQName; XQ4 uses UnreservedFunctionEQName for function names.
+	const nameNode = directChildOf(node, "EQName") ?? directChildOf(node, "UnreservedFunctionEQName");
 	if (!nameNode) return null;
 	const rawName = firstTerminalValue(nameNode);
 	if (!rawName) return null;
 	const { prefix, localName, uri } = parseEQName(rawName);
 	const namespaceUri = uri ?? resolvePrefix(prefix, analysis);
-	const params = extractParamsFromParamList(directChildOf(node, "ParamList"), analysis);
+	// XQ31: ParamList → Param; XQ4: ParamListWithDefaults → ParamWithDefault
+	const xq31List = directChildOf(node, "ParamList");
+	const xq4List = directChildOf(node, "ParamListWithDefaults");
+	const rawParams = xq31List
+		? directChildrenOf(xq31List, "Param")
+		: xq4List
+			? directChildrenOf(xq4List, "ParamWithDefault")
+			: [];
+	const params = rawParams.flatMap((p) => {
+		const r = paramNameNode(p, analysis);
+		return r ? [r] : [];
+	});
 	return { nameNode, qname: { prefix, localName, namespaceUri }, params, body: directChildOf(node, "FunctionBody") ?? null };
 }
 
@@ -212,17 +241,26 @@ export function asTransformExpr(node: Node, analysis: FileAnalysis): TransformEx
 
 // ── AnnotatedDecl wrappers ────────────────────────────────────────────────────
 
-/** QName, name node, arity, and annotation local-names for an AnnotatedDecl containing a FunctionDecl, or null. */
+/** QName, name node, arity, minArity, and annotation local-names for an AnnotatedDecl containing a FunctionDecl, or null. */
 export function asFunctionDeclaration(
 	node: Node,
 	analysis: FileAnalysis,
-): { qname: QName; nameNode: Node; arity: number; annotations: string[] } | null {
+): { qname: QName; nameNode: Node; arity: number; minArity?: number; annotations: string[] } | null {
 	if (node.type !== "AnnotatedDecl") return null;
 	const fnDeclNode = directChildOf(node, "FunctionDecl");
 	if (!fnDeclNode) return null;
 	const fn = asFunctionDecl(fnDeclNode, analysis);
 	if (!fn) return null;
-	return { qname: fn.qname, nameNode: fn.nameNode, arity: fn.params.length, annotations: annotationNames(node) };
+	// Compute minArity: count ParamWithDefault nodes that have no ':=' terminal (required params).
+	const xq4List = directChildOf(fnDeclNode, "ParamListWithDefaults");
+	let minArity: number | undefined;
+	if (xq4List) {
+		const required = directChildrenOf(xq4List, "ParamWithDefault").filter(
+			(p) => !(p as import("xq-parser").NonTerminal).children.some((c) => isTerminal(c) && c.value === ":="),
+		).length;
+		if (required < fn.params.length) minArity = required;
+	}
+	return { qname: fn.qname, nameNode: fn.nameNode, arity: fn.params.length, minArity, annotations: annotationNames(node) };
 }
 
 /** Resolved QName, name node, and annotation local-names for an AnnotatedDecl containing a VarDecl, or null. */
@@ -282,20 +320,40 @@ export function asBinding(node: Node, analysis: FileAnalysis): BindingShape | nu
 
 	switch (node.type) {
 		case "ForBinding": {
-			const nameNode = directChildOf(node, "VarName");
+			// XQ31: VarName is direct child. XQ4: ForItemBinding → VarNameAndType → EQName.
+			let nameNode = directChildOf(node, "VarName");
+			let initExpr = directChildOf(node, "ExprSingle");
+			if (!nameNode) {
+				const fib = directChildOf(node, "ForItemBinding");
+				if (fib) {
+					const vnt = directChildOf(fib, "VarNameAndType");
+					nameNode = vnt ? directChildOf(vnt, "EQName") : undefined;
+					initExpr = directChildOf(fib, "ExprSingle");
+				}
+			}
 			if (!nameNode) return null;
 			const v = varFromName(nameNode);
 			if (!v) return null;
 			const posVarNode = directChildOf(node, "PositionalVar");
 			const positionalVar = posVarNode ? asPositionalVar(posVarNode, analysis) ?? undefined : undefined;
-			return { ...v, initExpr: directChildOf(node, "ExprSingle") ?? undefined, positionalVar };
+			return { ...v, initExpr: initExpr ?? undefined, positionalVar };
 		}
 		case "LetBinding": {
-			const nameNode = directChildOf(node, "VarName");
+			// XQ31: VarName is direct child. XQ4: LetValueBinding → VarNameAndType → EQName.
+			let nameNode = directChildOf(node, "VarName");
+			let initExpr = directChildOf(node, "ExprSingle");
+			if (!nameNode) {
+				const lvb = directChildOf(node, "LetValueBinding");
+				if (lvb) {
+					const vnt = directChildOf(lvb, "VarNameAndType");
+					nameNode = vnt ? directChildOf(vnt, "EQName") : undefined;
+					initExpr = directChildOf(lvb, "ExprSingle");
+				}
+			}
 			if (!nameNode) return null;
 			const v = varFromName(nameNode);
 			if (!v) return null;
-			return { ...v, initExpr: directChildOf(node, "ExprSingle") ?? undefined };
+			return { ...v, initExpr: initExpr ?? undefined };
 		}
 		case "CountClause": {
 			const nameNode = directChildOf(node, "VarName");
@@ -383,26 +441,65 @@ export interface TypedBindingShape {
 	typeStr?: string;
 }
 
-// Handles LetBinding, ForBinding, VarDecl (VarName child) and Param (EQName child).
+/**
+ * Extracts name and optional declared type from a variable-binding or parameter node.
+ * Handles both XQuery 3.1 and XQuery 4.0 AST shapes.
+ */
 export function asTypedBinding(node: Node, text: string, analysis: FileAnalysis): TypedBindingShape | null {
 	let nameNode: Node | undefined;
+	let typeDecl: Node | undefined;
+
 	switch (node.type) {
-		case "LetBinding":
-		case "ForBinding":
 		case "VarDecl":
 			nameNode = directChildOf(node, "VarName");
+			typeDecl = directChildOf(node, "TypeDeclaration");
 			break;
 		case "Param":
 			nameNode = directChildOf(node, "EQName");
+			typeDecl = directChildOf(node, "TypeDeclaration");
 			break;
+		case "ParamWithDefault": {
+			// XQuery 4.0: parameter with optional default value
+			const vnt = directChildOf(node, "VarNameAndType");
+			if (!vnt) return null;
+			nameNode = directChildOf(vnt, "EQName");
+			typeDecl = directChildOf(vnt, "TypeDeclaration");
+			break;
+		}
+		case "LetBinding": {
+			// XQ31: VarName is direct child; XQ4: LetValueBinding → VarNameAndType → EQName
+			nameNode = directChildOf(node, "VarName");
+			typeDecl = directChildOf(node, "TypeDeclaration");
+			if (!nameNode) {
+				const lvb = directChildOf(node, "LetValueBinding");
+				if (lvb) {
+					const vnt = directChildOf(lvb, "VarNameAndType");
+					if (vnt) { nameNode = directChildOf(vnt, "EQName"); typeDecl = directChildOf(vnt, "TypeDeclaration"); }
+				}
+			}
+			break;
+		}
+		case "ForBinding": {
+			// XQ31: VarName is direct child; XQ4: ForItemBinding → VarNameAndType → EQName
+			nameNode = directChildOf(node, "VarName");
+			typeDecl = directChildOf(node, "TypeDeclaration");
+			if (!nameNode) {
+				const fib = directChildOf(node, "ForItemBinding");
+				if (fib) {
+					const vnt = directChildOf(fib, "VarNameAndType");
+					if (vnt) { nameNode = directChildOf(vnt, "EQName"); typeDecl = directChildOf(vnt, "TypeDeclaration"); }
+				}
+			}
+			break;
+		}
 		default:
 			return null;
 	}
+
 	const rawName = nameNode ? firstTerminalValue(nameNode) : null;
 	if (!rawName) return null;
 	const { prefix, localName, uri } = parseEQName(rawName);
 	const namespaceUri = uri ?? (prefix ? resolvePrefix(prefix, analysis) : "");
-	const typeDecl = directChildOf(node, "TypeDeclaration");
 	const seqType = typeDecl ? directChildOf(typeDecl, "SequenceType") : null;
 	return {
 		qname: { prefix, localName, namespaceUri },

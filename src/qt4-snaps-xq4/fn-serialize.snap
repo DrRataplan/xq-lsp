@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "serialize-xml-012",
+    "outcome": "false-positive",
+    "expectedCode": "SENR0001",
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

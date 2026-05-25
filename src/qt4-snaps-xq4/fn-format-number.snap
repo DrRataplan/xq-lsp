@@ -1,0 +1,38 @@
+[
+  {
+    "testCase": "numberformat111",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0098",
+    "got": []
+  },
+  {
+    "testCase": "numberformat124",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0097",
+    "got": []
+  },
+  {
+    "testCase": "numberformat125",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0114",
+    "got": []
+  },
+  {
+    "testCase": "numberformat126",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0098",
+    "got": []
+  },
+  {
+    "testCase": "numberformat127",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "numberformat901err",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0098",
+    "got": []
+  }
+]

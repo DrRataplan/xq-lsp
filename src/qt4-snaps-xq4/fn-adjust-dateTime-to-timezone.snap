@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "K-AdjDateTimeToTimezoneFunc-1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-AdjDateTimeToTimezoneFunc-2",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

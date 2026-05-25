@@ -1,0 +1,16 @@
+[
+  {
+    "testCase": "fn-idref-1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "fn-idref-4",
+    "outcome": "false-positive",
+    "expectedCode": "FODC0001",
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

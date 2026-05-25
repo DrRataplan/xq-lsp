@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "nscons-024",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "nscons-025",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  }
+]
