@@ -6,12 +6,18 @@
  *   - false negatives: the test expects a static error but we report nothing
  *
  * Requires QT4_TESTS_DIR env var pointing at a local checkout of qt4cg/qt4tests.
- * In CI the checkout is pinned to the SHA in qt4-testset-commit.txt.
  *
- * Run once to generate snapshots:
- *   QT4_TESTS_DIR=/path/to/qt4tests node --test --test-update-snapshots src/qt4-diagnostic.test.ts
+ * XQuery 3.1 mode (default):
+ *   QT4_TESTS_DIR=qt4tests node --test src/qt4-diagnostic.test.ts
+ *   Snapshots: src/qt4-snaps/
  *
- * Normal runs compare against stored snapshots in src/qt4-snaps/.
+ * XQuery 4.0 mode (includes XQ40+ tests, uses XQuery4Full parser):
+ *   QT4_TESTS_DIR=qt4tests XQ4_TESTS_MODE=1 node --test src/qt4-diagnostic.test.ts
+ *   Snapshots: src/qt4-snaps-xq4/
+ *
+ * Regenerate snapshots:
+ *   QT4_TESTS_DIR=qt4tests node --test --test-update-snapshots src/qt4-diagnostic.test.ts
+ *   QT4_TESTS_DIR=qt4tests XQ4_TESTS_MODE=1 node --test --test-update-snapshots src/qt4-diagnostic.test.ts
  */
 
 import { test } from "node:test";
@@ -25,7 +31,11 @@ import type { TestInput, TestOutput } from "./qt4-worker.ts";
 
 const NS = "http://www.w3.org/2010/09/qt-fots-catalog";
 
-// Spec tokens that are compatible with XQuery 3.1 (the version our LSP targets).
+// XQ4_TESTS_MODE=1 enables the XQuery 4.0 parser and includes XQ40+ test cases.
+const XQ4_MODE = !!process.env.XQ4_TESTS_MODE;
+const XQUERY_VERSION: "3.1" | "4.0" = XQ4_MODE ? "4.0" : "3.1";
+
+// Spec tokens compatible with XQuery 3.1.
 const XQ31_COMPAT = new Set([
 	"XP20",
 	"XP20+",
@@ -40,6 +50,11 @@ const XQ31_COMPAT = new Set([
 	"XQ31",
 	"XQ31+",
 ]);
+
+// Additional spec tokens compatible with XQuery 4.0 (superset of XQ31_COMPAT).
+const XQ40_COMPAT = new Set([...XQ31_COMPAT, "XQ40", "XQ40+", "XP40", "XP40+"]);
+
+const SPEC_COMPAT = XQ4_MODE ? XQ40_COMPAT : XQ31_COMPAT;
 
 // Feature dependencies that require infrastructure we don't have.
 const SKIP_FEATURES = new Set([
@@ -102,7 +117,7 @@ function shouldInclude(deps: Dep[]): boolean {
 		if (!dep.satisfied) continue; // "satisfied=false" means we must NOT have it; skip checking
 		if (dep.type === "spec") {
 			const alts = dep.value.trim().split(/\s+/);
-			if (!alts.some((s) => XQ31_COMPAT.has(s))) return false;
+			if (!alts.some((s) => SPEC_COMPAT.has(s))) return false;
 		}
 		if (dep.type === "feature" && SKIP_FEATURES.has(dep.value)) return false;
 	}
@@ -157,7 +172,10 @@ function runInWorker(batch: TestInput[]): Promise<TestOutput[]> {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 const QT4_DIR = process.env.QT4_TESTS_DIR;
-const SNAP_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "qt4-snaps");
+const SNAP_DIR = path.join(
+	path.dirname(fileURLToPath(import.meta.url)),
+	XQ4_MODE ? "qt4-snaps-xq4" : "qt4-snaps",
+);
 
 if (QT4_DIR) {
 	fs.mkdirSync(SNAP_DIR, { recursive: true });
@@ -227,6 +245,7 @@ if (QT4_DIR) {
 				expected,
 				expectedCode,
 				envNamespaces,
+				xqueryVersion: XQUERY_VERSION,
 			});
 
 			if (!seenSlugs.has(slug)) {

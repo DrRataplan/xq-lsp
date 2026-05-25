@@ -40,8 +40,12 @@ const typeErrorCache = new Map<string, TypeDiagnostic[]>();
 // Populated lazily on the first request for a given config root.
 const globAnalysesByConfigDir = new Map<string, Map<string, FileAnalysis>>();
 
+function xqueryVersionFor(uri: string): "3.1" | "4.0" {
+	return findConfig(uri)?.config.xqueryVersion ?? "3.1";
+}
+
 function analyzeDocument(doc: TextDocument): FileAnalysis {
-	const { analysis } = analyzeWithAst(doc.getText(), doc.uri);
+	const { analysis } = analyzeWithAst(doc.getText(), doc.uri, xqueryVersionFor(doc.uri));
 	analysisCache.set(doc.uri, analysis);
 	return analysis;
 }
@@ -51,10 +55,12 @@ function analyzeDocumentFull(doc: TextDocument): {
 	parseDiagnostics: ReturnType<typeof buildParseDiagnostics>;
 	hasAst: boolean;
 	ast: import("xq-parser").Node | null;
+	xqueryVersion: "3.1" | "4.0";
 } {
-	const { analysis, ast, parseError } = analyzeWithAst(doc.getText(), doc.uri);
+	const xqueryVersion = xqueryVersionFor(doc.uri);
+	const { analysis, ast, parseError } = analyzeWithAst(doc.getText(), doc.uri, xqueryVersion);
 	analysisCache.set(doc.uri, analysis);
-	return { analysis, parseDiagnostics: buildParseDiagnostics(parseError), hasAst: ast !== null, ast };
+	return { analysis, parseDiagnostics: buildParseDiagnostics(parseError), hasAst: ast !== null, ast, xqueryVersion };
 }
 
 function buildParseDiagnostics(parseError: Error | null) {
@@ -122,9 +128,9 @@ function getGlobAnalyses(currentUri: string): { byNamespace: Map<string, FileAna
 	return { byNamespace, lib };
 }
 
-function resolveImports(currentUri: string, analysis: FileAnalysis): Map<string, FileAnalysis> {
+function resolveImports(currentUri: string, analysis: FileAnalysis, xqueryVersion: "3.1" | "4.0" = "3.1"): Map<string, FileAnalysis> {
 	const result = new Map<string, FileAnalysis>();
-	result.set("builtin:fn", getBuiltins());
+	result.set("builtin:fn", getBuiltins(xqueryVersion));
 	const { byNamespace: globAnalyses, lib } = getGlobAnalyses(currentUri);
 	const runtimeByNamespace = new Map<string, FileAnalysis>();
 	for (const runtimeAnalysis of getRuntimeAnalyses(lib)) {
@@ -172,10 +178,10 @@ connection.onInitialize((params) => {
 
 documents.onDidChangeContent((change) => {
 	const doc = change.document;
-	const { analysis, parseDiagnostics: parseDiags, hasAst, ast } = analyzeDocumentFull(doc);
+	const { analysis, parseDiagnostics: parseDiags, hasAst, ast, xqueryVersion } = analyzeDocumentFull(doc);
 
 	if (hasAst && ast !== null) {
-		const imported = resolveImports(doc.uri, analysis);
+		const imported = resolveImports(doc.uri, analysis, xqueryVersion);
 		typeErrorCache.set(doc.uri, [
 			...checkTypes(ast, doc.getText(), analysis, imported),
 			...checkFunctionCalls(ast, analysis, imported),
@@ -227,7 +233,7 @@ connection.onCompletion((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return [];
 	const analysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const imported = resolveImports(doc.uri, analysis);
+	const imported = resolveImports(doc.uri, analysis, xqueryVersionFor(doc.uri));
 	const offset = doc.offsetAt(params.position);
 	return getCompletions(
 		{ textBeforeCursor: doc.getText().slice(0, offset), cursorOffset: offset },
@@ -241,7 +247,7 @@ connection.onHover((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return null;
 	const analysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const imported = resolveImports(doc.uri, analysis);
+	const imported = resolveImports(doc.uri, analysis, xqueryVersionFor(doc.uri));
 	return getHover(doc, doc.offsetAt(params.position), analysis, imported);
 });
 
@@ -249,7 +255,7 @@ connection.onSignatureHelp((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return null;
 	const analysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const imported = resolveImports(doc.uri, analysis);
+	const imported = resolveImports(doc.uri, analysis, xqueryVersionFor(doc.uri));
 	return getSignatureHelp(doc, doc.offsetAt(params.position), analysis, imported);
 });
 
@@ -264,7 +270,7 @@ connection.onDefinition((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return null;
 	const analysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const imported = resolveImports(doc.uri, analysis);
+	const imported = resolveImports(doc.uri, analysis, xqueryVersionFor(doc.uri));
 	return getDefinition(doc, doc.offsetAt(params.position), analysis, imported, (atPath) =>
 		resolveImportUri(doc.uri, atPath),
 	);

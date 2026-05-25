@@ -27,7 +27,8 @@ export interface DocComment {
 
 export interface FunctionSymbol {
 	qname: QName;
-	arity: number; // minimum number of arguments (= declared param count)
+	arity: number; // maximum number of arguments (= declared param count)
+	minArity?: number; // minimum args when some have defaults; absent means same as arity
 	variadic?: boolean; // accepts any number of args >= arity (e.g. fn:concat)
 	params: ParamInfo[];
 	returnType?: string;

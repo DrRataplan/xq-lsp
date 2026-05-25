@@ -1,0 +1,68 @@
+[
+  {
+    "testCase": "version_declaration-023-v1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "version_declaration-007",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0031",
+    "got": []
+  },
+  {
+    "testCase": "version_declaration-008",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0031",
+    "got": []
+  },
+  {
+    "testCase": "version_declaration-010",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0087",
+    "got": []
+  },
+  {
+    "testCase": "version_declaration-010-v3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0087",
+    "got": []
+  },
+  {
+    "testCase": "version_declaration-014",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0031",
+    "got": []
+  },
+  {
+    "testCase": "VersionDecl-v1-processor-and-v3-query",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0031",
+    "got": []
+  },
+  {
+    "testCase": "K-VersionProlog-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0087",
+    "got": []
+  },
+  {
+    "testCase": "K-VersionProlog-3-v3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0087",
+    "got": []
+  },
+  {
+    "testCase": "K-VersionProlog-4",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0087",
+    "got": []
+  },
+  {
+    "testCase": "K-VersionProlog-4-v3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0087",
+    "got": []
+  }
+]

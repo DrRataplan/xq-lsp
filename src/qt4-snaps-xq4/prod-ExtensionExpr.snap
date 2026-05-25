@@ -1,0 +1,148 @@
+[
+  {
+    "testCase": "extexpr-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0079",
+    "got": []
+  },
+  {
+    "testCase": "extexpr-4",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K-ExtensionExpression-3",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "K-ExtensionExpression-5",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K-ExtensionExpression-6",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "K-ExtensionExpression-7a",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0079",
+    "got": []
+  },
+  {
+    "testCase": "K2-ExtensionExpression-1a",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-ExtensionExpression-2",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "K2-ExtensionExpression-3",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "K2-ExtensionExpression-4",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "K2-ExtensionExpression-5",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "K2-ExtensionExpression-11",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "K2-ExtensionExpression-12",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "K2-ExtensionExpression-17",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "K2-ExtensionExpression-18",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "pragma-no-namespace-001a",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0079",
+    "got": []
+  },
+  {
+    "testCase": "pragma-no-namespace-002a",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0079",
+    "got": []
+  },
+  {
+    "testCase": "pragma-no-namespace-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "pragma-no-namespace-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "pragma-no-namespace-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

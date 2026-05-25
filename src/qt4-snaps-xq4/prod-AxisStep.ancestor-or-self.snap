@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "K2-ancestor-or-selfAxis-9",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

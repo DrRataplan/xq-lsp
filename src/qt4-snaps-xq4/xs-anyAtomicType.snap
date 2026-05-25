@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "xs-anyAtomicType-001",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "xs-anyAtomicType-002",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

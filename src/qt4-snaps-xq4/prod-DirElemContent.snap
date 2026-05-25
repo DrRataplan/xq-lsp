@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "Constr-cont-charref-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0090",
+    "got": []
+  },
+  {
+    "testCase": "K2-DirectConElemContent-26",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  }
+]

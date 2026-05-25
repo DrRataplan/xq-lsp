@@ -1,0 +1,20 @@
+[
+  {
+    "testCase": "for-map-key-022",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0089",
+    "got": []
+  },
+  {
+    "testCase": "for-map-value-022",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0089",
+    "got": []
+  },
+  {
+    "testCase": "for-map-key-value-010",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0089",
+    "got": []
+  }
+]

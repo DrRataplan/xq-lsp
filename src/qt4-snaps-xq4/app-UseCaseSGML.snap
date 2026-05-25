@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "sgml-queries-results-q10",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

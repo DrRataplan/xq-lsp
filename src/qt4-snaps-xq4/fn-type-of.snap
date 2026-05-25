@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "type-of-007",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

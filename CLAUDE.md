@@ -22,14 +22,24 @@ Tests use Node's built-in test runner (`node:test`) — no framework needed. Typ
 # one-time: initialize the submodule
 git submodule update --init
 
-# run (skipped automatically when QT4_TESTS_DIR is unset)
+# XQuery 3.1 mode (default): XQ31-compatible tests only
 QT4_TESTS_DIR=qt4tests node --test src/qt4-diagnostic.test.ts
 
-# regenerate snapshots after changing diagnostic logic or updating the testset pin
+# XQuery 4.0 mode: adds XQ40+ tests, uses the XQuery4Full parser
+QT4_TESTS_DIR=qt4tests XQ4_TESTS_MODE=1 node --test src/qt4-diagnostic.test.ts
+
+# Regenerate XQ31 snapshots after changing diagnostic logic or updating the testset pin
 QT4_TESTS_DIR=qt4tests node --test --test-update-snapshots src/qt4-diagnostic.test.ts
+
+# Regenerate XQ4 snapshots
+QT4_TESTS_DIR=qt4tests XQ4_TESTS_MODE=1 node --test --test-update-snapshots src/qt4-diagnostic.test.ts
 ```
 
-Snapshots live in `src/qt4-snaps/` — one JSON file per QT4 test-set, listing every failing case with its outcome (`false-positive` or `false-negative`), the expected error code, and what codes we actually emitted. CI checks out the submodule automatically via `submodules: true` on `actions/checkout`.
+Snapshots:
+- `src/qt4-snaps/` — XQ31 mode (one JSON file per QT4 test-set)
+- `src/qt4-snaps-xq4/` — XQ4 mode (superset; includes XQ40+ test sets)
+
+Each snapshot lists every failing case with its outcome (`false-positive` or `false-negative`), the expected error code, and what codes we actually emitted. CI checks out the submodule automatically via `submodules: true` on `actions/checkout`.
 
 The pinned commit is the submodule pointer in `.gitmodules`. A weekly CI workflow (`qt4-update.yml`) checks for new upstream commits and opens a PR that advances the submodule and regenerates snapshots.
 
@@ -37,7 +47,7 @@ The pinned commit is the submodule pointer in `.gitmodules`. A weekly CI workflo
 
 The server is a standard LSP over stdio. `src/server.ts` is the entry point and wires together all features using `vscode-languageserver`.
 
-**Two-phase parsing** is the central design: `src/analyzer.ts` first tries `XQuery31Full()` from `xq-parser`. If it throws (file is mid-edit and syntactically invalid), it falls back to regex extraction. Both paths produce the same `FileAnalysis` shape (`src/types.ts`).
+**Two-phase parsing** is the central design: `src/analyzer.ts` first tries `XQuery31Full()` (or `XQuery4Full()` when `xqueryVersion` is `"4.0"`) from `xq-parser`. If it throws (file is mid-edit and syntactically invalid), it falls back to regex extraction. Both paths produce the same `FileAnalysis` shape (`src/types.ts`).
 
 **`FileAnalysis`** (`src/types.ts`) — the shared data structure passed everywhere:
 
