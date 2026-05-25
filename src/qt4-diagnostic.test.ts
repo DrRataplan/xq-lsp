@@ -7,17 +7,15 @@
  *
  * Requires QT4_TESTS_DIR env var pointing at a local checkout of qt4cg/qt4tests.
  *
- * XQuery 3.1 mode (default):
+ * Runs both XQuery 3.1 and 4.0 suites in a single invocation:
  *   QT4_TESTS_DIR=qt4tests node --test src/qt4-diagnostic.test.ts
- *   Snapshots: src/qt4-snaps/
  *
- * XQuery 4.0 mode (includes XQ40+ tests, uses XQuery4Full parser):
- *   QT4_TESTS_DIR=qt4tests XQ4_TESTS_MODE=1 node --test src/qt4-diagnostic.test.ts
- *   Snapshots: src/qt4-snaps-xq4/
+ * Snapshots:
+ *   src/qt4-snaps/     — XQ31 mode (XQ31-compatible tests only)
+ *   src/qt4-snaps-xq4/ — XQ40 mode (superset; includes XQ40+ tests)
  *
  * Regenerate snapshots:
  *   QT4_TESTS_DIR=qt4tests node --test --test-update-snapshots src/qt4-diagnostic.test.ts
- *   QT4_TESTS_DIR=qt4tests XQ4_TESTS_MODE=1 node --test --test-update-snapshots src/qt4-diagnostic.test.ts
  */
 
 import { test } from "node:test";
@@ -30,10 +28,6 @@ import { fileURLToPath } from "node:url";
 import type { TestInput, TestOutput } from "./qt4-worker.ts";
 
 const NS = "http://www.w3.org/2010/09/qt-fots-catalog";
-
-// XQ4_TESTS_MODE=1 enables the XQuery 4.0 parser and includes XQ40+ test cases.
-const XQ4_MODE = !!process.env.XQ4_TESTS_MODE;
-const XQUERY_VERSION: "3.1" | "4.0" = XQ4_MODE ? "4.0" : "3.1";
 
 // Spec tokens compatible with XQuery 3.1.
 const XQ31_COMPAT = new Set([
@@ -53,8 +47,6 @@ const XQ31_COMPAT = new Set([
 
 // Additional spec tokens compatible with XQuery 4.0 (superset of XQ31_COMPAT).
 const XQ40_COMPAT = new Set([...XQ31_COMPAT, "XQ40", "XQ40+", "XP40", "XP40+"]);
-
-const SPEC_COMPAT = XQ4_MODE ? XQ40_COMPAT : XQ31_COMPAT;
 
 // Feature dependencies that require infrastructure we don't have.
 const SKIP_FEATURES = new Set([
@@ -145,12 +137,12 @@ function getDeps(el: slimdom.Element): Dep[] {
 	}));
 }
 
-function shouldInclude(deps: Dep[]): boolean {
+function shouldInclude(deps: Dep[], specCompat: Set<string>): boolean {
 	for (const dep of deps) {
 		if (!dep.satisfied) continue; // "satisfied=false" means we must NOT have it; skip checking
 		if (dep.type === "spec") {
 			const alts = dep.value.trim().split(/\s+/);
-			if (!alts.some((s) => SPEC_COMPAT.has(s))) return false;
+			if (!alts.some((s) => specCompat.has(s))) return false;
 		}
 		if (dep.type === "feature" && SKIP_FEATURES.has(dep.value)) return false;
 	}
@@ -257,25 +249,18 @@ function runInWorker(batch: TestInput[]): Promise<TestOutput[]> {
 	});
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// ── Suite runner ──────────────────────────────────────────────────────────────
 
-const QT4_DIR = process.env.QT4_TESTS_DIR;
-const SNAP_DIR = path.join(
-	path.dirname(fileURLToPath(import.meta.url)),
-	XQ4_MODE ? "qt4-snaps-xq4" : "qt4-snaps",
-);
-
-if (QT4_DIR) {
-	fs.mkdirSync(SNAP_DIR, { recursive: true });
-
-	// Parse catalog
-	const catalogXml = fs.readFileSync(path.join(QT4_DIR, "catalog.xml"), "utf8");
-	const catalogDoc = slimdom.parseXmlDocument(catalogXml);
-	const catalogEnvMap = buildEnvMap(catalogDoc.documentElement as slimdom.Element);
-	const catalogEnvVarMap = buildEnvVarMap(catalogDoc.documentElement as slimdom.Element);
-	const testSetFiles = Array.from(catalogDoc.getElementsByTagNameNS(NS, "test-set"))
-		.map((el) => (el as slimdom.Element).getAttribute("file"))
-		.filter((f): f is string => f !== null);
+async function runSuite(
+	qt4Dir: string,
+	version: "3.1" | "4.0",
+	snapDir: string,
+	specCompat: Set<string>,
+	testSetFiles: string[],
+	catalogEnvMap: EnvMap,
+	catalogEnvVarMap: EnvVarMap,
+): Promise<void> {
+	fs.mkdirSync(snapDir, { recursive: true });
 
 	// Collect all test inputs and track slug order
 	const allInputs: TestInput[] = [];
@@ -283,7 +268,7 @@ if (QT4_DIR) {
 	const seenSlugs = new Set<string>();
 
 	for (const tsFile of testSetFiles) {
-		const xmlPath = path.join(QT4_DIR, tsFile);
+		const xmlPath = path.join(qt4Dir, tsFile);
 		let xml: string;
 		try {
 			xml = fs.readFileSync(xmlPath, "utf8");
@@ -308,7 +293,7 @@ if (QT4_DIR) {
 			const name = tc.getAttribute("name") ?? "";
 			const tcDeps = getDeps(tc);
 
-			if (!shouldInclude([...tsDepsList, ...tcDeps])) continue;
+			if (!shouldInclude([...tsDepsList, ...tcDeps], specCompat)) continue;
 
 			const testEl = childEls(tc, "test")[0];
 			const resultEl = childEls(tc, "result")[0];
@@ -374,7 +359,7 @@ if (QT4_DIR) {
 				envNamespaces,
 				envVariables,
 				moduleCatalog,
-				xqueryVersion: XQUERY_VERSION,
+				xqueryVersion: version,
 			});
 
 			if (!seenSlugs.has(slug)) {
@@ -404,16 +389,36 @@ if (QT4_DIR) {
 	}
 
 	// Register one test per test-set, each with its own snapshot file
+	const label = version === "3.1" ? "xq31" : "xq40";
 	for (const slug of slugOrder) {
 		const results = bySlug.get(slug) ?? [];
 		const failures = results
 			.filter((r) => r.outcome !== "pass")
 			.map((r) => ({ testCase: r.testCase, outcome: r.outcome, expectedCode: r.expectedCode, got: r.got }));
 
-		const snapPath = path.join(SNAP_DIR, `${slug}.snap`);
+		const snapPath = path.join(snapDir, `${slug}.snap`);
 
-		test(`qt4/${slug}`, async (t) => {
+		test(`qt4/${label}/${slug}`, async (t) => {
 			await t.assert.fileSnapshot(failures, snapPath);
 		});
 	}
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+const QT4_DIR = process.env.QT4_TESTS_DIR;
+const SRC_DIR = path.dirname(fileURLToPath(import.meta.url));
+
+if (QT4_DIR) {
+	// Parse catalog once, shared by both suites.
+	const catalogXml = fs.readFileSync(path.join(QT4_DIR, "catalog.xml"), "utf8");
+	const catalogDoc = slimdom.parseXmlDocument(catalogXml);
+	const catalogEnvMap = buildEnvMap(catalogDoc.documentElement as slimdom.Element);
+	const catalogEnvVarMap = buildEnvVarMap(catalogDoc.documentElement as slimdom.Element);
+	const testSetFiles = Array.from(catalogDoc.getElementsByTagNameNS(NS, "test-set"))
+		.map((el) => (el as slimdom.Element).getAttribute("file"))
+		.filter((f): f is string => f !== null);
+
+	await runSuite(QT4_DIR, "3.1", path.join(SRC_DIR, "qt4-snaps"), XQ31_COMPAT, testSetFiles, catalogEnvMap, catalogEnvVarMap);
+	await runSuite(QT4_DIR, "4.0", path.join(SRC_DIR, "qt4-snaps-xq4"), XQ40_COMPAT, testSetFiles, catalogEnvMap, catalogEnvVarMap);
 }

@@ -22,22 +22,16 @@ Tests use Node's built-in test runner (`node:test`) — no framework needed. Typ
 # one-time: initialize the submodule
 git submodule update --init
 
-# XQuery 3.1 mode (default): XQ31-compatible tests only
+# run both XQ31 and XQ40 suites in one pass
 QT4_TESTS_DIR=qt4tests node --test src/qt4-diagnostic.test.ts
 
-# XQuery 4.0 mode: adds XQ40+ tests, uses the XQuery4Full parser
-QT4_TESTS_DIR=qt4tests XQ4_TESTS_MODE=1 node --test src/qt4-diagnostic.test.ts
-
-# Regenerate XQ31 snapshots after changing diagnostic logic or updating the testset pin
+# regenerate snapshots after changing diagnostic logic or updating the testset pin
 QT4_TESTS_DIR=qt4tests node --test --test-update-snapshots src/qt4-diagnostic.test.ts
-
-# Regenerate XQ4 snapshots
-QT4_TESTS_DIR=qt4tests XQ4_TESTS_MODE=1 node --test --test-update-snapshots src/qt4-diagnostic.test.ts
 ```
 
 Snapshots:
-- `src/qt4-snaps/` — XQ31 mode (one JSON file per QT4 test-set)
-- `src/qt4-snaps-xq4/` — XQ4 mode (superset; includes XQ40+ test sets)
+- `src/qt4-snaps/` — XQ31 suite (tests named `qt4/xq31/<slug>`)
+- `src/qt4-snaps-xq4/` — XQ40 suite (tests named `qt4/xq40/<slug>`)
 
 Each snapshot lists every failing case with its outcome (`false-positive` or `false-negative`), the expected error code, and what codes we actually emitted. CI checks out the submodule automatically via `submodules: true` on `actions/checkout`.
 
