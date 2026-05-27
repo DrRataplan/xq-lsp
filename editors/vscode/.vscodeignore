@@ -2,5 +2,6 @@ node_modules/
 build.mjs
 tsconfig.json
 extension.js
+smoke.test.mjs
 package-lock.json
 .gitignore
