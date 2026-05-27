@@ -1,6 +1,6 @@
 {
 	"name": "xq-lsp",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"description": "XQuery Language Server Protocol implementation",
 	"license": "MIT",
 	"author": "Martin Middel",
