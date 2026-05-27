@@ -23,7 +23,11 @@ await Promise.all([
 	esbuild.build({
 		...common,
 		entryPoints: [require.resolve('xq-lsp')],
-		outfile: 'dist/server.js',
+		outfile: 'dist/server.mjs',
+		format: 'esm',
+		// CJS packages bundled inside the ESM output use esbuild's __require shim,
+		// which needs `require` to be defined. createRequire provides it.
+		banner: { js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);' },
 	}),
 	cp('node_modules/xq-lsp/builtins', 'builtins', { recursive: true }),
 ]);

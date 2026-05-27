@@ -7,7 +7,7 @@ const { LanguageClient } = require('vscode-languageclient/node.js');
 let client;
 
 function activate(context) {
-	const serverScript = path.join(__dirname, 'server.js');
+	const serverScript = path.join(__dirname, 'server.mjs');
 
 	client = new LanguageClient(
 		'xquery-lsp',
