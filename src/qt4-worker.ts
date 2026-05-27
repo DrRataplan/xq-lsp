@@ -12,6 +12,7 @@ export interface TestInput {
 	expected: "static-error" | "no-static-error";
 	expectedCode: string | null;
 	envNamespaces: Array<{ prefix: string; uri: string }>;
+	xqueryVersion: "3.1" | "4.0";
 }
 
 export interface TestOutput {
@@ -22,11 +23,14 @@ export interface TestOutput {
 	got: string[];
 }
 
-const BUILTINS = new Map([["builtin:fn", getBuiltins()]]);
-
-function runDiagnostics(query: string, envNamespaces: Array<{ prefix: string; uri: string }>): string[] {
+function runDiagnostics(
+	query: string,
+	envNamespaces: Array<{ prefix: string; uri: string }>,
+	xqueryVersion: "3.1" | "4.0",
+): string[] {
 	try {
-		const { analysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq");
+		const builtins = new Map([["builtin:fn", getBuiltins(xqueryVersion)]]);
+		const { analysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq", xqueryVersion);
 		for (const ns of envNamespaces) {
 			if (ns.prefix && !analysis.namespaceDecls.some((d) => d.prefix === ns.prefix)) {
 				analysis.namespaceDecls.push({ prefix: ns.prefix, namespaceUri: ns.uri });
@@ -35,8 +39,8 @@ function runDiagnostics(query: string, envNamespaces: Array<{ prefix: string; ur
 		const codes: string[] = [];
 		if (parseError) codes.push("XPST0003");
 		if (ast) {
-			for (const d of checkTypes(ast, query, analysis, BUILTINS)) codes.push(d.code);
-			for (const d of checkFunctionCalls(ast, analysis, BUILTINS)) codes.push(d.code);
+			for (const d of checkTypes(ast, query, analysis, builtins)) codes.push(d.code);
+			for (const d of checkFunctionCalls(ast, analysis, builtins)) codes.push(d.code);
 			for (const d of findUndeclaredPrefixUsages(ast, analysis)) codes.push(d.code);
 		}
 		return [...new Set(codes)];
@@ -47,7 +51,7 @@ function runDiagnostics(query: string, envNamespaces: Array<{ prefix: string; ur
 
 const batch = workerData as TestInput[];
 const results: TestOutput[] = batch.map((tc) => {
-	const got = runDiagnostics(tc.query, tc.envNamespaces);
+	const got = runDiagnostics(tc.query, tc.envNamespaces, tc.xqueryVersion);
 	const hasError = got.length > 0;
 	const outcome =
 		tc.expected === "static-error"

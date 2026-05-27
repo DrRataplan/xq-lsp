@@ -1,4 +1,4 @@
-import { XQuery31Full } from "xq-parser";
+import { XQuery31Full, XQuery4Full } from "xq-parser";
 import type { Node, NonTerminal, Terminal } from "xq-parser";
 import type {
 	FileAnalysis,
@@ -241,37 +241,66 @@ function extractFunctions(
 		const decl = directChildOf(annotated, "FunctionDecl");
 		if (!decl) continue;
 
-		const eqname = directChildOf(decl, "EQName");
+		// XQ31 uses EQName; XQ4 uses UnreservedFunctionEQName for function names.
+		const eqname = directChildOf(decl, "EQName") ?? directChildOf(decl, "UnreservedFunctionEQName");
 		const name = eqname ? firstTerminalValue(eqname) : null;
 		if (!name) continue;
 
 		const doc = findPrecedingDoc(comments, text, annotated.start);
 
 		const params: ParamInfo[] = [];
-		const paramList = directChildOf(decl, "ParamList");
-		if (paramList) {
-			for (const param of findAll(paramList, "Param")) {
+		let minArity: number | undefined;
+
+		const xq31ParamList = directChildOf(decl, "ParamList");
+		const xq4ParamList = directChildOf(decl, "ParamListWithDefaults");
+
+		if (xq31ParamList) {
+			// XQuery 3.1: ParamList → Param → EQName + TypeDeclaration
+			for (const param of findAll(xq31ParamList, "Param")) {
 				const paramEqname = directChildOf(param, "EQName");
 				const paramName = paramEqname ? firstTerminalValue(paramEqname) : null;
 				if (!paramName) continue;
 				const typeDecl = directChildOf(param, "TypeDeclaration");
 				const seqTypeNode = typeDecl && directChildOf(typeDecl, "SequenceType");
 				const paramType = seqTypeNode ? sequenceTypeText(text, seqTypeNode) : undefined;
-				params.push({
-					name: paramName,
-					type: paramType,
-					description: doc?.params[paramName],
-				});
+				params.push({ name: paramName, type: paramType, description: doc?.params[paramName] });
 			}
+		} else if (xq4ParamList) {
+			// XQuery 4.0: ParamListWithDefaults → ParamWithDefault → VarNameAndType
+			let requiredCount = 0;
+			for (const pwDefault of directChildrenOf(xq4ParamList, "ParamWithDefault")) {
+				const vnt = directChildOf(pwDefault, "VarNameAndType");
+				if (!vnt) continue;
+				const paramEqname = directChildOf(vnt, "EQName");
+				const paramName = paramEqname ? firstTerminalValue(paramEqname) : null;
+				if (!paramName) continue;
+				const typeDecl = directChildOf(vnt, "TypeDeclaration");
+				const seqTypeNode = typeDecl && directChildOf(typeDecl, "SequenceType");
+				const paramType = seqTypeNode ? sequenceTypeText(text, seqTypeNode) : undefined;
+				params.push({ name: paramName, type: paramType, description: doc?.params[paramName] });
+				// A ParamWithDefault without ':=' terminal is required (no default value).
+				const hasDefault = (pwDefault as NonTerminal).children.some(
+					(c) => isTerminal(c) && c.value === ":=",
+				);
+				if (!hasDefault) requiredCount++;
+			}
+			if (requiredCount < params.length) minArity = requiredCount;
 		}
 
-		// Return type: 'as' followed by SequenceType (direct child of FunctionDecl)
-		const seqType = directChildOf(decl, "SequenceType");
+		// XQ31: SequenceType is a direct child of FunctionDecl.
+		// XQ4: return type is wrapped in TypeDeclaration → SequenceType.
+		const seqType =
+			directChildOf(decl, "SequenceType") ??
+			(() => {
+				const td = directChildOf(decl, "TypeDeclaration");
+				return td ? directChildOf(td, "SequenceType") : undefined;
+			})();
 		const returnType = seqType ? sequenceTypeText(text, seqType) : undefined;
 
 		results.push({
 			qname: makeFnQName(name, prefixMap, defaultFnNs),
 			arity: params.length,
+			minArity,
 			variadic: doc?.variadic,
 			params,
 			returnType,
@@ -474,9 +503,10 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	};
 }
 
-export function analyze(text: string, sourceUri: string): FileAnalysis {
+export function analyze(text: string, sourceUri: string, xqueryVersion: "3.1" | "4.0" = "3.1"): FileAnalysis {
+	const parse = xqueryVersion === "4.0" ? XQuery4Full : XQuery31Full;
 	try {
-		const { ast, comments } = XQuery31Full(text);
+		const { ast, comments } = parse(text);
 		return analyzeAst(ast, comments, text, sourceUri);
 	} catch {
 		return analyzeRegex(text, sourceUri);
@@ -486,9 +516,11 @@ export function analyze(text: string, sourceUri: string): FileAnalysis {
 export function analyzeWithAst(
 	text: string,
 	sourceUri: string,
+	xqueryVersion: "3.1" | "4.0" = "3.1",
 ): { analysis: FileAnalysis; ast: Node | null; parseError: Error | null } {
+	const parse = xqueryVersion === "4.0" ? XQuery4Full : XQuery31Full;
 	try {
-		const { ast, comments } = XQuery31Full(text);
+		const { ast, comments } = parse(text);
 		return { analysis: analyzeAst(ast, comments, text, sourceUri), ast, parseError: null };
 	} catch (e) {
 		return {

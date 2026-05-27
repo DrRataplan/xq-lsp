@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "named-function-ref-reserved-function-names-005",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "named-function-ref-reserved-function-names-005a",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

@@ -1,0 +1,164 @@
+[
+  {
+    "testCase": "annotation-15",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-16",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-17",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-18",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-19",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-20",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-21",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-22",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-23",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-24",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-25",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-26",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-27",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-28",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-33",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "annotation-35",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-36",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-39",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "annotation-assertion-11",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-assertion-12",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-assertion-13",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-assertion-14",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-assertion-15",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-assertion-16",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-assertion-17",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-assertion-18",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "annotation-assertion-40-08",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  }
+]

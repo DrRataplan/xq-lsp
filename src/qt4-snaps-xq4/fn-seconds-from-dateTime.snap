@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "K-SecondsFromDateTimeFunc-1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SecondsFromDateTimeFunc-2",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

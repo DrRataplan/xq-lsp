@@ -1,0 +1,668 @@
+[
+  {
+    "testCase": "casthc43",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-4",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-4a",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-5",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-5a",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0052",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-6",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-7",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-7a",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0052",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-8",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-9",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-9a",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0052",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-61",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-62",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-63",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-65",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-66",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-411",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-412",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-424",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-425",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-426",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-436",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-437",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-438",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-484",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-485",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-486",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-532",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-533",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-534",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-584",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-585",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-586",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-636",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-637",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-638",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-688",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-689",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-690",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-740",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-741",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-742",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-792",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-793",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-794",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-844",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-845",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-846",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-896",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-897",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-898",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-948",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-949",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-950",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1000",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1001",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1002",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1052",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1053",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1054",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1104",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1105",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1106",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1156",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1157",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1158",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1208",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1209",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1210",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1260",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1261",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1262",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1312",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1313",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1314",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1364",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1365",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1366",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1416",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1417",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1418",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1466",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0080",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1467",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1468",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1469",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1470",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1471",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1472",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1473",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1474",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1475",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1476",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1477",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1478",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1479",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1480",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1481",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1482",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1483",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1484",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1485",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1486",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1487",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1488",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1489",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1490",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprCast-1491",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K2-SeqExprCast-180",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K2-SeqExprCast-211",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K2-SeqExprCast-212",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K2-SeqExprCast-332",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "copynamespace-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0055",
+    "got": []
+  },
+  {
+    "testCase": "K-CopyNamespacesProlog-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0055",
+    "got": []
+  }
+]

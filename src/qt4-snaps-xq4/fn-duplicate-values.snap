@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "K-SeqduplicateValuesFunc-1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqduplicateValuesFunc-3",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

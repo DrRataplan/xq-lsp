@@ -1,0 +1,8 @@
+[
+  {
+    "testCase": "map-merge-001",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

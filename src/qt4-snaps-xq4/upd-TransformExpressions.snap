@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "id-transform-expr-050",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

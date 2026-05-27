@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "orderDecl-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0065",
+    "got": []
+  },
+  {
+    "testCase": "K-DefaultOrderingProlog-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0065",
+    "got": []
+  }
+]

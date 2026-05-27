@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "Serialization-003",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0108",
+    "got": []
+  },
+  {
+    "testCase": "Serialization-023",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0109",
+    "got": []
+  }
+]
