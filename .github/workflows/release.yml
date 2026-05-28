@@ -87,7 +87,7 @@ jobs:
                   " "${{ steps.version.outputs.new }}"
             - name: Package extension
               working-directory: editors/vscode
-              run: npx vsce package
+              run: npm run package
             - name: Publish to VS Code Marketplace
               working-directory: editors/vscode
               run: npx vsce publish --packagePath *.vsix
@@ -127,7 +127,7 @@ jobs:
               run: npm install ../../xq-lsp-*.tgz
             - name: Package extension
               working-directory: editors/vscode
-              run: npx vsce package
+              run: npm run package
             - name: Publish to VS Code Marketplace
               working-directory: editors/vscode
               run: npx vsce publish --packagePath *.vsix
