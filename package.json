@@ -6,9 +6,12 @@
 	"author": "Martin Middel",
 	"type": "module",
 	"main": "dist/server.js",
-	"repository": "https://github.com/DrRataplan/xq-lsp.git",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/DrRataplan/xq-lsp.git"
+	},
 	"bin": {
-		"xq-lsp": "./src/server.ts"
+		"xq-lsp": "src/server.ts"
 	},
 	"scripts": {
 		"build": "tsc",
