@@ -36,7 +36,7 @@ jobs:
                   node-version: 26
                   cache: npm
             - run: npm ci
-            - run: npm run build && npm pack
+            - run: npm run build
             - run: npm install --prefix editors/vscode
             - run: npm run test:coverage
               env:
