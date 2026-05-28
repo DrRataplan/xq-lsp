@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.2.0...lsp-v1.3.0) (2026-05-28)
+
+
+### Features
+
+* **vscode:** publish to Open VSX Registry for Cursor support ([2928578](https://github.com/DrRataplan/xq-lsp/commit/292857837fea055faff9e50bb074e12f2526bcf1))
+
 ## [1.2.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.1.0...lsp-v1.2.0) (2026-05-27)
 
 
