@@ -84,11 +84,19 @@ jobs:
                     m['editors/vscode'] = process.argv[1];
                     fs.writeFileSync('.release-please-manifest.json', JSON.stringify(m, null, 2) + '\n');
                   " "${{ steps.version.outputs.new }}"
+            - name: Package extension
+              working-directory: editors/vscode
+              run: npx vsce package
             - name: Publish to VS Code Marketplace
               working-directory: editors/vscode
-              run: npx vsce publish
+              run: npx vsce publish --packagePath *.vsix
               env:
                   VSCE_PAT: ${{ secrets.VSCE_PAT }}
+            - name: Publish to Open VSX Registry
+              working-directory: editors/vscode
+              run: npx ovsx publish *.vsix -p $OVSX_PAT
+              env:
+                  OVSX_PAT: ${{ secrets.OVSX_PAT }}
             - name: Commit, tag, and push
               run: |
                   git config user.name "github-actions[bot]"
@@ -115,8 +123,16 @@ jobs:
             - name: Override xq-lsp with local build
               working-directory: editors/vscode
               run: npm install ../../xq-lsp-*.tgz
+            - name: Package extension
+              working-directory: editors/vscode
+              run: npx vsce package
             - name: Publish to VS Code Marketplace
               working-directory: editors/vscode
-              run: npx vsce publish
+              run: npx vsce publish --packagePath *.vsix
               env:
                   VSCE_PAT: ${{ secrets.VSCE_PAT }}
+            - name: Publish to Open VSX Registry
+              working-directory: editors/vscode
+              run: npx ovsx publish *.vsix -p $OVSX_PAT
+              env:
+                  OVSX_PAT: ${{ secrets.OVSX_PAT }}
