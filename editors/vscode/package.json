@@ -2,7 +2,7 @@
 	"name": "xquery-lsp-vscode",
 	"displayName": "XQuery Language Server",
 	"description": "XQuery language support via xq-lsp",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"publisher": "elliat",
 	"license": "MIT",
 	"type": "module",
