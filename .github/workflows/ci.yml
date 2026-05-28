@@ -45,3 +45,20 @@ jobs:
               uses: coverallsapp/github-action@v2
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    publish-dry-run:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 26
+                  cache: npm
+            - run: npm ci
+            - run: npm run build
+            - name: npm publish dry-run
+              run: npm publish --dry-run
+            - run: npm install --prefix editors/vscode
+            - name: vsce package dry-run
+              run: npm run package
+              working-directory: editors/vscode
