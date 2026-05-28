@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/DrRataplan/xq-lsp/compare/vscode-v0.3.0...vscode-v0.4.0) (2026-05-28)
+
+
+### Features
+
+* **vscode:** bundle extension with esbuild, add smoke tests, fix release pipeline ([463e25d](https://github.com/DrRataplan/xq-lsp/commit/463e25d4289d092fb19ff7d6dd2b9bb10ba5a1fc))
+
 ## [0.3.0](https://github.com/DrRataplan/xq-lsp/compare/vscode-v0.2.1...vscode-v0.3.0) (2026-05-28)
 
 
