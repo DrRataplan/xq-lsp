@@ -36,6 +36,7 @@ jobs:
                   node-version: 26
                   cache: npm
             - run: npm ci
+            - run: npm ci --prefix editors/vscode
             - run: npm run test:coverage
               env:
                   QT4_TESTS_DIR: ${{ github.workspace }}/qt4tests
