@@ -56,9 +56,13 @@ jobs:
                   cache: npm
             - run: npm ci
             - run: npm run build
-            - name: npm publish dry-run
-              run: npm publish --dry-run
-            - run: npm install --prefix editors/vscode
+            - name: npm pack (validates package, creates tarball for vsce step)
+              run: npm pack
+            - name: Install extension deps, override xq-lsp with packed tarball
+              working-directory: editors/vscode
+              run: |
+                  npm install
+                  npm install ../../xq-lsp-*.tgz
             - name: vsce package dry-run
               run: npm run package
               working-directory: editors/vscode
