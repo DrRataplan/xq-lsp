@@ -7,7 +7,8 @@
 	"license": "MIT",
 	"type": "module",
 	"engines": {
-		"vscode": "^1.86.0"
+		"vscode": "^1.86.0",
+		"cursor": "^1.86.0"
 	},
 	"repository": "https://github.com/DrRataplan/xq-lsp.git",
 	"categories": [
@@ -34,7 +35,9 @@
 	},
 	"main": "./extension.js",
 	"scripts": {
-		"package": "vsce package"
+		"package": "vsce package",
+		"publish:vsce": "vsce publish",
+		"publish:ovsx": "ovsx publish"
 	},
 	"dependencies": {
 		"prettier": "^3.8.3",
@@ -43,6 +46,7 @@
 		"xq-lsp": "file:../../xq-lsp-1.2.0.tgz"
 	},
 	"devDependencies": {
-		"@vscode/vsce": "^3.0.0"
+		"@vscode/vsce": "^3.0.0",
+		"ovsx": "^0.9.0"
 	}
 }
