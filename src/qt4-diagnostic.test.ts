@@ -49,6 +49,12 @@ const SKIP_FEATURES = new Set([
 	"schemaAware",
 	"externalFunctions",
 	"serialization",
+	// The namespace axis (namespace::*) is not supported by the underlying parser;
+	// including these tests only produces false XPST0003 parse errors.
+	"namespace-axis",
+	// XQuery Update Facility — the parser does not support updating function syntax;
+	// including these tests only produces false XPST0003 parse errors.
+	"XQUpdate",
 ]);
 
 // ── DOM helpers ───────────────────────────────────────────────────────────────
@@ -220,10 +226,24 @@ if (QT4_DIR) {
 				}
 			}
 
+			// Resolve the query text: inline CDATA or external file reference.
+			const testFile = testEl.getAttribute("file");
+			let query: string;
+			if (testFile) {
+				const testFilePath = path.join(path.dirname(xmlPath), testFile);
+				try {
+					query = fs.readFileSync(testFilePath, "utf8");
+				} catch {
+					continue; // skip if the file can't be read
+				}
+			} else {
+				query = testEl.textContent ?? "";
+			}
+
 			allInputs.push({
 				testSetSlug: slug,
 				testCase: name,
-				query: testEl.textContent ?? "",
+				query,
 				expected,
 				expectedCode,
 				envNamespaces,

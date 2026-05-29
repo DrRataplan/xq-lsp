@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "currencysvg",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "RexParser",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  }
-]
+[]

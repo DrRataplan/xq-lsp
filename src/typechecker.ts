@@ -163,6 +163,10 @@ function isNodeSubtype(from: string | undefined, to: string | undefined): boolea
 export function isAssignable(from: XQueryType, to: XQueryType): boolean {
 	if (from.kind === "unknown" || to.kind === "unknown") return true;
 	if (to.kind === "item") return true;
+	// xs:error is the XPath bottom type — no value is an instance of it; the only way
+	// to "supply" it is via fn:error() which raises an error before returning.
+	// Treat xs:error parameters as always-compatible to avoid false XPTY0004 reports.
+	if (to.kind === "atomic" && to.name === "xs:error") return true;
 	if (from.kind === "empty") return to.occurrence === "*" || to.occurrence === "?";
 
 	if (from.kind === "atomic" && to.kind === "node") return false;

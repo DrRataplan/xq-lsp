@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "xs-error-017",
-    "outcome": "false-positive",
-    "expectedCode": "FOER0000",
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

@@ -4,29 +4,5 @@
     "outcome": "false-negative",
     "expectedCode": "XPST0017",
     "got": []
-  },
-  {
-    "testCase": "K2-NodeNameFunc-2",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "K3-NodeNameFunc-1",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "K3-NodeNameFunc-4",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
   }
 ]

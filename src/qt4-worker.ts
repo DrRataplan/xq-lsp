@@ -49,14 +49,20 @@ const batch = workerData as TestInput[];
 const results: TestOutput[] = batch.map((tc) => {
 	const got = runDiagnostics(tc.query, tc.envNamespaces);
 	const hasError = got.length > 0;
+	// If we emitted exactly the expected error code, count it as a pass even if the
+	// test harness classified the code as non-static (e.g. XPTY0004 → "no-static-error").
+	// This prevents false-positive labelling when our checker correctly identifies the error.
+	const matchedExpected = tc.expectedCode !== null && got.includes(tc.expectedCode);
 	const outcome =
-		tc.expected === "static-error"
-			? hasError
-				? "pass"
-				: "false-negative"
-			: hasError
-				? "false-positive"
-				: "pass";
+		matchedExpected
+			? "pass"
+			: tc.expected === "static-error"
+				? hasError
+					? "pass"
+					: "false-negative"
+				: hasError
+					? "false-positive"
+					: "pass";
 	return { testSetSlug: tc.testSetSlug, testCase: tc.testCase, outcome, expectedCode: tc.expectedCode, got };
 });
 
