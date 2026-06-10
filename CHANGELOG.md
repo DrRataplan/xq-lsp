@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.1](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.4.0...lsp-v1.4.1) (2026-06-10)
+
+
+### Bug Fixes
+
+* change the bin to the dist version ([e77944d](https://github.com/DrRataplan/xq-lsp/commit/e77944de7da857ac6ca9d3148b4a41abec175de4))
+* do not package testing snapshots to npm ([9638734](https://github.com/DrRataplan/xq-lsp/commit/963873401f3e4d74a9338c387bcfc3c3564f4f0d))
+* union multiple imports of modules ([1d77b65](https://github.com/DrRataplan/xq-lsp/commit/1d77b65b48933abfe20c6f0e9abd113c318f16b4))
+
 ## [1.4.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.3.0...lsp-v1.4.0) (2026-05-28)
 
 
