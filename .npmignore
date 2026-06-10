@@ -2,7 +2,8 @@ editors
 *~
 .*
 CLAUDE.md
-dist/test.js
+dist/*.test.js
 dist/test.d.ts
 dist/src/
-src/test.ts
+src/*.test.ts
+src/qt4-snaps/
