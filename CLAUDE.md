@@ -49,14 +49,12 @@ The server is a standard LSP over stdio. `src/server.ts` is the entry point and 
 - `defaultFunctionNamespace` — from `declare default function namespace`, else `XMLNS_FN`
 - `moduleNamespaceUri` / `modulePrefix` — from `module namespace prefix="uri"`
 
-**Predeclared namespaces** (`src/runtimes.ts`, `src/runtimes/*.json`) — namespace prefixes that are in scope without any declaration in the source. Two JSON files drive this:
+**Predeclared namespaces** — namespace prefixes that are in scope without any declaration in the source.
 
-- `src/runtimes/w3c-predeclared.json` — standard XQuery 3.1 predeclared prefixes (`math`, `map`, `array`). Always active.
-- `src/runtimes/existdb/predeclared-namespaces.json` — eXist-db-specific prefixes (`util`, `xmldb`, `sm`, …). Active when `lib: "existdb"` is configured.
+- `src/analyzer.ts` `BUILTIN_PREFIXES` — always-known prefixes: `fn`, `local`, `xs`, `xml`, `math`, `map`, `array`. These are the XQuery 3.1 spec-mandated and universally predeclared namespaces.
+- `src/runtimes/existdb/predeclared-namespaces.json` — eXist-db-specific prefixes (`util`, `xmldb`, `sm`, …). Active when `lib: ["existdb"]` is configured. Loaded by `getRuntimePredeclaredNamespaces(runtimes)` in `runtimes.ts`.
 
-`src/analyzer.ts` `BUILTIN_PREFIXES` is intentionally minimal (only `fn`, `local`, `xs`, `xml` — the spec-mandated fundamentals used by the resolver itself). All other predeclared prefixes live in the JSON files.
-
-`getRuntimePredeclaredNamespaces(runtimes)` in `runtimes.ts` returns the combined list; `withPredeclaredNs(analysis, ns)` merges them into `analysis.namespaceDecls` so `resolvePrefix` picks them up.
+`withPredeclaredNs(analysis, ns)` merges runtime-specific namespace declarations into `analysis.namespaceDecls` so `resolvePrefix` picks them up and `findUndeclaredPrefixUsages` doesn't flag them.
 
 **`resolveContext`** in `server.ts` — called at the start of every LSP handler. It:
 1. Calls `getRuntimePredeclaredNamespaces` for the active runtimes and injects them into the analysis via `withPredeclaredNs` (suppresses false `XQST0081` diagnostics for pre-declared prefixes)

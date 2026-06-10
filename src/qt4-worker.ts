@@ -4,9 +4,6 @@ import { checkTypes } from "./typechecker.ts";
 import { checkFunctionCalls } from "./functioncall-diagnostics.ts";
 import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
 import { getBuiltins } from "./builtins.ts";
-import { getRuntimePredeclaredNamespaces, withPredeclaredNs } from "./runtimes.ts";
-
-const W3C_NS = getRuntimePredeclaredNamespaces([]);
 
 export interface TestInput {
 	testSetSlug: string;
@@ -29,11 +26,10 @@ const BUILTINS = new Map([["builtin:fn", getBuiltins()]]);
 
 function runDiagnostics(query: string, envNamespaces: Array<{ prefix: string; uri: string }>): string[] {
 	try {
-		const { analysis: rawAnalysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq");
-		let analysis = withPredeclaredNs(rawAnalysis, W3C_NS);
+		const { analysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq");
 		for (const ns of envNamespaces) {
 			if (ns.prefix && !analysis.namespaceDecls.some((d) => d.prefix === ns.prefix)) {
-				analysis = { ...analysis, namespaceDecls: [...analysis.namespaceDecls, { prefix: ns.prefix, namespaceUri: ns.uri }] };
+				analysis.namespaceDecls.push({ prefix: ns.prefix, namespaceUri: ns.uri });
 			}
 		}
 		const codes: string[] = [];

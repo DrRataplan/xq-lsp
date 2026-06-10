@@ -159,12 +159,7 @@ describe("runtime defs: predeclared namespaces", () => {
 		return findUndeclaredPrefixUsages(ast, withPredeclaredNs(analysis, ns));
 	}
 
-	test("W3C predeclared: math/map/array produce no diagnostic without explicit declaration", () => {
-		const ds = diagsFor(`(math:sqrt(4.0), map:merge(()), array:size([1]))`, []);
-		assert.deepEqual(ds, [], `expected no diagnostics, got ${JSON.stringify(ds)}`);
-	});
-
-	test("W3C predeclared: unknown prefix still reported with no runtimes", () => {
+	test("unknown prefix still reported with no runtimes", () => {
 		const ds = diagsFor(`myns:foo()`, []);
 		assert.ok(
 			ds.some((d) => d.prefix === "myns"),

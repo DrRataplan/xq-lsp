@@ -6,24 +6,17 @@ import type { FileAnalysis, NamespaceDecl } from "./types.ts";
 
 const runtimesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "runtimes");
 
-function loadJson(filePath: string): Record<string, string> {
-	return JSON.parse(fs.readFileSync(filePath, "utf-8")) as Record<string, string>;
-}
-
 function toNamespaceDecls(raw: Record<string, string>): NamespaceDecl[] {
 	return Object.entries(raw).map(([prefix, namespaceUri]) => ({ prefix, namespaceUri }));
 }
 
-// Lazily loaded predeclared namespace lists.
-let w3cPredeclared: NamespaceDecl[] | null = null;
-function loadW3cPredeclared(): NamespaceDecl[] {
-	return (w3cPredeclared ??= toNamespaceDecls(loadJson(path.join(runtimesDir, "w3c-predeclared.json"))));
-}
-
+// Lazily loaded predeclared namespace list for the existdb runtime.
 let existdbPredeclared: NamespaceDecl[] | null = null;
 function loadExistdbPredeclared(): NamespaceDecl[] {
 	return (existdbPredeclared ??= toNamespaceDecls(
-		loadJson(path.join(runtimesDir, "existdb", "predeclared-namespaces.json")),
+		JSON.parse(
+			fs.readFileSync(path.join(runtimesDir, "existdb", "predeclared-namespaces.json"), "utf-8"),
+		) as Record<string, string>,
 	));
 }
 
@@ -72,9 +65,8 @@ const runtimeAnalysisCache = new Map<string, FileAnalysis>();
  * runtime-specific additions (e.g. eXist-db's util, xmldb, …).
  */
 export function getRuntimePredeclaredNamespaces(runtimes: string[]): NamespaceDecl[] {
-	const result = [...loadW3cPredeclared()];
-	if (runtimes.includes("existdb")) result.push(...loadExistdbPredeclared());
-	return result;
+	if (!runtimes.includes("existdb")) return [];
+	return loadExistdbPredeclared();
 }
 
 /**

@@ -6,13 +6,10 @@ import {
 	findImportInsertPosition,
 	findDeclareNsInsertPosition,
 } from "./namespace-diagnostics.ts";
-import { getRuntimePredeclaredNamespaces, withPredeclaredNs } from "./runtimes.ts";
-
-const W3C_NS = getRuntimePredeclaredNamespaces([]);
 
 function diags(src: string) {
 	const { analysis, ast } = analyzeWithAst(src, "file:///main.xq");
-	return findUndeclaredPrefixUsages(ast, withPredeclaredNs(analysis, W3C_NS));
+	return findUndeclaredPrefixUsages(ast, analysis);
 }
 
 // ── undeclared prefixes that SHOULD be reported ───────────────────────────────
