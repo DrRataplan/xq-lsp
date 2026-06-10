@@ -2,7 +2,7 @@
 	"name": "xquery-lsp-vscode",
 	"displayName": "XQuery Language Server",
 	"description": "XQuery language support via xq-lsp",
-	"version": "0.4.0",
+	"version": "0.4.1",
 	"publisher": "elliat",
 	"license": "MIT",
 	"engines": {
@@ -43,7 +43,7 @@
 		"prettier": "^3.8.3",
 		"prettier-plugin-xquery": "^1.6.0",
 		"vscode-languageclient": "^9.0.1",
-		"xq-lsp": "file:../.."
+		"xq-lsp": "file:../../xq-lsp-1.4.1.tgz"
 	},
 	"devDependencies": {
 		"@vscode/vsce": "^3.0.0",
