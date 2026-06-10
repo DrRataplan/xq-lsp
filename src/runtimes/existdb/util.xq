@@ -620,6 +620,38 @@ declare function util:is-module-registered() as xs:boolean external;
 declare function util:line-number() as xs:integer external;
 
 (:~
+ : Logs a message to the current logger (log4j). The $priority argument
+ : specifies the log level, e.g. 'DEBUG', 'INFO', 'WARN', 'ERROR'.
+ : @param $priority The log level priority string (e.g. 'INFO', 'WARN', 'ERROR')
+ : @param $message The message to log
+ :)
+declare function util:log($priority as xs:string, $message as item()*) as empty-sequence() external;
+
+(:~
+ : Logs a message to a named logger.
+ : @param $priority The log level: 'error', 'warn', 'debug', 'info', 'trace'
+ : @param $logger-name The name of the logger, e.g. 'my.app.log'
+ : @param $message The message to log
+ :)
+declare function util:log-app(
+	$priority as xs:string,
+	$logger-name as xs:string,
+	$message as item()*
+) as empty-sequence() external;
+
+(:~
+ : Logs the message to System.err.
+ : @param $message The message to log
+ :)
+declare function util:log-system-err($message as item()*) as empty-sequence() external;
+
+(:~
+ : Logs the message to System.out.
+ : @param $message The message to log
+ :)
+declare function util:log-system-out($message as item()*) as empty-sequence() external;
+
+(:~
  : Returns a sequence of function items for each function in the current
  : module.
  : @deprecated Use inspect:module-functions#0 instead.

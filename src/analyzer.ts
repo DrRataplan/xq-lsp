@@ -20,13 +20,13 @@ export const XMLNS_MATH = "http://www.w3.org/2005/xpath-functions/math";
 export const XMLNS_MAP = "http://www.w3.org/2005/xpath-functions/map";
 export const XMLNS_ARRAY = "http://www.w3.org/2005/xpath-functions/array";
 
+// Prefixes mandated by XQuery spec section 2.1.1 — always predeclared in every
+// conformant processor. math/map/array (also spec-predeclared) live in
+// w3c-predeclared.json and are injected via withPredeclaredNs in the server.
 const BUILTIN_PREFIXES: Record<string, string> = {
 	fn: XMLNS_FN,
 	local: XMLNS_LOCAL,
 	xs: XMLNS_XS,
-	math: XMLNS_MATH,
-	map: XMLNS_MAP,
-	array: XMLNS_ARRAY,
 	xml: "http://www.w3.org/XML/1998/namespace",
 };
 

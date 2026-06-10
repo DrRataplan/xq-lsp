@@ -3,10 +3,11 @@ import assert from "node:assert/strict";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { analyze } from "./analyzer.ts";
+import { analyze, analyzeWithAst } from "./analyzer.ts";
 import { getCompletions } from "./completion.ts";
 import { formatQName } from "./types.ts";
-import { getRuntimeAnalyses } from "./runtimes.ts";
+import { getRuntimeAnalyses, getRuntimePredeclaredNamespaces, withPredeclaredNs } from "./runtimes.ts";
+import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
 
 const runtimesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "runtimes");
 
@@ -148,5 +149,76 @@ describe("runtime defs: existdb smoketest", () => {
 		);
 		assert.ok(labels.includes("get-parameter"), `expected request functions, got ${labels.slice(0, 5)}`);
 		assert.ok(labels.includes("get-header"), `expected get-header in completions`);
+	});
+});
+
+describe("runtime defs: predeclared namespaces", () => {
+	function diagsFor(src: string, runtimes: string[]) {
+		const { analysis, ast } = analyzeWithAst(src, "file:///main.xq");
+		const ns = getRuntimePredeclaredNamespaces(runtimes);
+		return findUndeclaredPrefixUsages(ast, withPredeclaredNs(analysis, ns));
+	}
+
+	test("W3C predeclared: math/map/array produce no diagnostic without explicit declaration", () => {
+		const ds = diagsFor(`(math:sqrt(4.0), map:merge(()), array:size([1]))`, []);
+		assert.deepEqual(ds, [], `expected no diagnostics, got ${JSON.stringify(ds)}`);
+	});
+
+	test("W3C predeclared: unknown prefix still reported with no runtimes", () => {
+		const ds = diagsFor(`myns:foo()`, []);
+		assert.ok(
+			ds.some((d) => d.prefix === "myns"),
+			`expected myns diagnostic`,
+		);
+	});
+
+	test("existdb: util/xmldb/process produce no diagnostic when runtime is active", () => {
+		for (const prefix of ["util", "xmldb", "process", "sm", "request"]) {
+			const ds = diagsFor(`${prefix}:something()`, ["existdb"]);
+			assert.ok(
+				!ds.some((d) => d.prefix === prefix),
+				`${prefix} should not be reported as undeclared when existdb runtime is active`,
+			);
+		}
+	});
+
+	test("existdb: util IS reported as undeclared without the runtime", () => {
+		const ds = diagsFor(`util:log("hello")`, []);
+		assert.ok(
+			ds.some((d) => d.prefix === "util"),
+			`util should be reported without existdb runtime`,
+		);
+	});
+
+	test("existdb: predeclared JSON covers the core pre-declared function modules", () => {
+		const predeclaredPrefixes = new Set(
+			getRuntimePredeclaredNamespaces(["existdb"]).map((nd) => nd.prefix),
+		);
+		for (const prefix of ["util", "xmldb", "request", "response", "session", "sm", "system", "process"]) {
+			assert.ok(predeclaredPrefixes.has(prefix), `${prefix} should be in the existdb predeclared list`);
+		}
+	});
+
+	test("existdb: completions work for util: without explicit import", () => {
+		const src = `util:`;
+		const rawAnalysis = analyze(src, "file:///main.xq");
+		const ns = getRuntimePredeclaredNamespaces(["existdb"]);
+		const analysis = withPredeclaredNs(rawAnalysis, ns);
+		const byNamespace = new Map(
+			getRuntimeAnalyses(["existdb"])
+				.filter((a) => a.moduleNamespaceUri)
+				.map((a) => [a.moduleNamespaceUri!, a]),
+		);
+		// Simulate the resolveContext: add pre-declared runtime analyses directly
+		const imported = new Map<string, ReturnType<typeof analyze>>();
+		for (const nd of ns) {
+			const a = byNamespace.get(nd.namespaceUri);
+			if (a) imported.set(nd.namespaceUri, a);
+		}
+		const labels = getCompletions({ textBeforeCursor: "util:", cursorOffset: 5 }, analysis, imported).map(
+			(i) => i.label,
+		);
+		assert.ok(labels.includes("uuid"), `expected util:uuid in completions, got ${labels.slice(0, 10)}`);
+		assert.ok(labels.includes("log"), `expected util:log in completions`);
 	});
 });

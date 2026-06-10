@@ -29,7 +29,7 @@ import {
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
 import { checkUnused } from "./unused-diagnostics.ts";
 import { checkContextItemUsage } from "./context-item-diagnostics.ts";
-import { getRuntimeAnalyses } from "./runtimes.ts";
+import { getRuntimeAnalyses, getRuntimePredeclaredNamespaces, withPredeclaredNs } from "./runtimes.ts";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -133,10 +133,16 @@ function getGlobAnalyses(currentUri: string): { byNamespace: Map<string, FileAna
 	return { byNamespace, lib };
 }
 
-function resolveImports(currentUri: string, analysis: FileAnalysis): Map<string, FileAnalysis> {
+function resolveContext(
+	currentUri: string,
+	rawAnalysis: FileAnalysis,
+): { analysis: FileAnalysis; imported: Map<string, FileAnalysis> } {
 	const result = new Map<string, FileAnalysis>();
 	result.set("builtin:fn", getBuiltins());
 	const { byNamespace: globAnalyses, lib } = getGlobAnalyses(currentUri);
+	const predeclaredNs = getRuntimePredeclaredNamespaces(lib);
+	const analysis = withPredeclaredNs(rawAnalysis, predeclaredNs);
+
 	const runtimeByNamespace = new Map<string, FileAnalysis>();
 	for (const runtimeAnalysis of getRuntimeAnalyses(lib)) {
 		if (runtimeAnalysis.moduleNamespaceUri) {
@@ -147,7 +153,7 @@ function resolveImports(currentUri: string, analysis: FileAnalysis): Map<string,
 			);
 		}
 	}
-	for (const imp of analysis.imports) {
+	for (const imp of rawAnalysis.imports) {
 		if (imp.atPath) {
 			const uri = resolveImportUri(currentUri, imp.atPath);
 			const imported = getImportedAnalysis(uri);
@@ -158,7 +164,14 @@ function resolveImports(currentUri: string, analysis: FileAnalysis): Map<string,
 			if (imported) result.set(imp.namespaceUri, imported);
 		}
 	}
-	return result;
+	// Add pre-declared runtime analyses directly — available without explicit import
+	for (const nd of predeclaredNs) {
+		if (!result.has(nd.namespaceUri)) {
+			const runtimeAnalysis = runtimeByNamespace.get(nd.namespaceUri);
+			if (runtimeAnalysis) result.set(nd.namespaceUri, runtimeAnalysis);
+		}
+	}
+	return { analysis, imported: result };
 }
 
 // ── LSP lifecycle ────────────────────────────────────────────────────────────
@@ -187,13 +200,13 @@ connection.onInitialize((params) => {
 
 documents.onDidChangeContent((change) => {
 	const doc = change.document;
-	const { analysis, parseDiagnostics: parseDiags, hasAst, ast } = analyzeDocumentFull(doc);
+	const { analysis: rawAnalysis, parseDiagnostics: parseDiags, hasAst, ast } = analyzeDocumentFull(doc);
+	const { analysis, imported: resolvedImported } = resolveContext(doc.uri, rawAnalysis);
 
 	if (hasAst && ast !== null) {
-		const imported = resolveImports(doc.uri, analysis);
 		typeErrorCache.set(doc.uri, [
-			...checkTypes(ast, doc.getText(), analysis, imported),
-			...checkFunctionCalls(ast, analysis, imported),
+			...checkTypes(ast, doc.getText(), analysis, resolvedImported),
+			...checkFunctionCalls(ast, analysis, resolvedImported),
 		]);
 	}
 
@@ -256,8 +269,8 @@ documents.onDidChangeContent((change) => {
 connection.onCompletion((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return [];
-	const analysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const imported = resolveImports(doc.uri, analysis);
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
 	const offset = doc.offsetAt(params.position);
 	return getCompletions(
 		{ textBeforeCursor: doc.getText().slice(0, offset), cursorOffset: offset },
@@ -270,16 +283,16 @@ connection.onCompletion((params) => {
 connection.onHover((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return null;
-	const analysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const imported = resolveImports(doc.uri, analysis);
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
 	return getHover(doc, doc.offsetAt(params.position), analysis, imported);
 });
 
 connection.onSignatureHelp((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return null;
-	const analysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const imported = resolveImports(doc.uri, analysis);
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
 	return getSignatureHelp(doc, doc.offsetAt(params.position), analysis, imported);
 });
 
@@ -293,8 +306,8 @@ connection.onDocumentSymbol((params) => {
 connection.onDefinition((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return null;
-	const analysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const imported = resolveImports(doc.uri, analysis);
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
 	return getDefinition(doc, doc.offsetAt(params.position), analysis, imported, (atPath) =>
 		resolveImportUri(doc.uri, atPath),
 	);

@@ -45,8 +45,22 @@ The server is a standard LSP over stdio. `src/server.ts` is the entry point and 
 - `moduleVariables` — `declare variable` declarations
 - `localBindings` — `let`/`for` bindings (scope-approximated: visible from their offset onward)
 - `imports` — `import module namespace prefix="uri" at "path"` declarations
+- `namespaceDecls` — `declare namespace prefix="uri"` statements
+- `defaultFunctionNamespace` — from `declare default function namespace`, else `XMLNS_FN`
+- `moduleNamespaceUri` / `modulePrefix` — from `module namespace prefix="uri"`
 
-**Import resolution** happens in `server.ts`: when handling any request, it resolves each `ImportInfo.atPath` relative to the current file URI, loads and analyzes the imported file (cached by URI), and passes the resulting `Map<atPath, FileAnalysis>` to feature handlers. Imported file symbols are included in completions/hover/go-to-definition.
+**Predeclared namespaces** (`src/runtimes.ts`, `src/runtimes/*.json`) — namespace prefixes that are in scope without any declaration in the source. Two JSON files drive this:
+
+- `src/runtimes/w3c-predeclared.json` — standard XQuery 3.1 predeclared prefixes (`math`, `map`, `array`). Always active.
+- `src/runtimes/existdb/predeclared-namespaces.json` — eXist-db-specific prefixes (`util`, `xmldb`, `sm`, …). Active when `lib: "existdb"` is configured.
+
+`src/analyzer.ts` `BUILTIN_PREFIXES` is intentionally minimal (only `fn`, `local`, `xs`, `xml` — the spec-mandated fundamentals used by the resolver itself). All other predeclared prefixes live in the JSON files.
+
+`getRuntimePredeclaredNamespaces(runtimes)` in `runtimes.ts` returns the combined list; `withPredeclaredNs(analysis, ns)` merges them into `analysis.namespaceDecls` so `resolvePrefix` picks them up.
+
+**`resolveContext`** in `server.ts` — called at the start of every LSP handler. It:
+1. Calls `getRuntimePredeclaredNamespaces` for the active runtimes and injects them into the analysis via `withPredeclaredNs` (suppresses false `XQST0081` diagnostics for pre-declared prefixes)
+2. Builds the `imported: Map<string, FileAnalysis>` by resolving explicit `import module` statements and also including pre-declared runtime modules directly (so completions/hover/go-to-definition work without a written import)
 
 **Feature handlers** (`src/completion.ts`, `src/features.ts`) take `(currentAnalysis, importedAnalyses)` and are pure functions — no server state. Completion context is determined by scanning text before the cursor for `$`, `ns:`, or plain names. Snippet format is only used when the client advertises `snippetSupport`.
 

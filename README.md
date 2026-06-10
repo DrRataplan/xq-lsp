@@ -59,24 +59,70 @@ For files with syntax errors (common while editing), the server falls back to re
 
 Use the `lib` key to load built-in definitions for a specific runtime:
 
-| Value     | Runtime                                                             |
-| --------- | ------------------------------------------------------------------- |
-| `"fonto"` | [Fonto XML editor](https://www.fontoxml.com/) — `fonto:*` functions |
+| Value       | Runtime                                                                   |
+| ----------- | ------------------------------------------------------------------------- |
+| `"fonto"`   | [Fonto XML editor](https://www.fontoxml.com/) — `fonto:*` functions       |
+| `"existdb"` | [eXist-db](https://exist-db.org/) — all extension module functions        |
 
 ```xquery
-map {"glob": "src/**/*.xq", "lib": "fonto"}
-```
-
-Then import the namespace in your XQuery files as usual — the server resolves completions, hover, and go-to-definition against the bundled definitions:
-
-```xquery
-import module namespace fonto="http://www.fontoxml.com/functions";
+map {"glob": "src/**/*.xq", "lib": "existdb"}
 ```
 
 Multiple libs use an XPath sequence:
 
 ```xquery
 map {"glob": "src/**/*.xq", "lib": ("fonto", "other")}
+```
+
+#### eXist-db runtime
+
+The `"existdb"` runtime bundles stub definitions for every eXist-db extension
+module (`util`, `xmldb`, `request`, `sm`, `ft`, `compression`, …).
+
+eXist-db automatically pre-declares a large set of namespace prefixes — you can
+call `util:log(…)`, `xmldb:store(…)`, `process:execute(…)`, etc. without any
+`import module namespace` statement. When the `existdb` runtime is active the
+server knows about these pre-declared prefixes and:
+
+- **suppresses** false `XQST0081` ("namespace prefix not declared") diagnostics
+  for all pre-declared namespaces
+- **provides completions, hover, and go-to-definition** for those modules
+  without requiring an explicit `import module namespace` in your source
+
+If you do choose to write explicit imports (e.g. for editor portability), the
+server handles those correctly too:
+
+```xquery
+(: explicit import — also fine :)
+import module namespace util = "http://exist-db.org/xquery/util";
+util:uuid()
+```
+
+Modules that require explicit import even in eXist-db (e.g. `datetime`,
+`httpclient`, `console`, `crypto`, `kwic`) still need a `import module
+namespace` declaration; the server offers quick-fix code actions to insert it.
+
+```xquery
+(: lsp-config.xq in your project root :)
+map {
+    "glob": "src/**/*.xq",
+    "lib": "existdb",
+    "import": map {
+        "generateLocationHints": false()
+    }
+}
+```
+
+The `generateLocationHints: false()` setting prevents the server from appending
+`at "…"` paths to generated imports, which eXist-db does not need (it resolves
+modules by namespace URI).
+
+#### Fonto runtime
+
+Then import the namespace in your XQuery files as usual — the server resolves completions, hover, and go-to-definition against the bundled definitions:
+
+```xquery
+import module namespace fonto="http://www.fontoxml.com/functions";
 ```
 
 ### Location hints
