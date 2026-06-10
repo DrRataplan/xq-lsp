@@ -181,3 +181,31 @@ util:trim("x")`;
 		assert.ok(labels.includes("trim"), `expected trim via namespace-only import, got ${labels}`);
 	});
 });
+
+test("two module files sharing the same namespace URI have their functions unioned", () => {
+	withTmpDir((dir) => {
+		const ns = "http://example.com/util";
+
+		const srcA = `module namespace util="${ns}";
+declare function util:trim($s as xs:string) as xs:string { $s };`;
+		const srcB = `module namespace util="${ns}";
+declare function util:pad($s as xs:string, $n as xs:integer) as xs:string { $s };`;
+		fs.writeFileSync(path.join(dir, "util-a.xq"), srcA);
+		fs.writeFileSync(path.join(dir, "util-b.xq"), srcB);
+
+		const mainSrc = `import module namespace util="${ns}"; 1`;
+		const mainAnalysis = analyze(mainSrc, pathToFileURL(path.join(dir, "main.xq")).toString());
+
+		// Simulate what getGlobAnalyses does after the fix: merge both files into one entry
+		const aAnalysis = analyze(srcA, pathToFileURL(path.join(dir, "util-a.xq")).toString());
+		const bAnalysis = analyze(srcB, pathToFileURL(path.join(dir, "util-b.xq")).toString());
+		const merged = { ...aAnalysis, functions: [...aAnalysis.functions, ...bAnalysis.functions] };
+		const imported = new Map([[ns, merged]]);
+
+		const labels = getCompletions({ textBeforeCursor: "util:", cursorOffset: 5 }, mainAnalysis, imported).map(
+			(i) => i.label,
+		);
+		assert.ok(labels.includes("trim"), `expected trim, got ${labels}`);
+		assert.ok(labels.includes("pad"), `expected pad, got ${labels}`);
+	});
+});

@@ -102,6 +102,14 @@ function getImportedAnalysis(importUri: string): FileAnalysis | null {
 	}
 }
 
+function mergeAnalyses(a: FileAnalysis, b: FileAnalysis): FileAnalysis {
+	return {
+		...a,
+		functions: [...a.functions, ...b.functions],
+		moduleVariables: [...a.moduleVariables, ...b.moduleVariables],
+	};
+}
+
 function getGlobAnalyses(currentUri: string): { byNamespace: Map<string, FileAnalysis>; lib: string[] } {
 	const found = findConfig(currentUri);
 	if (!found) return { byNamespace: new Map(), lib: [] };
@@ -117,7 +125,9 @@ function getGlobAnalyses(currentUri: string): { byNamespace: Map<string, FileAna
 	for (const filePath of expandGlobs(config.globs, configDir)) {
 		const fileUri = pathToFileURL(filePath).toString();
 		const imported = getImportedAnalysis(fileUri);
-		if (imported?.moduleNamespaceUri) byNamespace.set(imported.moduleNamespaceUri, imported);
+		if (!imported?.moduleNamespaceUri) continue;
+		const existing = byNamespace.get(imported.moduleNamespaceUri);
+		byNamespace.set(imported.moduleNamespaceUri, existing ? mergeAnalyses(existing, imported) : imported);
 	}
 	globAnalysesByConfigDir.set(configDir, byNamespace);
 	return { byNamespace, lib };
@@ -130,7 +140,11 @@ function resolveImports(currentUri: string, analysis: FileAnalysis): Map<string,
 	const runtimeByNamespace = new Map<string, FileAnalysis>();
 	for (const runtimeAnalysis of getRuntimeAnalyses(lib)) {
 		if (runtimeAnalysis.moduleNamespaceUri) {
-			runtimeByNamespace.set(runtimeAnalysis.moduleNamespaceUri, runtimeAnalysis);
+			const existing = runtimeByNamespace.get(runtimeAnalysis.moduleNamespaceUri);
+			runtimeByNamespace.set(
+				runtimeAnalysis.moduleNamespaceUri,
+				existing ? mergeAnalyses(existing, runtimeAnalysis) : runtimeAnalysis,
+			);
 		}
 	}
 	for (const imp of analysis.imports) {
