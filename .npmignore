@@ -7,3 +7,7 @@ dist/test.d.ts
 dist/src/
 src/*.test.ts
 src/qt4-snaps/
+firebase.json
+release-please-config.json
+qt4-tests/
+scripts/
