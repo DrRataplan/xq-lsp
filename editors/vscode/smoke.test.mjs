@@ -4,6 +4,7 @@ import { spawn, execFileSync } from 'child_process';
 import { existsSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -97,6 +98,44 @@ describe('vscode extension bundle', { skip }, () => {
 		assert.ok(existsSync(path.join(dir, 'dist', 'server.mjs')), 'dist/server.mjs missing');
 		for (const f of ['builtins-fn.xq', 'builtins-math.xq', 'builtins-array.xq', 'builtins-map.xq', 'builtins-xs.xq']) {
 			assert.ok(existsSync(path.join(dir, 'builtins', f)), `builtins/${f} missing`);
+		}
+	});
+
+	it('extension.js loads without throwing (catches import.meta.url breakage)', () => {
+		// Require dist/extension.js outside VS Code by stubbing the 'vscode' external.
+		// Top-level code in the bundle (e.g. prettier's createRequire(import.meta.url))
+		// runs immediately on require(), so any bundler misconfiguration throws here.
+		// vscode-languageclient extends VS Code classes at module load time, so the
+		// stub must be a Proxy that returns a valid constructor for any property access.
+		const req = createRequire(import.meta.url);
+		const Module = req('module');
+		const extPath = path.join(dir, 'dist', 'extension.js');
+
+		function stubCtor() {}
+		const stubHandler = {
+			get: (target, prop) => prop === 'prototype' ? target.prototype : stubCtor,
+			apply: () => ({}),
+			construct: () => ({}),
+			set: () => true,
+		};
+		const vscodeMock = new Proxy(stubCtor, stubHandler);
+
+		const origResolve = Module._resolveFilename;
+		Module._resolveFilename = (request, ...args) =>
+			request === 'vscode' ? '\0vscode-stub' : origResolve(request, ...args);
+		req.cache['\0vscode-stub'] = {
+			id: '\0vscode-stub', filename: '\0vscode-stub', loaded: true, exports: vscodeMock,
+		};
+
+		try {
+			delete req.cache[extPath];
+			const ext = req(extPath);
+			assert.strictEqual(typeof ext.activate, 'function', 'missing activate export');
+			assert.strictEqual(typeof ext.deactivate, 'function', 'missing deactivate export');
+		} finally {
+			Module._resolveFilename = origResolve;
+			delete req.cache['\0vscode-stub'];
+			delete req.cache[extPath];
 		}
 	});
 

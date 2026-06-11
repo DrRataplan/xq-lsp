@@ -46,6 +46,29 @@ jobs:
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
 
+    test-vscode-extension:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 26
+                  cache: npm
+            - run: npm ci
+            - run: npm run build
+            - run: npm install --prefix editors/vscode
+            - name: Build extension bundle
+              run: node build.mjs
+              working-directory: editors/vscode
+            - name: Cache VS Code download
+              uses: actions/cache@v4
+              with:
+                  path: ~/.vscode-test
+                  key: vscode-${{ runner.os }}-stable
+            - name: Run VS Code E2E tests
+              run: xvfb-run -a npm run test:e2e
+              working-directory: editors/vscode
+
     publish-dry-run:
         runs-on: ubuntu-latest
         steps:
