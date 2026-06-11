@@ -92,7 +92,7 @@ function walk(
 				// Unwrap InitialClause/IntermediateClause wrappers (may be multiply nested)
 				let clause: Node = child;
 				while (!isTerminal(clause) && (clause.type === "InitialClause" || clause.type === "IntermediateClause")) {
-					const inner = (clause as NonTerminal).children.find((c) => !isTerminal(c));
+					const inner: Node | undefined = (clause as NonTerminal).children.find((c) => !isTerminal(c));
 					if (!inner) break;
 					clause = inner;
 				}
