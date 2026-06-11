@@ -28,6 +28,7 @@ import {
 } from "./namespace-diagnostics.ts";
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
 import { checkUnused } from "./unused-diagnostics.ts";
+import { checkUndeclaredVariables } from "./variable-diagnostics.ts";
 import { checkContextItemUsage } from "./context-item-diagnostics.ts";
 import { getRuntimeAnalyses, getRuntimePredeclaredNamespaces, withPredeclaredNs } from "./runtimes.ts";
 
@@ -263,9 +264,25 @@ documents.onDidChangeContent((change) => {
 		source: "xquery-lsp",
 	}));
 
+	const undeclaredVarDiagRaw =
+		hasAst && ast !== null ? checkUndeclaredVariables(ast, analysis, resolvedImported) : [];
+	const undeclaredVarDiags = undeclaredVarDiagRaw.map((d) => ({
+		severity: DiagnosticSeverity.Error,
+		range: {
+			start: doc.positionAt(d.offset),
+			end: doc.positionAt(d.offset + d.length),
+		},
+		message: d.message,
+		code: d.code,
+		source: "xquery-lsp",
+	}));
+
 	connection.sendDiagnostics({
 		uri: doc.uri,
-		diagnostics: [...parseDiags, ...typeDiags, ...nsDiags, ...unusedDiags, ...contextItemDiags],
+		diagnostics: [
+			...parseDiags, ...typeDiags, ...nsDiags, ...unusedDiags, ...contextItemDiags,
+			...undeclaredVarDiags,
+		],
 	});
 });
 
