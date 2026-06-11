@@ -1,6 +1,6 @@
-import type { FileAnalysis, FunctionSymbol, VariableSymbol } from "./types.ts";
+import type { FileAnalysis, FunctionSymbol, VariableSymbol, ParamInfo } from "./types.ts";
 import { formatQName } from "./types.ts";
-import { resolvePrefix } from "./analyzer.ts";
+import { resolvePrefix, nodeStackAtOffset, findAll } from "./analyzer.ts";
 
 export interface CompletionContext {
 	/** Text from start of document up to (and including) the cursor position */
@@ -61,6 +61,34 @@ function buildVariableEntry(v: VariableSymbol, filter: string): CompletionEntry 
 	return { label, kind: "variable", insertText: label, isSnippet: false };
 }
 
+function buildParamEntry(p: ParamInfo, filter: string): CompletionEntry | null {
+	if (filter && !p.name.toLowerCase().startsWith(filter.toLowerCase())) return null;
+	return {
+		label: `$${p.name}`,
+		kind: "variable",
+		detail: p.type ? `as ${p.type}` : undefined,
+		insertText: `$${p.name}`,
+		isSnippet: false,
+	};
+}
+
+/** Find the function symbol enclosing the cursor using the AST. */
+function findEnclosingFunction(
+	ast: NonNullable<FileAnalysis["ast"]>,
+	cursorOffset: number,
+	functions: FunctionSymbol[],
+): { fn: FunctionSymbol; bodyStart: number; bodyEnd: number } | null {
+	const stack = nodeStackAtOffset(ast, cursorOffset);
+	const bodyNode = stack.slice().reverse().find((n) => n.type === "FunctionBody");
+	if (!bodyNode || bodyNode.start === undefined || bodyNode.end == null) return null;
+	const annotatedNode = stack.find((n) => n.type === "AnnotatedDecl");
+	if (!annotatedNode || annotatedNode.start === undefined) return null;
+	const fn = functions.find((f) => f.sourceOffset === annotatedNode.start);
+	if (!fn) return null;
+	return { fn, bodyStart: bodyNode.start, bodyEnd: bodyNode.end };
+}
+
+
 function buildFunctionEntry(fn: FunctionSymbol, label: string, snippets: boolean): CompletionEntry {
 	return {
 		label,
@@ -77,22 +105,59 @@ export function getCompletions(
 	currentAnalysis: FileAnalysis,
 	importedAnalyses: Map<string, FileAnalysis>,
 	snippets = false,
+	lastValidAnalysis?: FileAnalysis,
 ): CompletionEntry[] {
 	const token = parseToken(ctx.textBeforeCursor);
 	const items: CompletionEntry[] = [];
 
 	if (token.kind === "variable") {
 		const filter = token.prefix;
+
+		// Module-level variables are always visible
 		for (const v of currentAnalysis.moduleVariables) {
 			const e = buildVariableEntry(v, filter);
 			if (e) items.push(e);
 		}
-		for (const v of currentAnalysis.localBindings) {
-			if (v.offset < ctx.cursorOffset) {
-				const e = buildVariableEntry(v, filter);
-				if (e) items.push(e);
+
+		// Prefer the current AST; fall back to the last successfully-parsed one for scope analysis
+		const scopeAst = currentAnalysis.ast ?? lastValidAnalysis?.ast;
+		if (scopeAst) {
+			const enclosing = findEnclosingFunction(scopeAst, ctx.cursorOffset, currentAnalysis.functions);
+			if (enclosing) {
+				// Inside a function body: params + local bindings within this body before cursor
+				for (const p of enclosing.fn.params) {
+					const e = buildParamEntry(p, filter);
+					if (e) items.push(e);
+				}
+				for (const v of currentAnalysis.localBindings) {
+					if (v.offset > enclosing.bodyStart && v.offset < ctx.cursorOffset && v.offset < enclosing.bodyEnd) {
+						const e = buildVariableEntry(v, filter);
+						if (e) items.push(e);
+					}
+				}
+			} else {
+				// In query body: exclude local bindings that live inside function bodies
+				const functionBodyRanges = findAll(scopeAst, "FunctionBody")
+					.filter((b) => b.start !== undefined && b.end != null)
+					.map((b) => ({ start: b.start as number, end: b.end as number }));
+				for (const v of currentAnalysis.localBindings) {
+					if (v.offset >= ctx.cursorOffset) continue;
+					if (functionBodyRanges.some((r) => v.offset >= r.start && v.offset <= r.end)) continue;
+					const e = buildVariableEntry(v, filter);
+					if (e) items.push(e);
+				}
+			}
+		} else {
+			// No AST ever available: simple offset-based filter, no function-param completions
+			for (const v of currentAnalysis.localBindings) {
+				if (v.offset < ctx.cursorOffset) {
+					const e = buildVariableEntry(v, filter);
+					if (e) items.push(e);
+				}
 			}
 		}
+
+		// Imported module-level variables are always visible
 		for (const analysis of importedAnalyses.values()) {
 			for (const v of analysis.moduleVariables) {
 				const e = buildVariableEntry(v, filter);
