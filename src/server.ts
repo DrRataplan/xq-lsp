@@ -35,6 +35,7 @@ const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 
 const analysisCache = new Map<string, FileAnalysis>();
+const lastValidAnalysisCache = new Map<string, FileAnalysis>(); // last AST-path analysis per URI
 const typeErrorCache = new Map<string, TypeDiagnostic[]>();
 
 // Glob analyses keyed by config directory, then by module namespace URI.
@@ -44,6 +45,7 @@ const globAnalysesByConfigDir = new Map<string, Map<string, FileAnalysis>>();
 function analyzeDocument(doc: TextDocument): FileAnalysis {
 	const { analysis } = analyzeWithAst(doc.getText(), doc.uri);
 	analysisCache.set(doc.uri, analysis);
+	if (analysis.usedAstPath) lastValidAnalysisCache.set(doc.uri, analysis);
 	return analysis;
 }
 
@@ -55,6 +57,7 @@ function analyzeDocumentFull(doc: TextDocument): {
 } {
 	const { analysis, ast, parseError } = analyzeWithAst(doc.getText(), doc.uri);
 	analysisCache.set(doc.uri, analysis);
+	if (analysis.usedAstPath) lastValidAnalysisCache.set(doc.uri, analysis);
 	return { analysis, parseDiagnostics: buildParseDiagnostics(parseError), hasAst: ast !== null, ast };
 }
 
@@ -277,6 +280,7 @@ connection.onCompletion((params) => {
 		analysis,
 		imported,
 		snippetSupport,
+		lastValidAnalysisCache.get(doc.uri),
 	);
 });
 

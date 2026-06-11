@@ -46,6 +46,122 @@ describe("completion: variables", () => {
 	});
 });
 
+/**
+ * Places the cursor just after the `$` that immediately follows `needle` in `src`.
+ * `needle` must NOT include the `$` — `src` must have `$` at `src[indexOf(needle) + needle.length]`.
+ */
+function cursorAfterDollar(src: string, needle: string): { textBeforeCursor: string; cursorOffset: number } {
+	const dollarPos = src.indexOf(needle) + needle.length; // points at "$"
+	return { textBeforeCursor: src.slice(0, dollarPos + 1), cursorOffset: dollarPos + 1 };
+}
+
+describe("completion: function parameters (AST path)", () => {
+	test("params appear inside function body", () => {
+		const src = `declare function local:f($a-long-param) { $a-long-param }; 1`;
+		const analysis = analyze(src, "file:///test.xq");
+		assert.ok(analysis.usedAstPath, "expected AST path");
+		// Cursor just after the "$" inside the function body (the return-expression "$a-long-param")
+		const ctx = cursorAfterDollar(src, "{ ");
+		const labels = getCompletions(ctx, analysis, new Map()).map((i) => i.label);
+		assert.ok(labels.includes("$a-long-param"), `expected $a-long-param, got ${labels}`);
+	});
+
+	test("params filtered by typed prefix", () => {
+		const src = `declare function local:f($param, $other) { $param }; 1`;
+		const analysis = analyze(src, "file:///test.xq");
+		assert.ok(analysis.usedAstPath, "expected AST path");
+		// textBeforeCursor ends with "$par" to filter by prefix "par"
+		const bodyDollar = src.indexOf("{ $") + 2; // offset of "$" in body
+		const ctx = { textBeforeCursor: src.slice(0, bodyDollar + 3), cursorOffset: bodyDollar + 3 };
+		const labels = getCompletions(ctx, analysis, new Map()).map((i) => i.label);
+		assert.ok(labels.includes("$param"), `expected $param, got ${labels}`);
+		assert.ok(!labels.includes("$other"), `$other should be filtered out, got ${labels}`);
+	});
+
+	test("params not visible outside function body", () => {
+		const src = `declare function local:f($param) { $param }; let $x := $x return $x`;
+		const analysis = analyze(src, "file:///test.xq");
+		assert.ok(analysis.usedAstPath, "expected AST path");
+		// Cursor inside "let $x := $x" — after the second "$" (the variable reference)
+		const ctx = cursorAfterDollar(src, ":= ");
+		const labels = getCompletions(ctx, analysis, new Map()).map((i) => i.label);
+		assert.ok(!labels.includes("$param"), `$param should not appear in query body, got ${labels}`);
+	});
+
+	test("let bindings from other function body not visible", () => {
+		const src = [
+			`declare function local:f1($p1) { let $inner1 := 1 return $inner1 };`,
+			`declare function local:f2($p2) { $p2 };`,
+			`1`,
+		].join("\n");
+		const analysis = analyze(src, "file:///test.xq");
+		assert.ok(analysis.usedAstPath, "expected AST path");
+		// Cursor just after "$" inside f2's body
+		const ctx = cursorAfterDollar(src, "local:f2($p2) { ");
+		const labels = getCompletions(ctx, analysis, new Map()).map((i) => i.label);
+		assert.ok(labels.includes("$p2"), `expected $p2, got ${labels}`);
+		assert.ok(!labels.includes("$p1"), `$p1 should not appear in f2 body, got ${labels}`);
+		assert.ok(!labels.includes("$inner1"), `$inner1 from f1 should not appear in f2 body, got ${labels}`);
+	});
+
+	test("let binding in same function body visible before cursor", () => {
+		const src = `declare function local:f($p) { let $bound := $p return $bound }; 1`;
+		const analysis = analyze(src, "file:///test.xq");
+		assert.ok(analysis.usedAstPath, "expected AST path");
+		// Cursor after "return $"
+		const ctx = cursorAfterDollar(src, "return ");
+		const labels = getCompletions(ctx, analysis, new Map()).map((i) => i.label);
+		assert.ok(labels.includes("$bound"), `expected $bound, got ${labels}`);
+		assert.ok(labels.includes("$p"), `expected $p, got ${labels}`);
+	});
+
+	test("query-body let binding not visible when cursor is inside function", () => {
+		const src = `declare function local:f($p) { $p }; let $outer := 1 return $outer`;
+		const analysis = analyze(src, "file:///test.xq");
+		assert.ok(analysis.usedAstPath, "expected AST path");
+		// Cursor just after "$" inside f's body (needle ends right before "$p")
+		const ctx = cursorAfterDollar(src, "local:f($p) { ");
+		const labels = getCompletions(ctx, analysis, new Map()).map((i) => i.label);
+		assert.ok(labels.includes("$p"), `expected $p, got ${labels}`);
+		assert.ok(!labels.includes("$outer"), `$outer (query-body binding) should not appear inside function, got ${labels}`);
+	});
+});
+
+describe("completion: function parameters (mid-edit, uses last valid AST)", () => {
+	test("params appear while file has syntax errors (last valid AST used)", () => {
+		const validSrc = `declare function local:f($param) { $param }; 1`;
+		const lastValidAnalysis = analyze(validSrc, "file:///test.xq");
+		assert.ok(lastValidAnalysis.usedAstPath, "expected AST path for valid source");
+
+		// Mid-edit: user typed "$" inside function body → syntax error → regex analysis
+		const midEditSrc = `declare function local:f($param) { $`;
+		const currentAnalysis = analyze(midEditSrc, "file:///test.xq");
+		assert.ok(!currentAnalysis.usedAstPath, "expected regex path for mid-edit source");
+
+		const labels = getCompletions(
+			{ textBeforeCursor: midEditSrc, cursorOffset: midEditSrc.length },
+			currentAnalysis, new Map(), false, lastValidAnalysis,
+		).map((i) => i.label);
+		assert.ok(labels.includes("$param"), `expected $param using last valid AST, got ${labels}`);
+	});
+
+	test("params not shown when cursor is after function body (mid-edit)", () => {
+		const validSrc = `declare function local:f($param) { $param }; $x`;
+		const lastValidAnalysis = analyze(validSrc, "file:///test.xq");
+
+		// Mid-edit: cursor is in query body, not inside function
+		const midEditSrc = `declare function local:f($param) { $param }; $`;
+		const currentAnalysis = analyze(midEditSrc, "file:///test.xq");
+		assert.ok(!currentAnalysis.usedAstPath, "expected regex path for mid-edit source");
+
+		const labels = getCompletions(
+			{ textBeforeCursor: midEditSrc, cursorOffset: midEditSrc.length },
+			currentAnalysis, new Map(), false, lastValidAnalysis,
+		).map((i) => i.label);
+		assert.ok(!labels.includes("$param"), `$param should not appear outside function body, got ${labels}`);
+	});
+});
+
 describe("completion: functions", () => {
 	test("namespace prefix returns matching functions", () => {
 		const labels = getCompletions(
