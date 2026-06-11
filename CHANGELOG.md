@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.5.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.4.1...lsp-v1.5.0) (2026-06-11)
+
+
+### Features
+
+* eXist-db pre-declared namespaces suppress false XQST0081 diagnostics ([cd94650](https://github.com/DrRataplan/xq-lsp/commit/cd94650db968d727717de62e6a60411481a7fb16))
+
+
+### Bug Fixes
+
+* inject W3C predeclared namespaces in qt4-worker ([4c93ad6](https://github.com/DrRataplan/xq-lsp/commit/4c93ad677db0eb266e04f080ee1a1ad986dfc03a))
+* **vscode:** make extension work by shimming import.meta.url ([fca848a](https://github.com/DrRataplan/xq-lsp/commit/fca848af51ee17a0dba8e7b95f4767c4d1ce974f))
+
 ## [1.4.1](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.4.0...lsp-v1.4.1) (2026-06-10)
 
 
