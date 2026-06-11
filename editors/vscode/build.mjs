@@ -19,6 +19,11 @@ await Promise.all([
 		entryPoints: ['extension.js'],
 		outfile: 'dist/extension.js',
 		external: ['vscode'],
+		// prettier/index.mjs uses createRequire(import.meta.url); esbuild renames
+		// import.meta to import_meta but doesn't define it when targeting CJS.
+		// Supply a shim so the reference resolves to the correct file URL.
+		define: { 'import.meta.url': '__importMetaUrl' },
+		banner: { js: 'const __importMetaUrl = require("url").pathToFileURL(__filename).href;' },
 	}),
 	esbuild.build({
 		...common,
