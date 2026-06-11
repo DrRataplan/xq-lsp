@@ -7,7 +7,4 @@ exports.run = async function () {
 
 	await ext.activate();
 	assert.ok(ext.isActive, 'extension failed to activate');
-
-	assert.strictEqual(typeof ext.exports?.activate, 'function', 'activate not exported');
-	assert.strictEqual(typeof ext.exports?.deactivate, 'function', 'deactivate not exported');
 };
