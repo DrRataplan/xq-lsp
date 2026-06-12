@@ -17,7 +17,7 @@
 		"build": "tsc",
 		"start": "node ./src/server.ts --stdio",
 		"test": "node --test",
-		"test:coverage": "mkdir -p coverage && node --experimental-test-coverage --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test-coverage-exclude='src/**/*.test.ts'",
+		"test:coverage": "mkdir -p coverage && node --experimental-test-coverage --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test-coverage-exclude='src/**/*.test.ts' --test-coverage-exclude='editors/**'",
 		"prepublishOnly": "npm run build"
 	},
 	"dependencies": {
