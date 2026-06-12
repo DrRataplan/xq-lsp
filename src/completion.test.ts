@@ -125,6 +125,27 @@ describe("completion: function parameters (AST path)", () => {
 		assert.ok(labels.includes("$p"), `expected $p, got ${labels}`);
 		assert.ok(!labels.includes("$outer"), `$outer (query-body binding) should not appear inside function, got ${labels}`);
 	});
+
+	test("module variable visible inside function body alongside params", () => {
+		const src = `declare variable $local:cfg := 1; declare function local:f($p) { $p }; 1`;
+		const analysis = analyze(src, "file:///test.xq");
+		assert.ok(analysis.usedAstPath, "expected AST path");
+		const ctx = cursorAfterDollar(src, "local:f($p) { ");
+		const labels = getCompletions(ctx, analysis, new Map()).map((i) => i.label);
+		assert.ok(labels.includes("$p"), `expected $p, got ${labels}`);
+		assert.ok(labels.includes("$local:cfg"), `expected $local:cfg to be visible inside function body, got ${labels}`);
+	});
+
+	test("typed param completion shows detail", () => {
+		const src = `declare function local:f($p as xs:integer) { $p }; 1`;
+		const analysis = analyze(src, "file:///test.xq");
+		assert.ok(analysis.usedAstPath, "expected AST path");
+		const ctx = cursorAfterDollar(src, "xs:integer) { ");
+		const items = getCompletions(ctx, analysis, new Map());
+		const pItem = items.find((i) => i.label === "$p");
+		assert.ok(pItem, `expected $p completion, got ${items.map((i) => i.label)}`);
+		assert.equal(pItem.detail, "as xs:integer", `expected detail "as xs:integer", got ${pItem.detail}`);
+	});
 });
 
 describe("completion: function parameters (mid-edit, uses last valid AST)", () => {
@@ -159,6 +180,36 @@ describe("completion: function parameters (mid-edit, uses last valid AST)", () =
 			currentAnalysis, new Map(), false, lastValidAnalysis,
 		).map((i) => i.label);
 		assert.ok(!labels.includes("$param"), `$param should not appear outside function body, got ${labels}`);
+	});
+});
+
+describe("completion: no-AST fallback (simple offset)", () => {
+	test("let binding visible by offset when no AST and no lastValidAnalysis", () => {
+		// Source with bare "$" at end → parse fails → regex path → ast undefined
+		const midEditSrc = `let $x := 1 return $`;
+		const analysis = analyze(midEditSrc, "file:///test.xq");
+		assert.ok(!analysis.usedAstPath, "expected regex path for mid-edit source");
+		// No lastValidAnalysis provided → simple offset fallback path
+		const labels = getCompletions(
+			{ textBeforeCursor: midEditSrc, cursorOffset: midEditSrc.length },
+			analysis,
+			new Map(),
+		).map((i) => i.label);
+		// $x is defined before cursor → should appear via offset-based filter
+		assert.ok(labels.includes("$x"), `expected $x via offset fallback, got ${labels}`);
+	});
+
+	test("let binding before cursor hidden when cursor precedes its offset", () => {
+		const midEditSrc = `let $x := 1 return $`;
+		const analysis = analyze(midEditSrc, "file:///test.xq");
+		assert.ok(!analysis.usedAstPath, "expected regex path for mid-edit source");
+		// Cursor at offset 0 — before $x is defined
+		const labels = getCompletions(
+			{ textBeforeCursor: "$", cursorOffset: 0 },
+			analysis,
+			new Map(),
+		).map((i) => i.label);
+		assert.ok(!labels.includes("$x"), `$x should not appear before its offset, got ${labels}`);
 	});
 });
 
