@@ -28,6 +28,7 @@ import {
 } from "./namespace-diagnostics.ts";
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
 import { checkUnused } from "./unused-diagnostics.ts";
+import { checkUndeclaredVariables } from "./variable-diagnostics.ts";
 import { checkContextItemUsage } from "./context-item-diagnostics.ts";
 import { getRuntimeAnalyses, getRuntimePredeclaredNamespaces, withPredeclaredNs } from "./runtimes.ts";
 
@@ -35,6 +36,7 @@ const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 
 const analysisCache = new Map<string, FileAnalysis>();
+const lastValidAnalysisCache = new Map<string, FileAnalysis>(); // last AST-path analysis per URI
 const typeErrorCache = new Map<string, TypeDiagnostic[]>();
 
 // Glob analyses keyed by config directory, then by module namespace URI.
@@ -44,6 +46,7 @@ const globAnalysesByConfigDir = new Map<string, Map<string, FileAnalysis>>();
 function analyzeDocument(doc: TextDocument): FileAnalysis {
 	const { analysis } = analyzeWithAst(doc.getText(), doc.uri);
 	analysisCache.set(doc.uri, analysis);
+	if (analysis.usedAstPath) lastValidAnalysisCache.set(doc.uri, analysis);
 	return analysis;
 }
 
@@ -55,6 +58,7 @@ function analyzeDocumentFull(doc: TextDocument): {
 } {
 	const { analysis, ast, parseError } = analyzeWithAst(doc.getText(), doc.uri);
 	analysisCache.set(doc.uri, analysis);
+	if (analysis.usedAstPath) lastValidAnalysisCache.set(doc.uri, analysis);
 	return { analysis, parseDiagnostics: buildParseDiagnostics(parseError), hasAst: ast !== null, ast };
 }
 
@@ -260,9 +264,25 @@ documents.onDidChangeContent((change) => {
 		source: "xquery-lsp",
 	}));
 
+	const undeclaredVarDiagRaw =
+		hasAst && ast !== null ? checkUndeclaredVariables(ast, analysis, resolvedImported) : [];
+	const undeclaredVarDiags = undeclaredVarDiagRaw.map((d) => ({
+		severity: DiagnosticSeverity.Error,
+		range: {
+			start: doc.positionAt(d.offset),
+			end: doc.positionAt(d.offset + d.length),
+		},
+		message: d.message,
+		code: d.code,
+		source: "xquery-lsp",
+	}));
+
 	connection.sendDiagnostics({
 		uri: doc.uri,
-		diagnostics: [...parseDiags, ...typeDiags, ...nsDiags, ...unusedDiags, ...contextItemDiags],
+		diagnostics: [
+			...parseDiags, ...typeDiags, ...nsDiags, ...unusedDiags, ...contextItemDiags,
+			...undeclaredVarDiags,
+		],
 	});
 });
 
@@ -277,6 +297,7 @@ connection.onCompletion((params) => {
 		analysis,
 		imported,
 		snippetSupport,
+		lastValidAnalysisCache.get(doc.uri),
 	);
 });
 
