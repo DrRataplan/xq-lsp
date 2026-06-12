@@ -30,6 +30,12 @@ describe("variable-diagnostics: undeclared variable (XPST0008)", () => {
 				`expected XPST0008 for $typo, got ${JSON.stringify(ds)}`);
 		});
 
+		test("undeclared variable in quantified satisfies clause", () => {
+			const ds = undeclaredVarDiags(`every $x in (1, 2) satisfies $ghost > 0`);
+			assert.ok(ds.some((d) => d.message.includes("ghost")),
+				`expected XPST0008 for $ghost in satisfies, got ${JSON.stringify(ds)}`);
+		});
+
 		test("function param referenced outside function body", () => {
 			const ds = undeclaredVarDiags(`declare function local:f($p) { $p }; $p`);
 			assert.ok(ds.some((d) => d.message.includes("'$p'")),
@@ -106,6 +112,28 @@ describe("variable-diagnostics: undeclared variable (XPST0008)", () => {
 		test("multiple lets visible to each other sequentially", () => {
 			const ds = undeclaredVarDiags(
 				`let $a := 1 let $b := $a return $b`,
+			);
+			assert.equal(ds.length, 0, `no errors expected, got ${JSON.stringify(ds)}`);
+		});
+
+		test("some-binding visible in satisfies expression", () => {
+			const ds = undeclaredVarDiags(`some $x in (1, 2, 3) satisfies $x > 0`);
+			assert.equal(ds.length, 0, `no errors expected, got ${JSON.stringify(ds)}`);
+		});
+
+		test("for positional variable visible in return", () => {
+			const ds = undeclaredVarDiags(`for $item at $pos in ("a", "b") return $pos`);
+			assert.equal(ds.length, 0, `no errors expected, got ${JSON.stringify(ds)}`);
+		});
+
+		test("count variable visible in return", () => {
+			const ds = undeclaredVarDiags(`for $x in (1, 2) count $cnt return $cnt`);
+			assert.equal(ds.length, 0, `no errors expected, got ${JSON.stringify(ds)}`);
+		});
+
+		test("outer FLWOR variable visible in nested FLWOR return", () => {
+			const ds = undeclaredVarDiags(
+				`for $outer in (1, 2) return (for $inner in (1, 2) return ($outer, $inner))`,
 			);
 			assert.equal(ds.length, 0, `no errors expected, got ${JSON.stringify(ds)}`);
 		});
