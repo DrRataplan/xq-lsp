@@ -31,6 +31,13 @@
 				],
 				"configuration": "./language-configuration.json"
 			}
+		],
+		"grammars": [
+			{
+				"language": "xquery",
+				"scopeName": "source.xquery",
+				"path": "./syntaxes/xquery.tmLanguage.json"
+			}
 		]
 	},
 	"main": "./dist/extension.js",
@@ -38,6 +45,8 @@
 		"build": "node build.mjs",
 		"package": "node build.mjs && vsce package --no-dependencies",
 		"test:e2e": "node e2e/runTests.mjs",
+		"test:grammar": "vscode-tmgrammar-snap -s source.xquery -g ./syntaxes/xquery.tmLanguage.json ./test/syntax/sample.xq",
+		"test:grammar:update": "vscode-tmgrammar-snap -u -s source.xquery -g ./syntaxes/xquery.tmLanguage.json ./test/syntax/sample.xq",
 		"publish:vsce": "vsce publish",
 		"publish:ovsx": "ovsx publish"
 	},
@@ -51,6 +60,7 @@
 		"@vscode/test-electron": "^2.4.0",
 		"@vscode/vsce": "^3.0.0",
 		"esbuild": "^0.28.0",
-		"ovsx": "^0.9.0"
+		"ovsx": "^0.9.0",
+		"vscode-tmgrammar-test": "^0.1.3"
 	}
 }
