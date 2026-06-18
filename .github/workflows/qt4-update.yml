@@ -25,9 +25,7 @@ jobs:
               id: check
               run: |
                   CURRENT=$(git -C qt4tests rev-parse HEAD)
-                  LATEST=$(curl -sf \
-                    -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                    https://api.github.com/repos/qt4cg/qt4tests/commits/main | jq -r '.sha // empty')
+                  LATEST=$(git ls-remote https://github.com/qt4cg/qt4tests.git refs/heads/master | cut -f1)
                   if [ -z "$LATEST" ]; then
                     echo "Could not fetch latest QT4 commit; skipping update" >&2
                     echo "changed=false" >> "$GITHUB_OUTPUT"
