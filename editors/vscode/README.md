@@ -4,6 +4,7 @@ XQuery language support for VS Code via the [xq-lsp](https://github.com/DrRatapl
 
 ## Features
 
+- **Syntax highlighting** — keywords, types, variables, operators, comments, and XQuery 4.0 tokens
 - **Completion** — functions declared in the current file, imported modules, and variables in scope
 - **Hover** — function signatures on hover
 - **Signature help** — active parameter hints inside function calls
