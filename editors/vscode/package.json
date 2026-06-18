@@ -4,6 +4,7 @@
 	"description": "XQuery language support via xq-lsp",
 	"version": "0.5.0",
 	"publisher": "elliat",
+	"icon": "icon.png",
 	"license": "MIT",
 	"engines": {
 		"vscode": "^1.86.0",
