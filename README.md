@@ -1,3 +1,5 @@
+<img src="./logo.svg" alt="xq-lsp" width="48" height="48">
+
 # xq-lsp
 
 Language Server Protocol implementation for XQuery, providing autocompletion, hover documentation, signature help, go-to-definition, and diagnostics.
