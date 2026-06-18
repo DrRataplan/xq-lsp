@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.5.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.4.1...lsp-v1.5.0) (2026-06-18)
+
+
+### Features
+
+* **completion:** add function param completions with proper scope isolation ([dab41a3](https://github.com/DrRataplan/xq-lsp/commit/dab41a349ae1d387f1b32b530e476b1d30da8f07))
+* **diagnostics:** report undeclared variable references as XPST0008 ([6ff1fa9](https://github.com/DrRataplan/xq-lsp/commit/6ff1fa9d5a9ecfb4d440119f3efa9e3f96204e05))
+* eXist-db pre-declared namespaces suppress false XQST0081 diagnostics ([cd94650](https://github.com/DrRataplan/xq-lsp/commit/cd94650db968d727717de62e6a60411481a7fb16))
+
+
+### Bug Fixes
+
+* inject W3C predeclared namespaces in qt4-worker ([4c93ad6](https://github.com/DrRataplan/xq-lsp/commit/4c93ad677db0eb266e04f080ee1a1ad986dfc03a))
+* **variable-diagnostics:** add explicit type annotation to fix TS build ([5867d7e](https://github.com/DrRataplan/xq-lsp/commit/5867d7ea549026cda98559b8d980f3bdf561f32f))
+* **vscode:** make extension work by shimming import.meta.url ([fca848a](https://github.com/DrRataplan/xq-lsp/commit/fca848af51ee17a0dba8e7b95f4767c4d1ce974f))
+
 ## [1.4.1](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.4.0...lsp-v1.4.1) (2026-06-10)
 
 
