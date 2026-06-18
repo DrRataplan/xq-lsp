@@ -4,6 +4,7 @@ Language Server Protocol implementation for XQuery, providing autocompletion, ho
 
 ## Features
 
+- **Syntax highlighting** — keywords, types, variables, operators, comments, and XQuery 4.0 tokens (VS Code extension)
 - **Completion** — functions declared in the current file, imported modules, and variables in scope
 - **Hover** — function signatures on hover
 - **Signature help** — active parameter hints inside function calls
@@ -234,4 +235,4 @@ npx vsce package
 code --install-extension xquery-lsp-vscode-*.vsix
 ```
 
-The extension registers `.xq`, `.xql`, `.xqm`, and `.xqy` files as XQuery and starts `xq-lsp` automatically when you open one.
+The extension registers `.xq`, `.xql`, `.xqm`, and `.xqy` files as XQuery, provides syntax highlighting via a bundled TextMate grammar, and starts `xq-lsp` automatically when you open one.
