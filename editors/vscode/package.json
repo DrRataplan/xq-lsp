@@ -11,7 +11,8 @@
 	},
 	"repository": "https://github.com/DrRataplan/xq-lsp.git",
 	"categories": [
-		"Programming Languages"
+		"Programming Languages",
+		"Formatters"
 	],
 	"activationEvents": [],
 	"contributes": {
