@@ -1,0 +1,147 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "XQuery",
+	"scopeName": "source.xquery",
+	"patterns": [
+		{ "include": "#comment" },
+		{ "include": "#pragma" },
+		{ "include": "#string" },
+		{ "include": "#number" },
+		{ "include": "#variable" },
+		{ "include": "#declaration" },
+		{ "include": "#control-keyword" },
+		{ "include": "#word-operator" },
+		{ "include": "#axis" },
+		{ "include": "#type" },
+		{ "include": "#function-call" },
+		{ "include": "#operator" }
+	],
+	"repository": {
+		"comment": {
+			"name": "comment.block.xquery",
+			"begin": "\\(:",
+			"end": ":\\)",
+			"patterns": [
+				{ "include": "#comment" }
+			]
+		},
+		"pragma": {
+			"name": "meta.preprocessor.xquery",
+			"begin": "\\(#",
+			"end": "#\\)",
+			"beginCaptures": { "0": { "name": "punctuation.definition.pragma.xquery" } },
+			"endCaptures":   { "0": { "name": "punctuation.definition.pragma.xquery" } },
+			"contentName": "entity.other.attribute-name.xquery"
+		},
+		"string": {
+			"patterns": [
+				{
+					"name": "string.quoted.double.xquery",
+					"begin": "\"",
+					"end": "\"",
+					"patterns": [
+						{ "name": "constant.character.escape.xquery", "match": "\"\"" },
+						{ "name": "constant.character.escape.xquery", "match": "&(?:[a-zA-Z][a-zA-Z0-9]*|#[0-9]+|#x[0-9a-fA-F]+);" }
+					]
+				},
+				{
+					"name": "string.quoted.single.xquery",
+					"begin": "'",
+					"end": "'",
+					"patterns": [
+						{ "name": "constant.character.escape.xquery", "match": "''" },
+						{ "name": "constant.character.escape.xquery", "match": "&(?:[a-zA-Z][a-zA-Z0-9]*|#[0-9]+|#x[0-9a-fA-F]+);" }
+					]
+				}
+			]
+		},
+		"number": {
+			"name": "constant.numeric.xquery",
+			"match": "\\b[0-9]+(\\.[0-9]*)?([eE][+\\-]?[0-9]+)?\\b|\\.([0-9]+)([eE][+\\-]?[0-9]+)?\\b"
+		},
+		"variable": {
+			"name": "variable.other.xquery",
+			"match": "\\$[\\w][\\w-]*(?::[\\w][\\w-]*)?"
+		},
+		"declaration": {
+			"patterns": [
+				{
+					"comment": "function declaration — highlight the function name",
+					"match": "(?<=declare\\s{0,40}(?:(?:private|public|updating|%[\\w:-]+(?:\\([^)]*\\))?\\s*)\\s*){0,5}function\\s{1,40})([\\w-]+:[\\w-]+|[\\w-]+)(?=\\s*\\()",
+					"captures": {
+						"1": { "name": "entity.name.function.xquery" }
+					}
+				},
+				{
+					"name": "keyword.other.declaration.xquery",
+					"match": "\\b(declare|module|import|xquery|version|namespace|option|context|ordering|boundary-space|construction|base-uri|copy-namespaces|external|updating|private|strip|preserve|inherit|ordered|unordered|ascending|descending|stable|collation|empty|allowing)\\b"
+				},
+				{
+					"name": "storage.modifier.xquery",
+					"match": "\\b(function|variable)\\b"
+				}
+			]
+		},
+		"control-keyword": {
+			"name": "keyword.control.xquery",
+			"match": "\\b(if|then|else|for|let|where|return|satisfies|every|some|in|case|default|typeswitch|try|catch|switch)\\b"
+		},
+		"word-operator": {
+			"name": "keyword.operator.word.xquery",
+			"match": "\\b(and|or|div|idiv|mod|union|intersect|except|eq|ne|lt|le|gt|ge|is|to|as|at|otherwise|instance\\s+of|cast\\s+as|castable\\s+as|treat\\s+as)\\b"
+		},
+		"axis": {
+			"match": "\\b(child|descendant|parent|ancestor|self|descendant-or-self|ancestor-or-self|following|following-sibling|preceding|preceding-sibling|attribute|namespace)::",
+			"captures": {
+				"1": { "name": "keyword.other.axis.xquery" }
+			}
+		},
+		"type": {
+			"patterns": [
+				{
+					"name": "support.type.builtin.xquery",
+					"match": "\\b(xs):(string|integer|decimal|float|double|boolean|date|time|dateTime|duration|anyURI|QName|anyAtomicType|untypedAtomic|hexBinary|base64Binary|long|int|short|byte|unsignedLong|unsignedInt|unsignedShort|unsignedByte|positiveInteger|negativeInteger|nonPositiveInteger|nonNegativeInteger|normalizedString|token|language|Name|NCName|ID|IDREF|IDREFS|ENTITY|ENTITIES|NMTOKEN|NMTOKENS|yearMonthDuration|dayTimeDuration|dateTimeStamp|gYear|gYearMonth|gMonth|gMonthDay|gDay)\\b"
+				},
+				{
+					"name": "support.type.xquery",
+					"match": "\\b(element|attribute|node|text|comment|document-node|namespace-node|processing-instruction|item|map|array|function|record|empty-sequence|schema-element|schema-attribute)(?=\\s*[(*?+,\\)]|\\s*$)"
+				}
+			]
+		},
+		"function-call": {
+			"patterns": [
+				{
+					"comment": "qualified function call: ns:local(",
+					"match": "\\b([\\w-]+):([\\w-]+)\\s*(?=\\()",
+					"captures": {
+						"1": { "name": "entity.name.namespace.xquery" },
+						"2": { "name": "entity.name.function.xquery" }
+					}
+				},
+				{
+					"comment": "unqualified function call: name(",
+					"match": "\\b([\\w-]+)\\s*(?=\\()",
+					"captures": {
+						"1": { "name": "entity.name.function.xquery" }
+					}
+				}
+			]
+		},
+		"operator": {
+			"patterns": [
+				{
+					"name": "keyword.operator.arrow.xquery",
+					"match": "->|=>"
+				},
+				{
+					"name": "keyword.operator.comparison.xquery",
+					"match": "!=|<=|>=|<|>|="
+				},
+				{
+					"name": "keyword.operator.range.xquery",
+					"match": "\\.\\.\\."
+				}
+			]
+		}
+	}
+}

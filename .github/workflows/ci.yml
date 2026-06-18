@@ -60,6 +60,9 @@ jobs:
             - name: Build extension bundle
               run: node build.mjs
               working-directory: editors/vscode
+            - name: Test grammar snapshots
+              run: npm run test:grammar
+              working-directory: editors/vscode
             - name: Cache VS Code download
               uses: actions/cache@v4
               with:

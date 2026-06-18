@@ -1,0 +1,997 @@
+>xquery version "3.1";
+#^^^^^^ source.xquery keyword.other.declaration.xquery
+#      ^ source.xquery
+#       ^^^^^^^ source.xquery keyword.other.declaration.xquery
+#              ^ source.xquery
+#               ^ source.xquery string.quoted.double.xquery
+#                ^^^ source.xquery string.quoted.double.xquery
+#                   ^ source.xquery string.quoted.double.xquery
+#                    ^^ source.xquery
+>
+>(: ── Module & namespace declarations ──────────────────────────────────────── :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                                                                               ^^ source.xquery comment.block.xquery
+>
+>module namespace app = "http://example.com/app";
+#^^^^^^ source.xquery keyword.other.declaration.xquery
+#      ^ source.xquery
+#       ^^^^^^^^^ source.xquery keyword.other.declaration.xquery
+#                ^^^^^ source.xquery
+#                     ^ source.xquery keyword.operator.comparison.xquery
+#                      ^ source.xquery
+#                       ^ source.xquery string.quoted.double.xquery
+#                        ^^^^^^^^^^^^^^^^^^^^^^ source.xquery string.quoted.double.xquery
+#                                              ^ source.xquery string.quoted.double.xquery
+#                                               ^^ source.xquery
+>declare namespace html = "http://www.w3.org/1999/xhtml";
+#^^^^^^^ source.xquery keyword.other.declaration.xquery
+#       ^ source.xquery
+#        ^^^^^^^^^ source.xquery keyword.other.declaration.xquery
+#                 ^^^^^^ source.xquery
+#                       ^ source.xquery keyword.operator.comparison.xquery
+#                        ^ source.xquery
+#                         ^ source.xquery string.quoted.double.xquery
+#                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery string.quoted.double.xquery
+#                                                      ^ source.xquery string.quoted.double.xquery
+#                                                       ^^ source.xquery
+>import module namespace util = "http://example.com/util" at "util.xqm";
+#^^^^^^ source.xquery keyword.other.declaration.xquery
+#      ^ source.xquery
+#       ^^^^^^ source.xquery keyword.other.declaration.xquery
+#             ^ source.xquery
+#              ^^^^^^^^^ source.xquery keyword.other.declaration.xquery
+#                       ^^^^^^ source.xquery
+#                             ^ source.xquery keyword.operator.comparison.xquery
+#                              ^ source.xquery
+#                               ^ source.xquery string.quoted.double.xquery
+#                                ^^^^^^^^^^^^^^^^^^^^^^^ source.xquery string.quoted.double.xquery
+#                                                       ^ source.xquery string.quoted.double.xquery
+#                                                        ^ source.xquery
+#                                                         ^^ source.xquery keyword.operator.word.xquery
+#                                                           ^ source.xquery
+#                                                            ^ source.xquery string.quoted.double.xquery
+#                                                             ^^^^^^^^ source.xquery string.quoted.double.xquery
+#                                                                     ^ source.xquery string.quoted.double.xquery
+#                                                                      ^^ source.xquery
+>
+>(# ext:mode "fast" #) 1
+#^^ source.xquery meta.preprocessor.xquery punctuation.definition.pragma.xquery
+#  ^^^^^^^^^^^^^^^^^ source.xquery meta.preprocessor.xquery entity.other.attribute-name.xquery
+#                   ^^ source.xquery meta.preprocessor.xquery punctuation.definition.pragma.xquery
+#                     ^ source.xquery
+#                      ^ source.xquery constant.numeric.xquery
+>
+>(:~
+#^^ source.xquery comment.block.xquery
+#  ^^ source.xquery comment.block.xquery
+> : A doc-comment — also a block comment.
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+> : @param $items the sequence to process
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+> : @return processed result
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+> :)
+#^ source.xquery comment.block.xquery
+# ^^ source.xquery comment.block.xquery
+>
+>(: ── Variable declarations ─────────────────────────────────────────────────── :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                                                                                ^^ source.xquery comment.block.xquery
+>
+>declare variable $app:base-uri as xs:anyURI := xs:anyURI("http://example.com");
+#^^^^^^^ source.xquery keyword.other.declaration.xquery
+#       ^ source.xquery
+#        ^^^^^^^^ source.xquery storage.modifier.xquery
+#                ^ source.xquery
+#                 ^^^^^^^^^^^^^ source.xquery variable.other.xquery
+#                              ^ source.xquery
+#                               ^^ source.xquery keyword.operator.word.xquery
+#                                 ^ source.xquery
+#                                  ^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                                           ^^ source.xquery
+#                                             ^ source.xquery keyword.operator.comparison.xquery
+#                                              ^ source.xquery
+#                                               ^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                                                        ^ source.xquery
+#                                                         ^ source.xquery string.quoted.double.xquery
+#                                                          ^^^^^^^^^^^^^^^^^^ source.xquery string.quoted.double.xquery
+#                                                                            ^ source.xquery string.quoted.double.xquery
+#                                                                             ^^^ source.xquery
+>declare variable $limit as xs:integer external;
+#^^^^^^^ source.xquery keyword.other.declaration.xquery
+#       ^ source.xquery
+#        ^^^^^^^^ source.xquery storage.modifier.xquery
+#                ^ source.xquery
+#                 ^^^^^^ source.xquery variable.other.xquery
+#                       ^ source.xquery
+#                        ^^ source.xquery keyword.operator.word.xquery
+#                          ^ source.xquery
+#                           ^^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                                     ^ source.xquery
+#                                      ^^^^^^^^ source.xquery keyword.other.declaration.xquery
+#                                              ^^ source.xquery
+>
+>(: ── Function declarations ──────────────────────────────────────────────────── :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                                                                                 ^^ source.xquery comment.block.xquery
+>
+>declare function app:greet($name as xs:string) as xs:string {
+#^^^^^^^ source.xquery keyword.other.declaration.xquery
+#       ^ source.xquery
+#        ^^^^^^^^ source.xquery storage.modifier.xquery
+#                ^ source.xquery
+#                 ^^^^^^^^^ source.xquery entity.name.function.xquery
+#                          ^ source.xquery
+#                           ^^^^^ source.xquery variable.other.xquery
+#                                ^ source.xquery
+#                                 ^^ source.xquery keyword.operator.word.xquery
+#                                   ^ source.xquery
+#                                    ^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                                             ^^ source.xquery
+#                                               ^^ source.xquery keyword.operator.word.xquery
+#                                                 ^ source.xquery
+#                                                  ^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                                                           ^^^ source.xquery
+>  "Hello, " || $name || "!"
+#^^ source.xquery
+#  ^ source.xquery string.quoted.double.xquery
+#   ^^^^^^^ source.xquery string.quoted.double.xquery
+#          ^ source.xquery string.quoted.double.xquery
+#           ^^^^ source.xquery
+#               ^^^^^ source.xquery variable.other.xquery
+#                    ^^^^ source.xquery
+#                        ^ source.xquery string.quoted.double.xquery
+#                         ^ source.xquery string.quoted.double.xquery
+#                          ^ source.xquery string.quoted.double.xquery
+>};
+#^^^ source.xquery
+>
+>declare private function local:max($a as xs:integer, $b as xs:integer) as xs:integer {
+#^^^^^^^ source.xquery keyword.other.declaration.xquery
+#       ^ source.xquery
+#        ^^^^^^^ source.xquery keyword.other.declaration.xquery
+#               ^ source.xquery
+#                ^^^^^^^^ source.xquery storage.modifier.xquery
+#                        ^ source.xquery
+#                         ^^^^^^^^^ source.xquery entity.name.function.xquery
+#                                  ^ source.xquery
+#                                   ^^ source.xquery variable.other.xquery
+#                                     ^ source.xquery
+#                                      ^^ source.xquery keyword.operator.word.xquery
+#                                        ^ source.xquery
+#                                         ^^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                                                   ^^ source.xquery
+#                                                     ^^ source.xquery variable.other.xquery
+#                                                       ^ source.xquery
+#                                                        ^^ source.xquery keyword.operator.word.xquery
+#                                                          ^ source.xquery
+#                                                           ^^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                                                                     ^^ source.xquery
+#                                                                       ^^ source.xquery keyword.operator.word.xquery
+#                                                                         ^ source.xquery
+#                                                                          ^^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                                                                                    ^^^ source.xquery
+>  if ($a gt $b) then $a else $b
+#^^ source.xquery
+#  ^^ source.xquery keyword.control.xquery
+#    ^^ source.xquery
+#      ^^ source.xquery variable.other.xquery
+#        ^ source.xquery
+#         ^^ source.xquery keyword.operator.word.xquery
+#           ^ source.xquery
+#            ^^ source.xquery variable.other.xquery
+#              ^^ source.xquery
+#                ^^^^ source.xquery keyword.control.xquery
+#                    ^ source.xquery
+#                     ^^ source.xquery variable.other.xquery
+#                       ^ source.xquery
+#                        ^^^^ source.xquery keyword.control.xquery
+#                            ^ source.xquery
+#                             ^^ source.xquery variable.other.xquery
+>};
+#^^^ source.xquery
+>
+>declare updating function app:set-flag($node as element()) {
+#^^^^^^^ source.xquery keyword.other.declaration.xquery
+#       ^ source.xquery
+#        ^^^^^^^^ source.xquery keyword.other.declaration.xquery
+#                ^ source.xquery
+#                 ^^^^^^^^ source.xquery storage.modifier.xquery
+#                         ^ source.xquery
+#                          ^^^^^^^^^^^^ source.xquery entity.name.function.xquery
+#                                      ^ source.xquery
+#                                       ^^^^^ source.xquery variable.other.xquery
+#                                            ^ source.xquery
+#                                             ^^ source.xquery keyword.operator.word.xquery
+#                                               ^ source.xquery
+#                                                ^^^^^^^ source.xquery support.type.xquery
+#                                                       ^^^^^^ source.xquery
+>  replace value of node $node with "true"
+#^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery
+#                        ^^^^^ source.xquery variable.other.xquery
+#                             ^^^^^^ source.xquery
+#                                   ^ source.xquery string.quoted.double.xquery
+#                                    ^^^^ source.xquery string.quoted.double.xquery
+#                                        ^ source.xquery string.quoted.double.xquery
+>};
+#^^^ source.xquery
+>
+>(: ── Control flow ───────────────────────────────────────────────────────────── :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                                                                                 ^^ source.xquery comment.block.xquery
+>
+>let $items := (1, 2, 3, 4, 5)
+#^^^ source.xquery keyword.control.xquery
+#   ^ source.xquery
+#    ^^^^^^ source.xquery variable.other.xquery
+#          ^^ source.xquery
+#            ^ source.xquery keyword.operator.comparison.xquery
+#             ^^ source.xquery
+#               ^ source.xquery constant.numeric.xquery
+#                ^^ source.xquery
+#                  ^ source.xquery constant.numeric.xquery
+#                   ^^ source.xquery
+#                     ^ source.xquery constant.numeric.xquery
+#                      ^^ source.xquery
+#                        ^ source.xquery constant.numeric.xquery
+#                         ^^ source.xquery
+#                           ^ source.xquery constant.numeric.xquery
+#                            ^^ source.xquery
+>let $evens :=
+#^^^ source.xquery keyword.control.xquery
+#   ^ source.xquery
+#    ^^^^^^ source.xquery variable.other.xquery
+#          ^^ source.xquery
+#            ^ source.xquery keyword.operator.comparison.xquery
+>  for $i in $items
+#^^ source.xquery
+#  ^^^ source.xquery keyword.control.xquery
+#     ^ source.xquery
+#      ^^ source.xquery variable.other.xquery
+#        ^ source.xquery
+#         ^^ source.xquery keyword.control.xquery
+#           ^ source.xquery
+#            ^^^^^^ source.xquery variable.other.xquery
+>  where $i mod 2 eq 0
+#^^ source.xquery
+#  ^^^^^ source.xquery keyword.control.xquery
+#       ^ source.xquery
+#        ^^ source.xquery variable.other.xquery
+#          ^ source.xquery
+#           ^^^ source.xquery keyword.operator.word.xquery
+#              ^ source.xquery
+#               ^ source.xquery constant.numeric.xquery
+#                ^ source.xquery
+#                 ^^ source.xquery keyword.operator.word.xquery
+#                   ^ source.xquery
+#                    ^ source.xquery constant.numeric.xquery
+>  order by $i ascending
+#^^^^^^^^^^^ source.xquery
+#           ^^ source.xquery variable.other.xquery
+#             ^ source.xquery
+#              ^^^^^^^^^ source.xquery keyword.other.declaration.xquery
+>  return $i
+#^^ source.xquery
+#  ^^^^^^ source.xquery keyword.control.xquery
+#        ^ source.xquery
+#         ^^ source.xquery variable.other.xquery
+>return $evens
+#^^^^^^ source.xquery keyword.control.xquery
+#      ^ source.xquery
+#       ^^^^^^ source.xquery variable.other.xquery
+>
+>,
+#^^ source.xquery
+>
+>(: if / then / else :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                    ^^ source.xquery comment.block.xquery
+>if (count($items) gt 0)
+#^^ source.xquery keyword.control.xquery
+#  ^^ source.xquery
+#    ^^^^^ source.xquery entity.name.function.xquery
+#         ^ source.xquery
+#          ^^^^^^ source.xquery variable.other.xquery
+#                ^^ source.xquery
+#                  ^^ source.xquery keyword.operator.word.xquery
+#                    ^ source.xquery
+#                     ^ source.xquery constant.numeric.xquery
+#                      ^^ source.xquery
+>then "non-empty"
+#^^^^ source.xquery keyword.control.xquery
+#    ^ source.xquery
+#     ^ source.xquery string.quoted.double.xquery
+#      ^^^^^^^^^ source.xquery string.quoted.double.xquery
+#               ^ source.xquery string.quoted.double.xquery
+>else "empty"
+#^^^^ source.xquery keyword.control.xquery
+#    ^ source.xquery
+#     ^ source.xquery string.quoted.double.xquery
+#      ^^^^^ source.xquery string.quoted.double.xquery
+#           ^ source.xquery string.quoted.double.xquery
+>
+>,
+#^^ source.xquery
+>
+>(: typeswitch :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^ source.xquery comment.block.xquery
+#              ^^ source.xquery comment.block.xquery
+>typeswitch ($items)
+#^^^^^^^^^^ source.xquery keyword.control.xquery
+#          ^^ source.xquery
+#            ^^^^^^ source.xquery variable.other.xquery
+#                  ^^ source.xquery
+>  case xs:integer return "integer"
+#^^ source.xquery
+#  ^^^^ source.xquery keyword.control.xquery
+#      ^ source.xquery
+#       ^^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                 ^ source.xquery
+#                  ^^^^^^ source.xquery keyword.control.xquery
+#                        ^ source.xquery
+#                         ^ source.xquery string.quoted.double.xquery
+#                          ^^^^^^^ source.xquery string.quoted.double.xquery
+#                                 ^ source.xquery string.quoted.double.xquery
+>  case xs:string  return "string"
+#^^ source.xquery
+#  ^^^^ source.xquery keyword.control.xquery
+#      ^ source.xquery
+#       ^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                ^^ source.xquery
+#                  ^^^^^^ source.xquery keyword.control.xquery
+#                        ^ source.xquery
+#                         ^ source.xquery string.quoted.double.xquery
+#                          ^^^^^^ source.xquery string.quoted.double.xquery
+#                                ^ source.xquery string.quoted.double.xquery
+>  default         return "other"
+#^^ source.xquery
+#  ^^^^^^^ source.xquery keyword.control.xquery
+#         ^^^^^^^^^ source.xquery
+#                  ^^^^^^ source.xquery keyword.control.xquery
+#                        ^ source.xquery
+#                         ^ source.xquery string.quoted.double.xquery
+#                          ^^^^^ source.xquery string.quoted.double.xquery
+#                               ^ source.xquery string.quoted.double.xquery
+>
+>,
+#^^ source.xquery
+>
+>(: try / catch :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#               ^^ source.xquery comment.block.xquery
+>try {
+#^^^ source.xquery keyword.control.xquery
+#   ^^^ source.xquery
+>  xs:integer("not-a-number")
+#^^ source.xquery
+#  ^^^^^^^^^^ source.xquery support.type.builtin.xquery
+#            ^ source.xquery
+#             ^ source.xquery string.quoted.double.xquery
+#              ^^^^^^^^^^^^ source.xquery string.quoted.double.xquery
+#                          ^ source.xquery string.quoted.double.xquery
+#                           ^^ source.xquery
+>} catch * {
+#^^ source.xquery
+#  ^^^^^ source.xquery keyword.control.xquery
+#       ^^^^^ source.xquery
+>  "conversion failed"
+#^^ source.xquery
+#  ^ source.xquery string.quoted.double.xquery
+#   ^^^^^^^^^^^^^^^^^ source.xquery string.quoted.double.xquery
+#                    ^ source.xquery string.quoted.double.xquery
+>}
+#^^ source.xquery
+>
+>,
+#^^ source.xquery
+>
+>(: every / some :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                ^^ source.xquery comment.block.xquery
+>every $x in $items satisfies ($x gt 0)
+#^^^^^ source.xquery keyword.control.xquery
+#     ^ source.xquery
+#      ^^ source.xquery variable.other.xquery
+#        ^ source.xquery
+#         ^^ source.xquery keyword.control.xquery
+#           ^ source.xquery
+#            ^^^^^^ source.xquery variable.other.xquery
+#                  ^ source.xquery
+#                   ^^^^^^^^^ source.xquery keyword.control.xquery
+#                            ^^ source.xquery
+#                              ^^ source.xquery variable.other.xquery
+#                                ^ source.xquery
+#                                 ^^ source.xquery keyword.operator.word.xquery
+#                                   ^ source.xquery
+#                                    ^ source.xquery constant.numeric.xquery
+#                                     ^^ source.xquery
+>,
+#^^ source.xquery
+>some  $x in $items satisfies ($x gt 3)
+#^^^^ source.xquery keyword.control.xquery
+#    ^^ source.xquery
+#      ^^ source.xquery variable.other.xquery
+#        ^ source.xquery
+#         ^^ source.xquery keyword.control.xquery
+#           ^ source.xquery
+#            ^^^^^^ source.xquery variable.other.xquery
+#                  ^ source.xquery
+#                   ^^^^^^^^^ source.xquery keyword.control.xquery
+#                            ^^ source.xquery
+#                              ^^ source.xquery variable.other.xquery
+#                                ^ source.xquery
+#                                 ^^ source.xquery keyword.operator.word.xquery
+#                                   ^ source.xquery
+#                                    ^ source.xquery constant.numeric.xquery
+#                                     ^^ source.xquery
+>
+>(: ── Word operators ─────────────────────────────────────────────────────────── :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                                                                                 ^^ source.xquery comment.block.xquery
+>
+>,
+#^^ source.xquery
+>
+>(1 + 2) div 3
+#^ source.xquery
+# ^ source.xquery constant.numeric.xquery
+#  ^^^ source.xquery
+#     ^ source.xquery constant.numeric.xquery
+#      ^^ source.xquery
+#        ^^^ source.xquery keyword.operator.word.xquery
+#           ^ source.xquery
+#            ^ source.xquery constant.numeric.xquery
+>,
+#^^ source.xquery
+>5 idiv 2
+#^ source.xquery constant.numeric.xquery
+# ^ source.xquery
+#  ^^^^ source.xquery keyword.operator.word.xquery
+#      ^ source.xquery
+#       ^ source.xquery constant.numeric.xquery
+>,
+#^^ source.xquery
+>7 mod 3
+#^ source.xquery constant.numeric.xquery
+# ^ source.xquery
+#  ^^^ source.xquery keyword.operator.word.xquery
+#     ^ source.xquery
+#      ^ source.xquery constant.numeric.xquery
+>,
+#^^ source.xquery
+>$items union ()
+#^^^^^^ source.xquery variable.other.xquery
+#      ^ source.xquery
+#       ^^^^^ source.xquery keyword.operator.word.xquery
+#            ^^^^ source.xquery
+>,
+#^^ source.xquery
+>$items intersect (1, 3)
+#^^^^^^ source.xquery variable.other.xquery
+#      ^ source.xquery
+#       ^^^^^^^^^ source.xquery keyword.operator.word.xquery
+#                ^^ source.xquery
+#                  ^ source.xquery constant.numeric.xquery
+#                   ^^ source.xquery
+#                     ^ source.xquery constant.numeric.xquery
+#                      ^^ source.xquery
+>,
+#^^ source.xquery
+>$items except (2, 4)
+#^^^^^^ source.xquery variable.other.xquery
+#      ^ source.xquery
+#       ^^^^^^ source.xquery keyword.operator.word.xquery
+#             ^^ source.xquery
+#               ^ source.xquery constant.numeric.xquery
+#                ^^ source.xquery
+#                  ^ source.xquery constant.numeric.xquery
+#                   ^^ source.xquery
+>,
+#^^ source.xquery
+>true() and false()
+#^^^^ source.xquery entity.name.function.xquery
+#    ^^^ source.xquery
+#       ^^^ source.xquery keyword.operator.word.xquery
+#          ^ source.xquery
+#           ^^^^^ source.xquery entity.name.function.xquery
+#                ^^^ source.xquery
+>,
+#^^ source.xquery
+>true() or  false()
+#^^^^ source.xquery entity.name.function.xquery
+#    ^^^ source.xquery
+#       ^^ source.xquery keyword.operator.word.xquery
+#         ^^ source.xquery
+#           ^^^^^ source.xquery entity.name.function.xquery
+#                ^^^ source.xquery
+>,
+#^^ source.xquery
+>1 eq 1
+#^ source.xquery constant.numeric.xquery
+# ^ source.xquery
+#  ^^ source.xquery keyword.operator.word.xquery
+#    ^ source.xquery
+#     ^ source.xquery constant.numeric.xquery
+>,
+#^^ source.xquery
+>1 ne 2
+#^ source.xquery constant.numeric.xquery
+# ^ source.xquery
+#  ^^ source.xquery keyword.operator.word.xquery
+#    ^ source.xquery
+#     ^ source.xquery constant.numeric.xquery
+>,
+#^^ source.xquery
+>1 lt 2
+#^ source.xquery constant.numeric.xquery
+# ^ source.xquery
+#  ^^ source.xquery keyword.operator.word.xquery
+#    ^ source.xquery
+#     ^ source.xquery constant.numeric.xquery
+>,
+#^^ source.xquery
+>1 le 1
+#^ source.xquery constant.numeric.xquery
+# ^ source.xquery
+#  ^^ source.xquery keyword.operator.word.xquery
+#    ^ source.xquery
+#     ^ source.xquery constant.numeric.xquery
+>,
+#^^ source.xquery
+>2 gt 1
+#^ source.xquery constant.numeric.xquery
+# ^ source.xquery
+#  ^^ source.xquery keyword.operator.word.xquery
+#    ^ source.xquery
+#     ^ source.xquery constant.numeric.xquery
+>,
+#^^ source.xquery
+>2 ge 2
+#^ source.xquery constant.numeric.xquery
+# ^ source.xquery
+#  ^^ source.xquery keyword.operator.word.xquery
+#    ^ source.xquery
+#     ^ source.xquery constant.numeric.xquery
+>,
+#^^ source.xquery
+>1 to 5
+#^ source.xquery constant.numeric.xquery
+# ^ source.xquery
+#  ^^ source.xquery keyword.operator.word.xquery
+#    ^ source.xquery
+#     ^ source.xquery constant.numeric.xquery
+>
+>(: XQuery 4.0: otherwise :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                         ^^ source.xquery comment.block.xquery
+>,
+#^^ source.xquery
+>() otherwise (1, 2, 3)
+#^^^ source.xquery
+#   ^^^^^^^^^ source.xquery keyword.operator.word.xquery
+#            ^^ source.xquery
+#              ^ source.xquery constant.numeric.xquery
+#               ^^ source.xquery
+#                 ^ source.xquery constant.numeric.xquery
+#                  ^^ source.xquery
+#                    ^ source.xquery constant.numeric.xquery
+#                     ^^ source.xquery
+>
+>(: ── Type expressions ───────────────────────────────────────────────────────── :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                                                                                 ^^ source.xquery comment.block.xquery
+>
+>,
+#^^ source.xquery
+>
+>"42" cast as xs:integer
+#^ source.xquery string.quoted.double.xquery
+# ^^ source.xquery string.quoted.double.xquery
+#   ^ source.xquery string.quoted.double.xquery
+#    ^ source.xquery
+#     ^^^^^^^ source.xquery keyword.operator.word.xquery
+#            ^ source.xquery
+#             ^^^^^^^^^^ source.xquery support.type.builtin.xquery
+>,
+#^^ source.xquery
+>"42" castable as xs:integer
+#^ source.xquery string.quoted.double.xquery
+# ^^ source.xquery string.quoted.double.xquery
+#   ^ source.xquery string.quoted.double.xquery
+#    ^ source.xquery
+#     ^^^^^^^^^^^ source.xquery keyword.operator.word.xquery
+#                ^ source.xquery
+#                 ^^^^^^^^^^ source.xquery support.type.builtin.xquery
+>,
+#^^ source.xquery
+>42   treat as xs:integer
+#^^ source.xquery constant.numeric.xquery
+#  ^^^ source.xquery
+#     ^^^^^^^^ source.xquery keyword.operator.word.xquery
+#             ^ source.xquery
+#              ^^^^^^^^^^ source.xquery support.type.builtin.xquery
+>,
+#^^ source.xquery
+>42   instance of xs:integer
+#^^ source.xquery constant.numeric.xquery
+#  ^^^ source.xquery
+#     ^^^^^^^^^^^ source.xquery keyword.operator.word.xquery
+#                ^ source.xquery
+#                 ^^^^^^^^^^ source.xquery support.type.builtin.xquery
+>,
+#^^ source.xquery
+>42   instance of xs:double?
+#^^ source.xquery constant.numeric.xquery
+#  ^^^ source.xquery
+#     ^^^^^^^^^^^ source.xquery keyword.operator.word.xquery
+#                ^ source.xquery
+#                 ^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                          ^^ source.xquery
+>,
+#^^ source.xquery
+><a/> instance of element()
+#^ source.xquery keyword.operator.comparison.xquery
+# ^^ source.xquery
+#   ^ source.xquery keyword.operator.comparison.xquery
+#    ^ source.xquery
+#     ^^^^^^^^^^^ source.xquery keyword.operator.word.xquery
+#                ^ source.xquery
+#                 ^^^^^^^ source.xquery support.type.xquery
+#                        ^^^ source.xquery
+>,
+#^^ source.xquery
+>() instance of empty-sequence()
+#^^^ source.xquery
+#   ^^^^^^^^^^^ source.xquery keyword.operator.word.xquery
+#              ^ source.xquery
+#               ^^^^^ source.xquery keyword.other.declaration.xquery
+#                    ^^^^^^^^^ source.xquery entity.name.function.xquery
+#                             ^^^ source.xquery
+>
+>(: ── Sequence type keywords ─────────────────────────────────────────────────── :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                                                                                 ^^ source.xquery comment.block.xquery
+>
+>declare function local:accepts-node($n as node()) as item()* { $n };
+#^^^^^^^ source.xquery keyword.other.declaration.xquery
+#       ^ source.xquery
+#        ^^^^^^^^ source.xquery storage.modifier.xquery
+#                ^ source.xquery
+#                 ^^^^^^^^^^^^^^^^^^ source.xquery entity.name.function.xquery
+#                                   ^ source.xquery
+#                                    ^^ source.xquery variable.other.xquery
+#                                      ^ source.xquery
+#                                       ^^ source.xquery keyword.operator.word.xquery
+#                                         ^ source.xquery
+#                                          ^^^^ source.xquery support.type.xquery
+#                                              ^^^^ source.xquery
+#                                                  ^^ source.xquery keyword.operator.word.xquery
+#                                                    ^ source.xquery
+#                                                     ^^^^ source.xquery support.type.xquery
+#                                                         ^^^^^^ source.xquery
+#                                                               ^^ source.xquery variable.other.xquery
+#                                                                 ^^^^ source.xquery
+>declare function local:takes-map($m as map(*)) as array(*) { array { $m?* } };
+#^^^^^^^ source.xquery keyword.other.declaration.xquery
+#       ^ source.xquery
+#        ^^^^^^^^ source.xquery storage.modifier.xquery
+#                ^ source.xquery
+#                 ^^^^^^^^^^^^^^^ source.xquery entity.name.function.xquery
+#                                ^ source.xquery
+#                                 ^^ source.xquery variable.other.xquery
+#                                   ^ source.xquery
+#                                    ^^ source.xquery keyword.operator.word.xquery
+#                                      ^ source.xquery
+#                                       ^^^ source.xquery support.type.xquery
+#                                          ^^^^^ source.xquery
+#                                               ^^ source.xquery keyword.operator.word.xquery
+#                                                 ^ source.xquery
+#                                                  ^^^^^ source.xquery support.type.xquery
+#                                                       ^^^^^^^^^^^^^^ source.xquery
+#                                                                     ^^ source.xquery variable.other.xquery
+#                                                                       ^^^^^^^^ source.xquery
+>declare function local:takes-record($r as record(id as xs:integer, label as xs:string)) as xs:string { $r?label };
+#^^^^^^^ source.xquery keyword.other.declaration.xquery
+#       ^ source.xquery
+#        ^^^^^^^^ source.xquery storage.modifier.xquery
+#                ^ source.xquery
+#                 ^^^^^^^^^^^^^^^^^^ source.xquery entity.name.function.xquery
+#                                   ^ source.xquery
+#                                    ^^ source.xquery variable.other.xquery
+#                                      ^ source.xquery
+#                                       ^^ source.xquery keyword.operator.word.xquery
+#                                         ^ source.xquery
+#                                          ^^^^^^ source.xquery support.type.xquery
+#                                                ^^^^ source.xquery
+#                                                    ^^ source.xquery keyword.operator.word.xquery
+#                                                      ^ source.xquery
+#                                                       ^^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                                                                 ^^^^^^^^ source.xquery
+#                                                                         ^^ source.xquery keyword.operator.word.xquery
+#                                                                           ^ source.xquery
+#                                                                            ^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                                                                                     ^^^ source.xquery
+#                                                                                        ^^ source.xquery keyword.operator.word.xquery
+#                                                                                          ^ source.xquery
+#                                                                                           ^^^^^^^^^ source.xquery support.type.builtin.xquery
+#                                                                                                    ^^^ source.xquery
+#                                                                                                       ^^ source.xquery variable.other.xquery
+#                                                                                                         ^^^^^^^^^^ source.xquery
+>
+>(: ── XPath axes ─────────────────────────────────────────────────────────────── :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                                                                                 ^^ source.xquery comment.block.xquery
+>
+>,
+#^^ source.xquery
+>
+><root><child/></root>/child::*
+#^ source.xquery keyword.operator.comparison.xquery
+# ^^^^ source.xquery
+#     ^ source.xquery keyword.operator.comparison.xquery
+#      ^ source.xquery keyword.operator.comparison.xquery
+#       ^^^^^^ source.xquery
+#             ^ source.xquery keyword.operator.comparison.xquery
+#              ^ source.xquery keyword.operator.comparison.xquery
+#               ^^^^^ source.xquery
+#                    ^ source.xquery keyword.operator.comparison.xquery
+#                     ^ source.xquery
+#                      ^^^^^ source.xquery keyword.other.axis.xquery
+#                           ^^ source.xquery
+#                             ^^ source.xquery
+>,
+#^^ source.xquery
+><root/>/self::element()
+#^ source.xquery keyword.operator.comparison.xquery
+# ^^^^^ source.xquery
+#      ^ source.xquery keyword.operator.comparison.xquery
+#       ^ source.xquery
+#        ^^^^ source.xquery keyword.other.axis.xquery
+#            ^^ source.xquery
+#              ^^^^^^^ source.xquery support.type.xquery
+#                     ^^^ source.xquery
+>,
+#^^ source.xquery
+><root><a/></root>/descendant-or-self::node()
+#^ source.xquery keyword.operator.comparison.xquery
+# ^^^^ source.xquery
+#     ^ source.xquery keyword.operator.comparison.xquery
+#      ^ source.xquery keyword.operator.comparison.xquery
+#       ^^ source.xquery
+#         ^ source.xquery keyword.operator.comparison.xquery
+#          ^ source.xquery keyword.operator.comparison.xquery
+#           ^^^^^ source.xquery
+#                ^ source.xquery keyword.operator.comparison.xquery
+#                 ^ source.xquery
+#                  ^^^^^^^^^^^^^^^^^^ source.xquery keyword.other.axis.xquery
+#                                    ^^ source.xquery
+#                                      ^^^^ source.xquery support.type.xquery
+#                                          ^^^ source.xquery
+>,
+#^^ source.xquery
+><root/>/attribute::*
+#^ source.xquery keyword.operator.comparison.xquery
+# ^^^^^ source.xquery
+#      ^ source.xquery keyword.operator.comparison.xquery
+#       ^ source.xquery
+#        ^^^^^^^^^ source.xquery keyword.other.axis.xquery
+#                 ^^ source.xquery
+#                   ^^ source.xquery
+>,
+#^^ source.xquery
+><root/>/following-sibling::*
+#^ source.xquery keyword.operator.comparison.xquery
+# ^^^^^ source.xquery
+#      ^ source.xquery keyword.operator.comparison.xquery
+#       ^ source.xquery
+#        ^^^^^^^^^^^^^^^^^ source.xquery keyword.other.axis.xquery
+#                         ^^ source.xquery
+#                           ^^ source.xquery
+>
+>(: ── Function calls ─────────────────────────────────────────────────────────── :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                                                                                 ^^ source.xquery comment.block.xquery
+>
+>,
+#^^ source.xquery
+>
+>fn:string-join(("a", "b", "c"), ", ")
+#^^ source.xquery entity.name.namespace.xquery
+#  ^ source.xquery
+#   ^^^^^^^^^^^ source.xquery entity.name.function.xquery
+#              ^^ source.xquery
+#                ^ source.xquery string.quoted.double.xquery
+#                 ^ source.xquery string.quoted.double.xquery
+#                  ^ source.xquery string.quoted.double.xquery
+#                   ^^ source.xquery
+#                     ^ source.xquery string.quoted.double.xquery
+#                      ^ source.xquery string.quoted.double.xquery
+#                       ^ source.xquery string.quoted.double.xquery
+#                        ^^ source.xquery
+#                          ^ source.xquery string.quoted.double.xquery
+#                           ^ source.xquery string.quoted.double.xquery
+#                            ^ source.xquery string.quoted.double.xquery
+#                             ^^^ source.xquery
+#                                ^ source.xquery string.quoted.double.xquery
+#                                 ^^ source.xquery string.quoted.double.xquery
+#                                   ^ source.xquery string.quoted.double.xquery
+#                                    ^^ source.xquery
+>,
+#^^ source.xquery
+>string-join(("a", "b"), "-")
+#^^^^^^^^^^^ source.xquery entity.name.function.xquery
+#           ^^ source.xquery
+#             ^ source.xquery string.quoted.double.xquery
+#              ^ source.xquery string.quoted.double.xquery
+#               ^ source.xquery string.quoted.double.xquery
+#                ^^ source.xquery
+#                  ^ source.xquery string.quoted.double.xquery
+#                   ^ source.xquery string.quoted.double.xquery
+#                    ^ source.xquery string.quoted.double.xquery
+#                     ^^^ source.xquery
+#                        ^ source.xquery string.quoted.double.xquery
+#                         ^ source.xquery string.quoted.double.xquery
+#                          ^ source.xquery string.quoted.double.xquery
+#                           ^^ source.xquery
+>,
+#^^ source.xquery
+>xs:integer("42")
+#^^^^^^^^^^ source.xquery support.type.builtin.xquery
+#          ^ source.xquery
+#           ^ source.xquery string.quoted.double.xquery
+#            ^^ source.xquery string.quoted.double.xquery
+#              ^ source.xquery string.quoted.double.xquery
+#               ^^ source.xquery
+>,
+#^^ source.xquery
+>local:max(3, 7)
+#^^^^^ source.xquery entity.name.namespace.xquery
+#     ^ source.xquery
+#      ^^^ source.xquery entity.name.function.xquery
+#         ^ source.xquery
+#          ^ source.xquery constant.numeric.xquery
+#           ^^ source.xquery
+#             ^ source.xquery constant.numeric.xquery
+#              ^^ source.xquery
+>
+>(: ── Variables ──────────────────────────────────────────────────────────────── :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                                                                                 ^^ source.xquery comment.block.xquery
+>
+>,
+#^^ source.xquery
+>
+>let $x := 1
+#^^^ source.xquery keyword.control.xquery
+#   ^ source.xquery
+#    ^^ source.xquery variable.other.xquery
+#      ^^ source.xquery
+#        ^ source.xquery keyword.operator.comparison.xquery
+#         ^ source.xquery
+#          ^ source.xquery constant.numeric.xquery
+>let $my-var := $x + 1
+#^^^ source.xquery keyword.control.xquery
+#   ^ source.xquery
+#    ^^^^^^^ source.xquery variable.other.xquery
+#           ^^ source.xquery
+#             ^ source.xquery keyword.operator.comparison.xquery
+#              ^ source.xquery
+#               ^^ source.xquery variable.other.xquery
+#                 ^^^ source.xquery
+#                    ^ source.xquery constant.numeric.xquery
+>return ($x, $my-var)
+#^^^^^^ source.xquery keyword.control.xquery
+#      ^^ source.xquery
+#        ^^ source.xquery variable.other.xquery
+#          ^^ source.xquery
+#            ^^^^^^^ source.xquery variable.other.xquery
+#                   ^^ source.xquery
+>
+>(: ── Strings & escapes ───────────────────────────────────────────────────────── :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                                                                                  ^^ source.xquery comment.block.xquery
+>
+>,
+#^^ source.xquery
+>
+>"a ""quoted"" word"
+#^ source.xquery string.quoted.double.xquery
+# ^^ source.xquery string.quoted.double.xquery
+#   ^ source.xquery string.quoted.double.xquery
+#    ^ source.xquery string.quoted.double.xquery
+#     ^^^^^^ source.xquery string.quoted.double.xquery
+#           ^ source.xquery string.quoted.double.xquery
+#            ^ source.xquery string.quoted.double.xquery
+#             ^^^^^ source.xquery string.quoted.double.xquery
+#                  ^ source.xquery string.quoted.double.xquery
+>,
+#^^ source.xquery
+>'it''s fine'
+#^ source.xquery string.quoted.single.xquery
+# ^^ source.xquery string.quoted.single.xquery
+#   ^ source.xquery string.quoted.single.xquery
+#    ^ source.xquery string.quoted.single.xquery
+#     ^^^^^^ source.xquery string.quoted.single.xquery
+#           ^ source.xquery string.quoted.single.xquery
+>,
+#^^ source.xquery
+>"ampersand: &amp; copyright: &#169; hex: &#x00A9;"
+#^ source.xquery string.quoted.double.xquery
+# ^^^^^^^^^^^ source.xquery string.quoted.double.xquery
+#            ^^^^^ source.xquery string.quoted.double.xquery constant.character.escape.xquery
+#                 ^^^^^^^^^^^^ source.xquery string.quoted.double.xquery
+#                             ^^^^^^ source.xquery string.quoted.double.xquery constant.character.escape.xquery
+#                                   ^^^^^^ source.xquery string.quoted.double.xquery
+#                                         ^^^^^^^^ source.xquery string.quoted.double.xquery constant.character.escape.xquery
+#                                                 ^ source.xquery string.quoted.double.xquery
+>
+>(: ── Numbers ────────────────────────────────────────────────────────────────── :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                                                                                 ^^ source.xquery comment.block.xquery
+>
+>,
+#^^ source.xquery
+>
+>42
+#^^ source.xquery constant.numeric.xquery
+>,
+#^^ source.xquery
+>3.14
+#^^^^ source.xquery constant.numeric.xquery
+>,
+#^^ source.xquery
+>2.5e10
+#^^^^^^ source.xquery constant.numeric.xquery
+>,
+#^^ source.xquery
+>.5
+#^^ source.xquery constant.numeric.xquery
+>
+>(: ── Arrow operators (3.1 => and 4.0 ->) ───────────────────────────────────── :)
+#^^ source.xquery comment.block.xquery
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.xquery comment.block.xquery
+#                                                                                ^^ source.xquery comment.block.xquery
+>
+>,
+#^^ source.xquery
+>
+>"hello" => upper-case()
+#^ source.xquery string.quoted.double.xquery
+# ^^^^^ source.xquery string.quoted.double.xquery
+#      ^ source.xquery string.quoted.double.xquery
+#       ^ source.xquery
+#        ^^ source.xquery keyword.operator.arrow.xquery
+#          ^ source.xquery
+#           ^^^^^^^^^^ source.xquery entity.name.function.xquery
+#                     ^^^ source.xquery
+>,
+#^^ source.xquery
+>(1, 2, 3) -> fn:sum#1
+#^ source.xquery
+# ^ source.xquery constant.numeric.xquery
+#  ^^ source.xquery
+#    ^ source.xquery constant.numeric.xquery
+#     ^^ source.xquery
+#       ^ source.xquery constant.numeric.xquery
+#        ^^ source.xquery
+#          ^^ source.xquery keyword.operator.arrow.xquery
+#            ^^^^^^^^ source.xquery
+#                    ^ source.xquery constant.numeric.xquery
+>
