@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.6.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.5.0...lsp-v1.6.0) (2026-06-19)
+
+
+### Features
+
+* **vscode:** add XQuery 4.0 syntax highlighting grammar ([f2ee489](https://github.com/DrRataplan/xq-lsp/commit/f2ee489ff1ec3ab67f9142d6c039c559d28d5e67))
+
+
+### Bug Fixes
+
+* copy runtime files to dist and inline existdb predeclared namespaces ([e98b6d6](https://github.com/DrRataplan/xq-lsp/commit/e98b6d672ba504bba5dda30980b7a58cbdfcf847))
+
 ## [1.5.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.4.1...lsp-v1.5.0) (2026-06-18)
 
 
