@@ -27,6 +27,7 @@ import { findConfig, expandGlobs } from "./config.ts";
 import {
 	findImportInsertPosition,
 	findDeclareNsInsertPosition,
+	computeRelativePath,
 } from "./namespace-diagnostics.ts";
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
 import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
@@ -280,12 +281,46 @@ connection.onCompletion((params) => {
 	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
 	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
 	const offset = doc.offsetAt(params.position);
+
+	const { byNamespace: globAnalyses } = getGlobAnalyses(doc.uri);
+	const config = findConfig(doc.uri)?.config;
+	const generateLocationHints = config?.generateLocationHints ?? true;
+
+	// Build the set of modules available to auto-import (known in the workspace, not yet imported).
+	const availableAnalyses = new Map<string, FileAnalysis>();
+	for (const [nsUri, analysis] of globAnalyses) {
+		if (!imported.has(nsUri) && !imported.has(analysis.modulePrefix ?? "")) {
+			// Only include if not already reachable via the imported map
+			const alreadyImported = [...imported.values()].some(
+				(a) => a.moduleNamespaceUri === nsUri,
+			);
+			if (!alreadyImported) availableAnalyses.set(nsUri, analysis);
+		}
+	}
+
+	// Build known pure-XML namespaces (from config prefixes + glob file namespace declarations).
+	const configPrefixes = config?.prefixes ?? {};
+	const knownNamespaces = new Map<string, string>(
+		Object.entries(configPrefixes) as [string, string][],
+	);
+	for (const a of globAnalyses.values()) {
+		for (const nd of a.namespaceDecls) {
+			if (!knownNamespaces.has(nd.prefix)) knownNamespaces.set(nd.prefix, nd.namespaceUri);
+		}
+		for (const imp of a.imports) {
+			if (!knownNamespaces.has(imp.prefix)) knownNamespaces.set(imp.prefix, imp.namespaceUri);
+		}
+	}
+
 	return getCompletions(
 		{ textBeforeCursor: doc.getText().slice(0, offset), cursorOffset: offset },
 		analysis,
 		imported,
 		snippetSupport,
 		lastValidAnalysisCache.get(doc.uri),
+		availableAnalyses,
+		knownNamespaces,
+		{ docText: doc.getText(), docUri: doc.uri, generateLocationHints },
 	);
 });
 
@@ -469,14 +504,6 @@ connection.onCodeAction((params) => {
 	return actions;
 });
 
-function computeRelativePath(fromUri: string, toUri: string): string {
-	const fromPath = uriToPath(fromUri);
-	const toPath = uriToPath(toUri);
-	const fromDir = path.dirname(fromPath);
-	let rel = path.relative(fromDir, toPath).replace(/\\/g, "/");
-	if (!rel.startsWith(".")) rel = "./" + rel;
-	return rel;
-}
 
 documents.listen(connection);
 connection.listen();
