@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "testCase": "combiningnodeseqintersecthc4",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]

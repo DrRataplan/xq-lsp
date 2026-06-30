@@ -24,6 +24,38 @@
     "got": []
   },
   {
+    "testCase": "K2-ExternalVariablesWithout-19",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "K2-ExternalVariablesWithout-20",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "K2-ExternalVariablesWithout-21",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "K2-ExternalVariablesWithout-22",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
     "testCase": "extvardeclwithtype-23",
     "outcome": "false-positive",
     "expectedCode": null,

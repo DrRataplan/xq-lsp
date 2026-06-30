@@ -1,8 +1,6 @@
 import { workerData, parentPort } from "node:worker_threads";
 import { analyzeWithAst } from "./analyzer.ts";
-import { checkTypes } from "./typechecker.ts";
-import { checkFunctionCalls } from "./functioncall-diagnostics.ts";
-import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
+import { runDiagnostics } from "./diagnostics.ts";
 import { getBuiltins } from "./builtins.ts";
 
 export interface TestInput {
@@ -24,7 +22,7 @@ export interface TestOutput {
 
 const BUILTINS = new Map([["builtin:fn", getBuiltins()]]);
 
-function runDiagnostics(query: string, envNamespaces: Array<{ prefix: string; uri: string }>): string[] {
+function collectCodes(query: string, envNamespaces: Array<{ prefix: string; uri: string }>): string[] {
 	try {
 		const { analysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq");
 		for (const ns of envNamespaces) {
@@ -35,9 +33,7 @@ function runDiagnostics(query: string, envNamespaces: Array<{ prefix: string; ur
 		const codes: string[] = [];
 		if (parseError) codes.push("XPST0003");
 		if (ast) {
-			for (const d of checkTypes(ast, query, analysis, BUILTINS)) codes.push(d.code);
-			for (const d of checkFunctionCalls(ast, analysis, BUILTINS)) codes.push(d.code);
-			for (const d of findUndeclaredPrefixUsages(ast, analysis)) codes.push(d.code);
+			for (const d of runDiagnostics(ast, query, analysis, BUILTINS)) codes.push(d.code);
 		}
 		return [...new Set(codes)];
 	} catch {
@@ -47,7 +43,7 @@ function runDiagnostics(query: string, envNamespaces: Array<{ prefix: string; ur
 
 const batch = workerData as TestInput[];
 const results: TestOutput[] = batch.map((tc) => {
-	const got = runDiagnostics(tc.query, tc.envNamespaces);
+	const got = collectCodes(tc.query, tc.envNamespaces);
 	const hasError = got.length > 0;
 	const outcome =
 		tc.expected === "static-error"

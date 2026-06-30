@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "testCase": "soap-q1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]
