@@ -1,3 +1,5 @@
+import * as path from "path";
+import { fileURLToPath } from "url";
 import type { Node } from "xq-parser";
 import type { FileAnalysis } from "./types.ts";
 import { isTerminal, directChildOf, firstTerminalValue, resolvePrefix } from "./analyzer.ts";
@@ -106,28 +108,54 @@ export function findUndeclaredPrefixUsages(
 // ── Insertion-position helpers (used by the code action handler) ─────────────
 
 /**
- * Find the first line in the prolog that is safe to insert a new statement
- * before — i.e. after any leading VersionDecl and ModuleDecl, which the
- * grammar requires to come first.  Everything else can be reordered by
- * xquery-prettier.
+ * Return the first line index after the mandatory header — xquery version
+ * decl, module namespace decl, and any leading block comments (including
+ * multi-line docblocks).  This is the safe fallback insertion point when no
+ * existing statements of the same kind are present to anchor the insert.
  */
-function firstPrologLine(text: string): number {
+function headerEndLine(text: string): number {
 	const lines = text.split("\n");
-	for (let i = 0; i < lines.length; i++) {
+	let i = 0;
+	while (i < lines.length) {
 		const t = lines[i].trim();
-		if (/^xquery\b/.test(t) || /^module\s+namespace\b/.test(t)) continue;
-		if (t === "" || t.startsWith("(:")) continue; // leading whitespace / comments
+		if (/^xquery\b/.test(t) || /^module\s+namespace\b/.test(t)) { i++; continue; }
+		if (t === "") { i++; continue; }
+		if (t.startsWith("(:")) {
+			// Scan forward to the line that closes the comment block.
+			while (i < lines.length && !lines[i].includes(":)")) i++;
+			i++; // move past the closing line
+			continue;
+		}
 		return i;
 	}
-	return 0;
+	return i;
 }
 
-/** Position at which to insert a new `import module namespace` statement. */
+/**
+ * Position at which to insert a new `import module namespace` statement:
+ * after the last existing import (to keep imports grouped), or after the
+ * file header (version/module decls and leading comments) when none exist.
+ */
 export function findImportInsertPosition(text: string): { line: number; character: number } {
-	return { line: firstPrologLine(text), character: 0 };
+	const lines = text.split("\n");
+	for (let i = lines.length - 1; i >= 0; i--) {
+		if (/^\s*import\s+module\s+namespace\b/.test(lines[i]))
+			return { line: i + 1, character: 0 };
+	}
+	return { line: headerEndLine(text), character: 0 };
 }
 
 /** Position at which to insert a new `declare namespace` statement. */
 export function findDeclareNsInsertPosition(text: string): { line: number; character: number } {
-	return { line: firstPrologLine(text), character: 0 };
+	return { line: headerEndLine(text), character: 0 };
+}
+
+/** Compute a relative file path from one URI to another, always using forward slashes and a leading `./`. */
+export function computeRelativePath(fromUri: string, toUri: string): string {
+	const fromPath = fileURLToPath(fromUri);
+	const toPath = fileURLToPath(toUri);
+	const fromDir = path.dirname(fromPath);
+	let rel = path.relative(fromDir, toPath).replace(/\\/g, "/");
+	if (!rel.startsWith(".")) rel = "./" + rel;
+	return rel;
 }

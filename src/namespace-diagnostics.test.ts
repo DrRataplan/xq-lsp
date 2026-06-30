@@ -123,32 +123,85 @@ describe("namespace-diagnostics: other", () => {
 // ── insert positions ──────────────────────────────────────────────────────────
 
 describe("insert positions", () => {
-	test("findImportInsertPosition: line 0 when no version/module decl", () => {
-		assert.deepEqual(
-			findImportInsertPosition(`import module namespace a="http://a.com" at "./a.xq"; a:f()`),
-			{ line: 0, character: 0 },
-		);
-	});
+	// ── findImportInsertPosition ─────────────────────────────────────────────────
 
-	test("findImportInsertPosition: skips xquery version decl", () => {
+	test("findImportInsertPosition: after last existing import (single import, no header)", () => {
 		assert.deepEqual(
-			findImportInsertPosition(`xquery version "3.1";\nimport module namespace a="http://a.com" at "./a.xq";\na:f()`),
+			findImportInsertPosition(`import module namespace a="http://a.com" at "./a.xq";\na:f()`),
 			{ line: 1, character: 0 },
 		);
 	});
 
-	test("findImportInsertPosition: skips module namespace decl in library module", () => {
+	test("findImportInsertPosition: after last import when version decl precedes it", () => {
+		assert.deepEqual(
+			findImportInsertPosition(`xquery version "3.1";\nimport module namespace a="http://a.com" at "./a.xq";\na:f()`),
+			{ line: 2, character: 0 },
+		);
+	});
+
+	test("findImportInsertPosition: after last of multiple imports", () => {
+		const src = [
+			`xquery version "3.1";`,
+			`import module namespace a="http://a.com" at "./a.xq";`,
+			`import module namespace b="http://b.com";`,
+			`a:f()`,
+		].join("\n");
+		assert.deepEqual(findImportInsertPosition(src), { line: 3, character: 0 });
+	});
+
+	test("findImportInsertPosition: after header when no imports (module namespace decl)", () => {
 		assert.deepEqual(
 			findImportInsertPosition(`module namespace m="http://m.com";\ndeclare function m:f() { 1 };`),
 			{ line: 1, character: 0 },
 		);
 	});
 
+	test("findImportInsertPosition: after multi-line docblock when no imports", () => {
+		const src = [
+			`(:~`,
+			` : Module description.`,
+			` :)`,
+			`module namespace m="http://m.com";`,
+			`declare function m:f() { 1 };`,
+		].join("\n");
+		assert.deepEqual(findImportInsertPosition(src), { line: 4, character: 0 });
+	});
+
+	test("findImportInsertPosition: after last import when docblock precedes imports", () => {
+		const src = [
+			`(:~`,
+			` : Main module.`,
+			` :)`,
+			`import module namespace a="http://a.com" at "./a.xq";`,
+			`a:f()`,
+		].join("\n");
+		assert.deepEqual(findImportInsertPosition(src), { line: 4, character: 0 });
+	});
+
+	test("findImportInsertPosition: line 0 for bare expression with no header and no imports", () => {
+		assert.deepEqual(
+			findImportInsertPosition(`local:f()`),
+			{ line: 0, character: 0 },
+		);
+	});
+
+	// ── findDeclareNsInsertPosition ──────────────────────────────────────────────
+
 	test("findDeclareNsInsertPosition: skips xquery version decl", () => {
 		assert.deepEqual(
 			findDeclareNsInsertPosition(`xquery version "3.1";\ndeclare function local:f() { 1 };`),
 			{ line: 1, character: 0 },
 		);
+	});
+
+	test("findDeclareNsInsertPosition: after multi-line docblock", () => {
+		const src = [
+			`(:~`,
+			` : description`,
+			` :)`,
+			`declare function local:f() { 1 };`,
+		].join("\n");
+		assert.deepEqual(findDeclareNsInsertPosition(src), { line: 3, character: 0 });
 	});
 });
 
