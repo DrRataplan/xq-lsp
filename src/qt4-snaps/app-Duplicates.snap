@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "testCase": "duplicates-windows-1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]

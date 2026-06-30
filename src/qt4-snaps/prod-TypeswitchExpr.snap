@@ -1,50 +1,128 @@
 [
   {
-    "testCase": "K2-sequenceExprTypeswitch-4",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
+    "testCase": "typeswitchhc16",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
   },
   {
-    "testCase": "K2-sequenceExprTypeswitch-5",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
+    "testCase": "typeswitchhc20",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
   },
   {
-    "testCase": "K2-sequenceExprTypeswitch-6",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
+    "testCase": "K2-sequenceExprTypeswitch-12",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
   },
   {
-    "testCase": "K2-sequenceExprTypeswitch-7",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
+    "testCase": "K2-sequenceExprTypeswitch-13",
+    "outcome": "false-positive",
+    "expectedCode": "XQTY0024",
+    "got": [
+      "XPST0008"
+    ]
   },
   {
-    "testCase": "K2-sequenceExprTypeswitch-9",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
+    "testCase": "K2-sequenceExprTypeswitch-15",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
   },
   {
-    "testCase": "K2-sequenceExprTypeswitch-10",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
+    "testCase": "K2-sequenceExprTypeswitch-16",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
   },
   {
-    "testCase": "K2-sequenceExprTypeswitch-11",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
+    "testCase": "typeswitch-union-nomatch",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "typeswitch-union-branch-1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "typeswitch-union-branch-1-dup",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "typeswitch-union-branch-2",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "typeswitch-union-branch-2-dup",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "typeswitch-union-branch-both",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "typeswitch-union-branch-both-dup",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
   },
   {
     "testCase": "typeswitch-union-in-xquery-10",
     "outcome": "false-negative",
     "expectedCode": "XPST0003",
     "got": []
+  },
+  {
+    "testCase": "typeswitch-117",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "typeswitch-119",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
   }
 ]

@@ -1,8 +1,1 @@
-[
-  {
-    "testCase": "ReturnExpr014",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
-  }
-]
+[]

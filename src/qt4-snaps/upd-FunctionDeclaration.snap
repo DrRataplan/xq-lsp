@@ -64,6 +64,14 @@
     ]
   },
   {
+    "testCase": "id-function-declaration-013",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
     "testCase": "id-function-declaration-015",
     "outcome": "false-positive",
     "expectedCode": "XUST0001",

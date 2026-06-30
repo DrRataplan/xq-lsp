@@ -11,10 +11,7 @@ import builtinsMath from "../builtins/builtins-math.xq?raw";
 import builtinsMap from "../builtins/builtins-map.xq?raw";
 import builtinsArray from "../builtins/builtins-array.xq?raw";
 import { findUndeclaredPrefixUsages } from "../src/namespace-diagnostics.ts";
-import { checkTypes } from "../src/typechecker.ts";
-import { checkFunctionCalls } from "../src/functioncall-diagnostics.ts";
-import { checkUnused } from "../src/unused-diagnostics.ts";
-import { checkContextItemUsage } from "../src/context-item-diagnostics.ts";
+import { runDiagnostics, runHints } from "../src/diagnostics.ts";
 import { type FileAnalysis } from "../src/types.ts";
 import { resolveFunctionAtOffset, resolveSignatureAtOffset, functionSignature } from "../src/hover-core.ts";
 import { getCompletions } from "../src/completion-core.ts";
@@ -238,17 +235,11 @@ const xqueryLinter = linter((view): Diagnostic[] => {
 
 	if (ast) {
 		const imported = getImported(analysis);
-		for (const d of checkTypes(ast, code, analysis, new Map())) {
-			diagnostics.push({ from: d.offset, to: d.offset + d.length, severity: "warning", message: d.message });
-		}
-		for (const d of checkFunctionCalls(ast, analysis, imported)) {
+		for (const d of runDiagnostics(ast, code, analysis, imported)) {
 			diagnostics.push({ from: d.offset, to: d.offset + d.length, severity: "error", message: d.message });
 		}
-		for (const d of checkUnused(ast, analysis)) {
+		for (const d of runHints(ast, analysis)) {
 			diagnostics.push({ from: d.offset, to: d.offset + d.length, severity: "hint", message: d.message });
-		}
-		for (const d of checkContextItemUsage(ast)) {
-			diagnostics.push({ from: d.offset, to: d.offset + d.length, severity: "error", message: d.message });
 		}
 	}
 

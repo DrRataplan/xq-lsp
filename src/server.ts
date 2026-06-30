@@ -18,18 +18,14 @@ import { getCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getDefinition } from "./definition.ts";
 import type { FileAnalysis, TypeDiagnostic } from "./types.ts";
-import { checkTypes } from "./typechecker.ts";
-import { checkFunctionCalls } from "./functioncall-diagnostics.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import {
-	findUndeclaredPrefixUsages,
 	findImportInsertPosition,
 	findDeclareNsInsertPosition,
 } from "./namespace-diagnostics.ts";
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
-import { checkUnused } from "./unused-diagnostics.ts";
-import { checkUndeclaredVariables } from "./variable-diagnostics.ts";
-import { checkContextItemUsage } from "./context-item-diagnostics.ts";
+import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
+import { runDiagnostics, runHints } from "./diagnostics.ts";
 import { getRuntimeAnalyses, getRuntimePredeclaredNamespaces, withPredeclaredNs } from "./runtimes.ts";
 
 const connection = createConnection(ProposedFeatures.all);
@@ -37,7 +33,6 @@ const documents = new TextDocuments(TextDocument);
 
 const analysisCache = new Map<string, FileAnalysis>();
 const lastValidAnalysisCache = new Map<string, FileAnalysis>(); // last AST-path analysis per URI
-const typeErrorCache = new Map<string, TypeDiagnostic[]>();
 
 // Glob analyses keyed by config directory, then by module namespace URI.
 // Populated lazily on the first request for a given config root.
@@ -207,82 +202,33 @@ documents.onDidChangeContent((change) => {
 	const { analysis: rawAnalysis, parseDiagnostics: parseDiags, hasAst, ast } = analyzeDocumentFull(doc);
 	const { analysis, imported: resolvedImported } = resolveContext(doc.uri, rawAnalysis);
 
-	if (hasAst && ast !== null) {
-		typeErrorCache.set(doc.uri, [
-			...checkTypes(ast, doc.getText(), analysis, resolvedImported),
-			...checkFunctionCalls(ast, analysis, resolvedImported),
-		]);
+	// Run all error-level diagnostics and hints via the central registry.
+	// findUndeclaredPrefixUsages returns [] when ast is null; runDiagnostics guards the rest.
+	const nsDiagRaw = findUndeclaredPrefixUsages(ast, analysis);
+	const errorDiagRaw = hasAst && ast !== null ? runDiagnostics(ast, doc.getText(), analysis, resolvedImported) : [];
+	const hintDiagRaw = hasAst && ast !== null ? runHints(ast, analysis) : [];
+
+	function toLsp(d: TypeDiagnostic, severity: DiagnosticSeverity) {
+		return {
+			severity,
+			range: { start: doc.positionAt(d.offset), end: doc.positionAt(d.offset + d.length) },
+			message: d.message,
+			code: d.code,
+			source: "xquery-lsp",
+		};
 	}
 
-	const typeDiags = (typeErrorCache.get(doc.uri) ?? []).map((td) => ({
-		severity: DiagnosticSeverity.Warning,
-		range: {
-			start: doc.positionAt(td.offset),
-			end: doc.positionAt(td.offset + td.length),
-		},
-		message: td.message,
-		code: td.code,
-		source: "xquery-lsp",
-	}));
-
-	// findUndeclaredPrefixUsages returns [] when ast is null (parse error path).
-	const nsDiagRaw = findUndeclaredPrefixUsages(ast, analysis);
 	const nsDiags = nsDiagRaw.map((nd) => ({
-		severity: DiagnosticSeverity.Error,
-		range: {
-			start: doc.positionAt(nd.offset),
-			end: doc.positionAt(nd.offset + nd.length),
-		},
-		message: nd.message,
-		code: nd.code,
-		source: "xquery-lsp",
+		...toLsp(nd, DiagnosticSeverity.Error),
 		data: { prefix: nd.prefix, usageKind: nd.usageKind } as { prefix: string; usageKind: NamespaceUsageKind },
 	}));
-
-	// checkUnused only runs when the AST is available.
-	const unusedDiagRaw = hasAst && ast !== null ? checkUnused(ast, analysis) : [];
-	const unusedDiags = unusedDiagRaw.map((ud) => ({
-		severity: DiagnosticSeverity.Hint,
-		range: {
-			start: doc.positionAt(ud.offset),
-			end: doc.positionAt(ud.offset + ud.length),
-		},
-		message: ud.message,
-		code: ud.code,
-		source: "xquery-lsp",
-	}));
-
-	const contextItemDiagRaw = hasAst && ast !== null ? checkContextItemUsage(ast) : [];
-	const contextItemDiags = contextItemDiagRaw.map((cd) => ({
-		severity: DiagnosticSeverity.Error,
-		range: {
-			start: doc.positionAt(cd.offset),
-			end: doc.positionAt(cd.offset + cd.length),
-		},
-		message: cd.message,
-		code: cd.code,
-		source: "xquery-lsp",
-	}));
-
-	const undeclaredVarDiagRaw =
-		hasAst && ast !== null ? checkUndeclaredVariables(ast, analysis, resolvedImported) : [];
-	const undeclaredVarDiags = undeclaredVarDiagRaw.map((d) => ({
-		severity: DiagnosticSeverity.Error,
-		range: {
-			start: doc.positionAt(d.offset),
-			end: doc.positionAt(d.offset + d.length),
-		},
-		message: d.message,
-		code: d.code,
-		source: "xquery-lsp",
-	}));
+	// nsDiags already covers XQST0081 (with the code-action data field), so exclude those here.
+	const errorDiags = errorDiagRaw.filter((d) => d.code !== "XQST0081").map((d) => toLsp(d, DiagnosticSeverity.Error));
+	const hintDiags = hintDiagRaw.map((d) => toLsp(d, DiagnosticSeverity.Hint));
 
 	connection.sendDiagnostics({
 		uri: doc.uri,
-		diagnostics: [
-			...parseDiags, ...typeDiags, ...nsDiags, ...unusedDiags, ...contextItemDiags,
-			...undeclaredVarDiags,
-		],
+		diagnostics: [...parseDiags, ...nsDiags, ...errorDiags, ...hintDiags],
 	});
 });
 

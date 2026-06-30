@@ -54,5 +54,21 @@
     "got": [
       "XPST0003"
     ]
+  },
+  {
+    "testCase": "fn-outermost-053",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fn-outermost-054",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
   }
 ]
