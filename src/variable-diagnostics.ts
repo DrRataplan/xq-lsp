@@ -1,7 +1,7 @@
 import type { Node, NonTerminal } from "xq-parser";
 import type { FileAnalysis, QName } from "./types.ts";
 import { qnameKey } from "./types.ts";
-import { isTerminal, directChildOf, directChildrenOf } from "./analyzer.ts";
+import { isTerminal, directChildOf, directChildrenOf, firstTerminalValue, parseEQName, resolvePrefix } from "./analyzer.ts";
 import { asFunctionDecl, asVarRef, asVarName, asBinding, asInlineFunctionExpr, asWindowVars, asTransformExpr } from "./ast-nodes.ts";
 
 export interface UndeclaredVariableDiagnostic {
@@ -162,6 +162,22 @@ function walk(
 					walk(child, scope, analysis, moduleVarKeys, out);
 				}
 			}
+			scope.pop();
+			return;
+		}
+
+		case "InlineFunctionExpr": {
+			scope.push();
+			const paramList = directChildOf(node, "ParamList");
+			for (const param of paramList ? (paramList as NonTerminal).children.filter((c) => c.type === "Param") : []) {
+				const nameNode = directChildOf(param, "EQName");
+				const rawName = nameNode ? firstTerminalValue(nameNode) : null;
+				if (!rawName) continue;
+				const { prefix, localName, uri } = parseEQName(rawName);
+				scope.add(qnameKey({ prefix, localName, namespaceUri: uri ?? (prefix ? resolvePrefix(prefix, analysis) : "") }));
+			}
+			const body = directChildOf(node, "FunctionBody");
+			if (body) walk(body, scope, analysis, moduleVarKeys, out);
 			scope.pop();
 			return;
 		}
