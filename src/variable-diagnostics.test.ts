@@ -103,6 +103,29 @@ describe("variable-diagnostics: undeclared variable (XPST0008)", () => {
 				`XPST0008 should not fire for undeclared-prefix variables, got ${JSON.stringify(ds)}`);
 		});
 
+		test("inline function param visible inside its body", () => {
+			const ds = undeclaredVarDiags(`
+array:for-each(function ($item as xs:string) { $item }, ())`);
+			assert.equal(ds.length, 0, `no errors expected, got ${JSON.stringify(ds)}`);
+		});
+
+		test("let binding inside inline function body not flagged", () => {
+			const ds = undeclaredVarDiags(`
+array:for-each(function ($cfg as map(*)) {
+    let $name := map:keys($cfg)
+    return $name
+}, ())`);
+			assert.equal(ds.length, 0, `no errors expected, got ${JSON.stringify(ds)}`);
+		});
+
+		test("inline function param not visible outside its body", () => {
+			const ds = undeclaredVarDiags(
+				`(array:for-each(function ($item as xs:string) { $item }, ()), $item)`,
+			);
+			assert.ok(ds.some((d) => d.message.includes("'$item'")),
+				`expected XPST0008 for $item outside inline function, got ${JSON.stringify(ds)}`);
+		});
+
 		test("$err:* variables in catch clause not flagged", () => {
 			const ds = undeclaredVarDiags(`try { 1 } catch * { $err:code }`);
 			assert.ok(!ds.some((d) => d.message.includes("err:code")),
