@@ -294,6 +294,54 @@ declare function math:sin($x) { $x };`,
 	});
 });
 
+describe("completion: imported module variables", () => {
+	const libAnalysis = analyze(
+		`module namespace lib="http://example.com/lib";
+declare variable $lib:config := "x";`,
+		"file:///lib.xq",
+	);
+
+	test("imported variable appears when same prefix is used", () => {
+		const mainAnalysis = analyze(
+			`import module namespace lib="http://example.com/lib" at "./lib.xq"; 1`,
+			"file:///main.xq",
+		);
+		const labels = getCompletions(
+			{ textBeforeCursor: "$", cursorOffset: 1 },
+			mainAnalysis,
+			new Map([["./lib.xq", libAnalysis]]),
+		).map((i) => i.label);
+		assert.ok(labels.includes("$lib:config"), `expected $lib:config, got ${labels}`);
+	});
+
+	test("imported variable appears under aliased import prefix", () => {
+		const mainAnalysis = analyze(
+			`import module namespace mylib="http://example.com/lib" at "./lib.xq"; 1`,
+			"file:///main.xq",
+		);
+		const labels = getCompletions(
+			{ textBeforeCursor: "$", cursorOffset: 1 },
+			mainAnalysis,
+			new Map([["./lib.xq", libAnalysis]]),
+		).map((i) => i.label);
+		assert.ok(labels.includes("$mylib:config"), `expected $mylib:config (import prefix), got ${labels}`);
+		assert.ok(!labels.includes("$lib:config"), `should not expose library-internal prefix $lib:config, got ${labels}`);
+	});
+
+	test("aliased prefix filters correctly when user types prefix", () => {
+		const mainAnalysis = analyze(
+			`import module namespace mylib="http://example.com/lib" at "./lib.xq"; 1`,
+			"file:///main.xq",
+		);
+		const labels = getCompletions(
+			{ textBeforeCursor: "$mylib:", cursorOffset: 7 },
+			mainAnalysis,
+			new Map([["./lib.xq", libAnalysis]]),
+		).map((i) => i.label);
+		assert.ok(labels.includes("$mylib:config"), `expected $mylib:config after typing $mylib:, got ${labels}`);
+	});
+});
+
 describe("completion: builtins", () => {
 	const builtins = getBuiltins();
 
