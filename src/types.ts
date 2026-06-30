@@ -16,6 +16,7 @@ export interface ParamInfo {
 	name: string;
 	type?: string;
 	description?: string;
+	sourceOffset?: number; // char offset of the '$' or name in source
 }
 
 export interface DocComment {

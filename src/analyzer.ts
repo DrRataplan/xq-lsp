@@ -261,6 +261,7 @@ function extractFunctions(
 					name: paramName,
 					type: paramType,
 					description: doc?.params[paramName],
+					sourceOffset: param.start,
 				});
 			}
 		}

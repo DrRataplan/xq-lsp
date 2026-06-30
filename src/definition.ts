@@ -35,11 +35,47 @@ export function getDefinition(
 	if (hasDollar) {
 		const { prefix: varPrefix, localName: varLocalName, uri: varDirectUri } = parseEQName(word);
 		const varNsUri = varDirectUri ?? (varPrefix ? resolvePrefix(varPrefix, current) : "");
+
+		// Local bindings and module-level variables in current file
 		const allVars = [...current.moduleVariables, ...current.localBindings];
 		const v = allVars.find((v) => v.qname.namespaceUri === varNsUri && v.qname.localName === varLocalName);
-		if (!v) return null;
-		const pos = doc.positionAt(v.offset);
-		return Location.create(doc.uri, { start: pos, end: pos });
+		if (v) {
+			const pos = doc.positionAt(v.offset);
+			return Location.create(doc.uri, { start: pos, end: pos });
+		}
+
+		// Function params in the current file (prefer the nearest enclosing function)
+		if (!varNsUri) {
+			const enclosingFn = current.functions
+				.filter((f) => f.sourceOffset !== undefined && f.sourceOffset <= offset)
+				.at(-1);
+			const matchingFn = enclosingFn ?? current.functions[0];
+			const param = matchingFn?.params.find((p) => p.name === varLocalName);
+			if (param?.sourceOffset !== undefined) {
+				const pos = doc.positionAt(param.sourceOffset);
+				return Location.create(doc.uri, { start: pos, end: pos });
+			}
+		}
+
+		// Imported module-level variables
+		for (const [, analysis] of imported) {
+			const iv = analysis.moduleVariables.find(
+				(v) => v.qname.namespaceUri === varNsUri && v.qname.localName === varLocalName,
+			);
+			if (!iv) continue;
+			const uri = iv.sourceUri;
+			let pos: Position = { line: 0, character: 0 };
+			try {
+				const filePath = fileURLToPath(uri);
+				const srcText = fs.readFileSync(filePath, "utf-8");
+				pos = positionInText(srcText, iv.offset);
+			} catch {
+				/* file not readable, use line 0 */
+			}
+			return Location.create(uri, { start: pos, end: pos });
+		}
+
+		return null;
 	}
 
 	// Function definition — resolve by namespace URI, search current file then all imports
