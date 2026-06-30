@@ -157,10 +157,17 @@ export function getCompletions(
 			}
 		}
 
-		// Imported module-level variables are always visible
+		// Imported module-level variables — rewrite prefix to the one used in the current module
 		for (const analysis of importedAnalyses.values()) {
 			for (const v of analysis.moduleVariables) {
-				const e = buildVariableEntry(v, filter);
+				const localPrefix = currentAnalysis.imports.find(
+					(i) => i.namespaceUri === v.qname.namespaceUri,
+				)?.prefix;
+				const displayVar =
+					localPrefix !== undefined && localPrefix !== v.qname.prefix
+						? { ...v, qname: { ...v.qname, prefix: localPrefix } }
+						: v;
+				const e = buildVariableEntry(displayVar, filter);
 				if (e) items.push(e);
 			}
 		}
