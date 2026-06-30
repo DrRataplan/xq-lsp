@@ -4,7 +4,8 @@ import { Location } from "vscode-languageserver/node.js";
 import type { Position } from "vscode-languageserver/node.js";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 import type { FileAnalysis } from "./types.ts";
-import { resolvePrefix, parseEQName } from "./analyzer.ts";
+import { resolvePrefix, parseEQName, nodeStackAtOffset, directChildOf, directChildrenOf, firstTerminalValue } from "./analyzer.ts";
+import { asVarRef } from "./ast-nodes.ts";
 
 function wordAt(text: string, offset: number): { word: string; start: number } {
 	let start = offset;
@@ -34,8 +35,30 @@ export function getDefinition(
 	const hasDollar = start > 0 && text[start - 1] === "$";
 
 	if (hasDollar) {
-		const { prefix: varPrefix, localName: varLocalName, uri: varDirectUri } = parseEQName(word);
-		const varNsUri = varDirectUri ?? (varPrefix ? resolvePrefix(varPrefix, current) : "");
+		// Use AST to extract the exact variable name (handles dashes and other valid NCName chars).
+		// Fall back to the text-scanned `word` only when no AST is available.
+		let varLocalName: string;
+		let varNsUri: string;
+		let astStack: import("xq-parser").Node[] | null = null;
+
+		if (current.ast) {
+			astStack = nodeStackAtOffset(current.ast, offset);
+			const varRefNode = [...astStack].reverse().find((n) => n.type === "VarRef");
+			const qname = varRefNode ? asVarRef(varRefNode, current) : null;
+			if (qname) {
+				varLocalName = qname.localName;
+				varNsUri = qname.namespaceUri;
+			} else {
+				// Cursor is on $ but AST didn't yield a VarRef (e.g. mid-edit) — fall back
+				const { prefix, localName, uri } = parseEQName(word);
+				varLocalName = localName;
+				varNsUri = uri ?? (prefix ? resolvePrefix(prefix, current) : "");
+			}
+		} else {
+			const { prefix, localName, uri } = parseEQName(word);
+			varLocalName = localName;
+			varNsUri = uri ?? (prefix ? resolvePrefix(prefix, current) : "");
+		}
 
 		// Local bindings and module-level variables in current file
 		const allVars = [...current.moduleVariables, ...current.localBindings];
@@ -45,7 +68,26 @@ export function getDefinition(
 			return Location.create(doc.uri, { start: pos, end: pos });
 		}
 
-		// Function params in the current file (prefer the nearest enclosing function)
+		// Params of inline function expressions enclosing the cursor (not tracked in analysis)
+		if (!varNsUri && astStack) {
+			for (let i = astStack.length - 1; i >= 0; i--) {
+				if (astStack[i].type !== "InlineFunctionExpr") continue;
+				const paramList = directChildOf(astStack[i], "ParamList");
+				for (const param of paramList ? directChildrenOf(paramList, "Param") : []) {
+					const nameNode = directChildOf(param, "EQName");
+					const rawName = nameNode ? firstTerminalValue(nameNode) : null;
+					if (!rawName) continue;
+					const { prefix, localName } = parseEQName(rawName);
+					if (prefix || localName !== varLocalName) continue;
+					if (nameNode?.start !== undefined) {
+						const pos = doc.positionAt(nameNode.start);
+						return Location.create(doc.uri, { start: pos, end: pos });
+					}
+				}
+			}
+		}
+
+		// Params of declared functions in the current file (prefer nearest enclosing by source offset)
 		if (!varNsUri) {
 			const enclosingFn = current.functions
 				.filter((f) => f.sourceOffset !== undefined && f.sourceOffset <= offset)

@@ -60,6 +60,53 @@ describe("go-to-definition", () => {
 			const loc = getDefinition(doc, declOffset + 1, analysis, new Map(), (at) => `file:///${at}`);
 			assert.ok(loc, "expected location for $p param");
 		});
+
+		test("param with dashes in name, cursor before the dash", () => {
+			const src = `declare function local:f($method-name as xs:string) { $method-name }; 1`;
+			const bodyRef = src.lastIndexOf("$method-name");
+			const doc = makeDoc(src);
+			const analysis = analyze(src, "file:///test.xq");
+			// cursor on 'e' in 'method' (before the dash)
+			const loc = getDefinition(doc, bodyRef + 2, analysis, new Map(), (at) => `file:///${at}`);
+			assert.ok(loc, "expected location for $method-name param (cursor before dash)");
+			assert.equal(loc!.uri, "file:///test.xq");
+		});
+
+		test("param with dashes in name, cursor after the dash", () => {
+			const src = `declare function local:f($method-name as xs:string) { $method-name }; 1`;
+			const bodyRef = src.lastIndexOf("$method-name");
+			const doc = makeDoc(src);
+			const analysis = analyze(src, "file:///test.xq");
+			// cursor on 'a' in 'name' (after the dash)
+			const afterDash = bodyRef + "$method-n".length;
+			const loc = getDefinition(doc, afterDash, analysis, new Map(), (at) => `file:///${at}`);
+			assert.ok(loc, "expected location for $method-name param (cursor after dash)");
+			assert.equal(loc!.uri, "file:///test.xq");
+		});
+	});
+
+	describe("inline function params", () => {
+		test("param with dashes in name, cursor after the dash", () => {
+			const src = `array:for-each($arr, function($method-name as xs:string) { $method-name })`;
+			const bodyRef = src.lastIndexOf("$method-name");
+			const afterDash = bodyRef + "$method-n".length;
+			const doc = makeDoc(src);
+			const analysis = analyze(src, "file:///test.xq");
+			const loc = getDefinition(doc, afterDash, analysis, new Map(), (at) => `file:///${at}`);
+			assert.ok(loc, "expected location for inline function $method-name param (cursor after dash)");
+			assert.equal(loc!.uri, "file:///test.xq");
+		});
+
+		test("param of inline function navigates to its declaration", () => {
+			const src = `array:for-each($arr, function($item) { $item })`;
+			const bodyRef = src.lastIndexOf("$item");
+			const doc = makeDoc(src);
+			const analysis = analyze(src, "file:///test.xq");
+			const loc = getDefinition(doc, bodyRef + 1, analysis, new Map(), (at) => `file:///${at}`);
+			assert.ok(loc, "expected location for inline function $item param");
+			const declOffset = src.indexOf("$item");
+			assert.deepEqual(loc!.range.start, doc.positionAt(declOffset + 1)); // EQName starts after $
+		});
 	});
 
 	describe("imported variables", () => {
