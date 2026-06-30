@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "testCase": "K2-Steps-1",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "K2-Steps-4",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  }
+]

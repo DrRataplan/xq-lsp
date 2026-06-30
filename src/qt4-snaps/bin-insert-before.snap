@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "testCase": "EXPath-binary-insert-before-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-insert-before-002",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/binary}index-out-of-range",
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-insert-before-003",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/binary}index-out-of-range",
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-insert-before-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-insert-before-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-insert-before-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]

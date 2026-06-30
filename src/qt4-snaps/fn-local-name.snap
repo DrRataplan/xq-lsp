@@ -1,5 +1,13 @@
 [
   {
+    "testCase": "fn-local-name-23",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
     "testCase": "fn-local-name-77",
     "outcome": "false-positive",
     "expectedCode": null,

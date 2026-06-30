@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "testCase": "cbcl-avg-008",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]
