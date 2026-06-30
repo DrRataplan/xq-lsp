@@ -9,13 +9,23 @@ export interface CompletionContext {
 	cursorOffset: number;
 }
 
+/** Carries enough information for the LSP adapter to build the additionalTextEdit. */
+export interface AdditionalEdit {
+	kind: "import-module" | "declare-namespace";
+	prefix: string;
+	namespaceUri: string;
+	/** Source URI of the module file, used to compute the relative `at` path. */
+	sourceUri?: string;
+}
+
 export interface CompletionEntry {
 	label: string;
-	kind: "function" | "variable";
+	kind: "function" | "variable" | "namespace";
 	detail?: string;
 	documentation?: string; // markdown
 	insertText: string;
 	isSnippet: boolean;
+	additionalEdit?: AdditionalEdit;
 }
 
 interface TokenInfo {
@@ -88,7 +98,6 @@ function findEnclosingFunction(
 	return { fn, bodyStart: bodyNode.start, bodyEnd: bodyNode.end };
 }
 
-
 function buildFunctionEntry(fn: FunctionSymbol, label: string, snippets: boolean): CompletionEntry {
 	return {
 		label,
@@ -100,12 +109,21 @@ function buildFunctionEntry(fn: FunctionSymbol, label: string, snippets: boolean
 	};
 }
 
+/** Return the source URI for a module's analysis (taken from the first known symbol). */
+function moduleSourceUri(analysis: FileAnalysis): string | undefined {
+	return analysis.functions[0]?.sourceUri ?? analysis.moduleVariables[0]?.sourceUri;
+}
+
 export function getCompletions(
 	ctx: CompletionContext,
 	currentAnalysis: FileAnalysis,
 	importedAnalyses: Map<string, FileAnalysis>,
 	snippets = false,
 	lastValidAnalysis?: FileAnalysis,
+	/** Modules available in the workspace but not yet imported in the current file. Keyed by namespace URI. */
+	availableAnalyses?: Map<string, FileAnalysis>,
+	/** Known namespace prefix → URI mappings (from config / glob scans) for pure XML namespaces. */
+	knownNamespaces?: Map<string, string>,
 ): CompletionEntry[] {
 	const token = parseToken(ctx.textBeforeCursor);
 	const items: CompletionEntry[] = [];
@@ -171,21 +189,84 @@ export function getCompletions(
 				if (e) items.push(e);
 			}
 		}
+
+		// Variables from modules available in the workspace but not yet imported
+		if (availableAnalyses) {
+			const colonIdx = filter.indexOf(":");
+			if (colonIdx >= 0) {
+				const nsPrefix = filter.slice(0, colonIdx);
+				const localFilter = filter.slice(colonIdx + 1).toLowerCase();
+				const nsUri = resolvePrefix(nsPrefix, currentAnalysis);
+				if (nsUri.startsWith("urn:xq-lsp:undeclared:")) {
+					for (const [moduleNsUri, analysis] of availableAnalyses) {
+						if (analysis.modulePrefix !== nsPrefix) continue;
+						const sourceUri = moduleSourceUri(analysis);
+						for (const v of analysis.moduleVariables) {
+							if (localFilter && !v.qname.localName.toLowerCase().startsWith(localFilter)) continue;
+							const displayQName = { ...v.qname, prefix: nsPrefix };
+							items.push({
+								label: `$${formatQName(displayQName)}`,
+								kind: "variable",
+								insertText: `$${formatQName(displayQName)}`,
+								isSnippet: false,
+								additionalEdit: { kind: "import-module", prefix: nsPrefix, namespaceUri: moduleNsUri, sourceUri },
+							});
+						}
+					}
+				}
+			}
+		}
+
 		return items;
 	}
 
 	if (token.kind === "qualified-name" && token.nsPrefix) {
 		const targetUri = resolvePrefix(token.nsPrefix, currentAnalysis);
 		const filter = token.prefix.toLowerCase();
-		const allFns = [
-			...currentAnalysis.functions,
-			...[...importedAnalyses.values()].flatMap((a) => a.functions),
-		];
-		for (const fn of allFns) {
-			if (fn.qname.namespaceUri !== targetUri) continue;
-			if (filter && !fn.qname.localName.toLowerCase().includes(filter)) continue;
-			items.push(buildFunctionEntry(fn, fn.qname.localName, snippets));
+
+		if (!targetUri.startsWith("urn:xq-lsp:undeclared:")) {
+			// Prefix is declared — show functions from current + imported analyses (no additionalEdit needed)
+			const allFns = [
+				...currentAnalysis.functions,
+				...[...importedAnalyses.values()].flatMap((a) => a.functions),
+			];
+			for (const fn of allFns) {
+				if (fn.qname.namespaceUri !== targetUri) continue;
+				if (filter && !fn.qname.localName.toLowerCase().includes(filter)) continue;
+				items.push(buildFunctionEntry(fn, fn.qname.localName, snippets));
+			}
+			return items;
 		}
+
+		// Prefix is undeclared — look for matching modules in the workspace
+		let foundModule = false;
+		if (availableAnalyses) {
+			for (const [moduleNsUri, analysis] of availableAnalyses) {
+				if (analysis.modulePrefix !== token.nsPrefix) continue;
+				foundModule = true;
+				const sourceUri = moduleSourceUri(analysis);
+				for (const fn of analysis.functions) {
+					if (filter && !fn.qname.localName.toLowerCase().includes(filter)) continue;
+					items.push({
+						...buildFunctionEntry(fn, fn.qname.localName, snippets),
+						additionalEdit: { kind: "import-module", prefix: token.nsPrefix, namespaceUri: moduleNsUri, sourceUri },
+					});
+				}
+			}
+		}
+
+		// Pure XML namespace (no module functions): offer a declare-namespace item if prefix is known
+		if (!foundModule && knownNamespaces?.has(token.nsPrefix)) {
+			const nsUri = knownNamespaces.get(token.nsPrefix)!;
+			items.push({
+				label: `declare namespace ${token.nsPrefix} = "${nsUri}"`,
+				kind: "namespace",
+				insertText: token.prefix,
+				isSnippet: false,
+				additionalEdit: { kind: "declare-namespace", prefix: token.nsPrefix, namespaceUri: nsUri },
+			});
+		}
+
 		return items;
 	}
 

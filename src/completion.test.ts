@@ -365,3 +365,155 @@ describe("completion: builtins", () => {
 		assert.ok(!labels.some((l) => l.startsWith("fn:")), `fn: prefix should not appear, got ${labels}`);
 	});
 });
+
+// ── Auto-import / auto-declare via additionalTextEdits ────────────────────────
+
+const utilLib = analyze(
+	`module namespace util="http://example.com/util";
+declare function util:trim($s as xs:string) { $s };
+declare function util:upper($s as xs:string) { $s };`,
+	"file:///util.xq",
+);
+
+const configLib = analyze(
+	`module namespace cfg="http://example.com/cfg";
+declare variable $cfg:debug := false();`,
+	"file:///cfg.xq",
+);
+
+const bare = analyze(`1`, "file:///main.xq");
+const available = new Map([
+	["http://example.com/util", utilLib],
+	["http://example.com/cfg", configLib],
+]);
+
+describe("completion: auto-import — functions from unimported module", () => {
+	test("functions appear when prefix matches module prefix", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "util:", cursorOffset: 5 },
+			bare, new Map(), false, undefined, available,
+		);
+		assert.ok(items.some((i) => i.label === "trim"), `expected trim, got ${items.map((i) => i.label)}`);
+	});
+
+	test("additionalTextEdits inserts import statement", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "util:", cursorOffset: 5 },
+			bare, new Map(), false, undefined, available, undefined,
+			{ docText: "1", docUri: "file:///main.xq", generateLocationHints: true },
+		);
+		const trim = items.find((i) => i.label === "trim");
+		assert.ok(trim?.additionalTextEdits?.length, "expected additionalTextEdits");
+		const edit = trim!.additionalTextEdits![0];
+		assert.ok(edit.newText.includes("import module namespace util"), `wrong import text: ${edit.newText}`);
+		assert.ok(edit.newText.includes("http://example.com/util"), `missing URI: ${edit.newText}`);
+		assert.ok(edit.newText.includes(`at "./util.xq"`), `expected relative at-path: ${edit.newText}`);
+	});
+
+	test("filter by local name still works", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "util:up", cursorOffset: 7 },
+			bare, new Map(), false, undefined, available,
+		);
+		const labels = items.map((i) => i.label);
+		assert.ok(labels.includes("upper"), `expected upper, got ${labels}`);
+		assert.ok(!labels.includes("trim"), `trim should be filtered out, got ${labels}`);
+	});
+
+	test("no additionalTextEdits when module is already imported", () => {
+		const alreadyImported = analyze(
+			`import module namespace util="http://example.com/util" at "./util.xq"; 1`,
+			"file:///main.xq",
+		);
+		const items = getCompletions(
+			{ textBeforeCursor: "util:", cursorOffset: 5 },
+			alreadyImported,
+			new Map([["./util.xq", utilLib]]),
+			false, undefined, available,
+		);
+		const trim = items.find((i) => i.label === "trim");
+		assert.ok(trim, "expected trim from imported module");
+		assert.ok(!trim!.additionalTextEdits?.length, "should have no additionalTextEdits when already imported");
+	});
+});
+
+describe("completion: auto-import — variables from unimported module", () => {
+	test("variables appear when namespace prefix matches module prefix", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "$cfg:", cursorOffset: 5 },
+			bare, new Map(), false, undefined, available,
+		);
+		assert.ok(items.some((i) => i.label === "$cfg:debug"), `expected $cfg:debug, got ${items.map((i) => i.label)}`);
+	});
+
+	test("additionalTextEdits inserts import statement for variables", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "$cfg:", cursorOffset: 5 },
+			bare, new Map(), false, undefined, available, undefined,
+			{ docText: "1", docUri: "file:///main.xq", generateLocationHints: true },
+		);
+		const debug = items.find((i) => i.label === "$cfg:debug");
+		assert.ok(debug?.additionalTextEdits?.length, "expected additionalTextEdits on variable");
+		assert.ok(debug!.additionalTextEdits![0].newText.includes("import module namespace cfg"), "expected cfg import");
+	});
+
+	test("no additionalTextEdits for variable when module is already imported", () => {
+		const alreadyImported = analyze(
+			`import module namespace cfg="http://example.com/cfg" at "./cfg.xq"; 1`,
+			"file:///main.xq",
+		);
+		const items = getCompletions(
+			{ textBeforeCursor: "$cfg:", cursorOffset: 5 },
+			alreadyImported,
+			new Map([["./cfg.xq", configLib]]),
+			false, undefined, available,
+		);
+		const debug = items.find((i) => i.label === "$cfg:debug");
+		assert.ok(debug, "expected $cfg:debug from imported module");
+		assert.ok(!debug!.additionalTextEdits?.length, "should have no additionalTextEdits when already imported");
+	});
+});
+
+describe("completion: auto-declare-namespace for pure XML namespaces (knownNamespaces)", () => {
+	const knownNs = new Map([["tei", "http://www.tei-c.org/ns/1.0"]]);
+
+	test("declare-namespace item appears for undeclared prefix in knownNamespaces", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "tei:", cursorOffset: 4 },
+			bare, new Map(), false, undefined, new Map(), knownNs,
+		);
+		assert.ok(
+			items.some((i) => i.label.includes("tei") && i.label.includes("http://www.tei-c.org/ns/1.0")),
+			`expected declare-namespace item for tei, got ${items.map((i) => i.label)}`,
+		);
+	});
+
+	test("declare-namespace item has additionalTextEdits with declare namespace statement", () => {
+		const items = getCompletions(
+			{ textBeforeCursor: "tei:", cursorOffset: 4 },
+			bare, new Map(), false, undefined, new Map(), knownNs,
+			{ docText: "1", docUri: "file:///main.xq", generateLocationHints: false },
+		);
+		const nsItem = items.find((i) => i.label.includes("tei") && i.label.includes("http://www.tei-c.org/ns/1.0"));
+		assert.ok(nsItem?.additionalTextEdits?.length, "expected additionalTextEdits");
+		assert.ok(
+			nsItem!.additionalTextEdits![0].newText.includes(`declare namespace tei = "http://www.tei-c.org/ns/1.0"`),
+			`wrong text: ${nsItem!.additionalTextEdits![0].newText}`,
+		);
+	});
+
+	test("declare-namespace item does not appear when prefix is already declared", () => {
+		const declared = analyze(
+			`declare namespace tei="http://www.tei-c.org/ns/1.0"; 1`,
+			"file:///main.xq",
+		);
+		const items = getCompletions(
+			{ textBeforeCursor: "tei:", cursorOffset: 4 },
+			declared, new Map(), false, undefined, new Map(), knownNs,
+		);
+		assert.ok(
+			!items.some((i) => i.label.includes("declare namespace")),
+			`declare-namespace item should not appear when tei is already declared, got ${items.map((i) => i.label)}`,
+		);
+	});
+});

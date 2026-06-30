@@ -1,3 +1,5 @@
+import * as path from "path";
+import { fileURLToPath } from "url";
 import type { Node } from "xq-parser";
 import type { FileAnalysis } from "./types.ts";
 import { isTerminal, directChildOf, firstTerminalValue, resolvePrefix } from "./analyzer.ts";
@@ -146,4 +148,14 @@ export function findImportInsertPosition(text: string): { line: number; characte
 /** Position at which to insert a new `declare namespace` statement. */
 export function findDeclareNsInsertPosition(text: string): { line: number; character: number } {
 	return { line: headerEndLine(text), character: 0 };
+}
+
+/** Compute a relative file path from one URI to another, always using forward slashes and a leading `./`. */
+export function computeRelativePath(fromUri: string, toUri: string): string {
+	const fromPath = fileURLToPath(fromUri);
+	const toPath = fileURLToPath(toUri);
+	const fromDir = path.dirname(fromPath);
+	let rel = path.relative(fromDir, toPath).replace(/\\/g, "/");
+	if (!rel.startsWith(".")) rel = "./" + rel;
+	return rel;
 }
