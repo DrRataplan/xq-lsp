@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "testCase": "fn-unparsed-text-lines-055",
+    "outcome": "false-positive",
+    "expectedCode": "FOUT1170",
+    "got": [
+      "XPST0008"
+    ]
+  }
+]

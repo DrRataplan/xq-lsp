@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "testCase": "EXPath-binary-to-octets-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]

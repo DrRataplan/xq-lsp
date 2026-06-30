@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "testCase": "EXPath-binary-bitwise-and-001",
+    "outcome": "false-positive",
+    "expectedCode": "Q{http://expath.org/ns/binary}differing-length-arguments",
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-bitwise-and-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-bitwise-and-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-bitwise-and-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "EXPath-binary-bitwise-and-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]

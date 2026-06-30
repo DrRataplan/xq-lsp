@@ -24,6 +24,14 @@
     "got": []
   },
   {
+    "testCase": "function-declaration-026",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
     "testCase": "function-declaration-027",
     "outcome": "false-negative",
     "expectedCode": "XPST0003",
@@ -102,39 +110,9 @@
     "got": []
   },
   {
-    "testCase": "K-FunctionProlog-36",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionProlog-37",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionProlog-38",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
-  },
-  {
     "testCase": "K-FunctionProlog-57",
     "outcome": "false-negative",
     "expectedCode": "XPST0051",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionProlog-60",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionProlog-61",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
     "got": []
   },
   {

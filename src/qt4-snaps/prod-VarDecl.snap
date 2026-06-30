@@ -72,6 +72,14 @@
     "got": []
   },
   {
+    "testCase": "K2-InternalVariablesWithout-14",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
     "testCase": "vardeclwithtype-12",
     "outcome": "false-negative",
     "expectedCode": "XQST0049",
