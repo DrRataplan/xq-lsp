@@ -91,14 +91,14 @@ describe("runtime defs: existdb smoketest", () => {
 		assert.deepEqual(errors, [], `parse errors in existdb files`);
 	});
 
-	test("all .xq files export at least one function", () => {
+	test("all .xq files export at least one function or variable", () => {
 		const empty: string[] = [];
 		for (const file of xqFiles) {
 			const src = fs.readFileSync(path.join(existdbDir, file), "utf-8");
 			const analysis = analyze(src, `builtin:existdb/${file}`);
-			if (analysis.functions.length === 0) empty.push(file);
+			if (analysis.functions.length === 0 && analysis.moduleVariables.length === 0) empty.push(file);
 		}
-		assert.deepEqual(empty, [], `existdb files with no functions`);
+		assert.deepEqual(empty, [], `existdb files with no functions or variables`);
 	});
 
 	test("request:get-parameter has arity 2 and typed params", () => {

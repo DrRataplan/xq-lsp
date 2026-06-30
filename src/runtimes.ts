@@ -59,6 +59,7 @@ const RUNTIME_FILES: Record<string, string[]> = {
 		path.join(runtimesDir, "existdb", "counter.xq"),
 		path.join(runtimesDir, "existdb", "crypto.xq"),
 		path.join(runtimesDir, "existdb", "datetime.xq"),
+		path.join(runtimesDir, "existdb", "exist.xq"),
 		path.join(runtimesDir, "existdb", "file.xq"),
 		path.join(runtimesDir, "existdb", "ft.xq"),
 		path.join(runtimesDir, "existdb", "httpclient.xq"),
