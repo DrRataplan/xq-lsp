@@ -28,7 +28,8 @@
 					".xq",
 					".xql",
 					".xqm",
-					".xqy"
+					".xqy",
+					".xquery"
 				],
 				"configuration": "./language-configuration.json"
 			}

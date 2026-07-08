@@ -19,7 +19,7 @@ For files with syntax errors (common while editing), the server falls back to re
 
 ## Supported file extensions
 
-`.xq`, `.xql`, `.xqm`, `.xqy`
+`.xq`, `.xql`, `.xqm`, `.xqy`, `.xquery`
 
 ## Configuration
 
