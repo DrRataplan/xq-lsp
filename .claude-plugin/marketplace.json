@@ -1,0 +1,21 @@
+{
+	"name": "xq-lsp",
+	"description": "XQuery language server integrations for Claude Code.",
+	"owner": {
+		"name": "Martin Middel"
+	},
+	"plugins": [
+		{
+			"name": "xquery-lsp",
+			"source": "./editors/claude-code",
+			"description": "XQuery language intelligence for Claude Code (diagnostics, go-to-definition, hover, find-references) powered by xq-lsp.",
+			"author": {
+				"name": "Martin Middel"
+			},
+			"homepage": "https://github.com/DrRataplan/xq-lsp",
+			"repository": "https://github.com/DrRataplan/xq-lsp",
+			"license": "MIT",
+			"keywords": ["xquery", "lsp", "language-server"]
+		}
+	]
+}

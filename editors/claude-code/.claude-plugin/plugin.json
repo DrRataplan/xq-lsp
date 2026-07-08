@@ -1,0 +1,15 @@
+{
+	"name": "xquery-lsp",
+	"displayName": "XQuery Language Server",
+	"version": "0.1.0",
+	"description": "XQuery diagnostics, go-to-definition, hover, and completions for Claude Code, powered by xq-lsp.",
+	"author": {
+		"name": "Martin Middel",
+		"url": "https://github.com/DrRataplan/xq-lsp"
+	},
+	"homepage": "https://github.com/DrRataplan/xq-lsp",
+	"repository": "https://github.com/DrRataplan/xq-lsp",
+	"license": "MIT",
+	"keywords": ["xquery", "lsp", "language-server"],
+	"lspServers": "./.lsp.json"
+}
