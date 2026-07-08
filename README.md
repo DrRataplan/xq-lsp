@@ -237,4 +237,4 @@ npx vsce package
 code --install-extension xquery-lsp-vscode-*.vsix
 ```
 
-The extension registers `.xq`, `.xql`, `.xqm`, and `.xqy` files as XQuery, provides syntax highlighting via a bundled TextMate grammar, and starts `xq-lsp` automatically when you open one.
+The extension registers `.xq`, `.xql`, `.xqm`, `.xqy`, and `.xquery` files as XQuery, provides syntax highlighting via a bundled TextMate grammar, and starts `xq-lsp` automatically when you open one.
