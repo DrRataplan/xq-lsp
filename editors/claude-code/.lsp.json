@@ -1,0 +1,14 @@
+{
+	"xquery": {
+		"command": "xq-lsp",
+		"args": ["--stdio"],
+		"extensionToLanguage": {
+			".xq": "xquery",
+			".xql": "xquery",
+			".xqm": "xquery",
+			".xqy": "xquery",
+			".xquery": "xquery"
+		},
+		"transport": "stdio"
+	}
+}
