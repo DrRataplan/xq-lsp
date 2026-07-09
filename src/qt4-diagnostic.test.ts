@@ -174,6 +174,61 @@ function getExpected(resultEl: slimdom.Element): { expected: Expected; code: str
 	return { expected: "no-static-error", code: null };
 }
 
+// A query whose only top-level expression is a call to fn:error()/error() with
+// literal arguments (string literals, `()`, or `QName(literal, literal)`) names
+// its error code as arbitrary caller data, not a static property of the query.
+// The QT4 suite uses this to test that a runtime propagates dynamically raised
+// errors — it's a dynamic-evaluation test, not a static-analysis test, so a
+// static analyzer can never satisfy it and it shouldn't count as a gap.
+const STRING_LITERAL_RE = /^(?:'[^']*'|"[^"]*")$/;
+
+function splitTopLevelArgs(s: string): string[] {
+	const args: string[] = [];
+	let depth = 0;
+	let quote: string | null = null;
+	let current = "";
+	for (const ch of s) {
+		if (quote) {
+			current += ch;
+			if (ch === quote) quote = null;
+			continue;
+		}
+		if (ch === "'" || ch === '"') {
+			quote = ch;
+			current += ch;
+			continue;
+		}
+		if (ch === "(") depth++;
+		if (ch === ")") depth--;
+		if (ch === "," && depth === 0) {
+			args.push(current);
+			current = "";
+			continue;
+		}
+		current += ch;
+	}
+	if (current.trim() !== "" || args.length > 0) args.push(current);
+	return args.map((a) => a.trim());
+}
+
+function isLiteralErrorArg(arg: string): boolean {
+	if (arg === "()") return true;
+	if (STRING_LITERAL_RE.test(arg)) return true;
+	const qnameMatch = arg.match(/^(?:fn:)?QName\(([\s\S]*)\)$/);
+	if (!qnameMatch) return false;
+	const qnameArgs = splitTopLevelArgs(qnameMatch[1]);
+	return qnameArgs.length === 2 && qnameArgs.every((a) => STRING_LITERAL_RE.test(a));
+}
+
+function isLiteralErrorOnlyQuery(query: string): boolean {
+	const match = query.trim().match(/^(?:fn:)?error\(([\s\S]*)\)$/);
+	if (!match) return false;
+	const args = splitTopLevelArgs(match[1]);
+	// fn:error's signatures take at most 3 args (code, description, error-object);
+	// more than that is a genuine static arity error, not a dynamic-code test.
+	return args.length > 0 && args.length <= 3 && args.every(isLiteralErrorArg);
+}
+
 // ── Worker runner ─────────────────────────────────────────────────────────────
 
 function runInWorker(batch: TestInput[]): Promise<TestOutput[]> {
@@ -241,7 +296,7 @@ if (QT4_DIR) {
 			const resultEl = childEls(tc, "result")[0];
 			if (!testEl || !resultEl) continue;
 
-			const { expected, code: expectedCode } = getExpected(resultEl);
+			let { expected, code: expectedCode } = getExpected(resultEl);
 			if (expected === "ambiguous") continue;
 
 			// The query is either inline text or, via <test file="...">, a path
@@ -256,6 +311,11 @@ if (QT4_DIR) {
 				}
 			} else {
 				query = testEl.textContent ?? "";
+			}
+
+			if (expected === "static-error" && isLiteralErrorOnlyQuery(query)) {
+				expected = "no-static-error";
+				expectedCode = null;
 			}
 
 			const tcEnvEl = childEls(tc, "environment")[0];
