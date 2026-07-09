@@ -1,11 +1,5 @@
 [
   {
-    "testCase": "function-declaration-022",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0034",
-    "got": []
-  },
-  {
     "testCase": "function-declaration-023",
     "outcome": "false-negative",
     "expectedCode": "XQST0045",
@@ -69,42 +63,6 @@
   },
   {
     "testCase": "K-FunctionProlog-24",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0045",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionProlog-26",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0034",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionProlog-27",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0034",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionProlog-28",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0034",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionProlog-29",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0034",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionProlog-31",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0045",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionProlog-32",
     "outcome": "false-negative",
     "expectedCode": "XQST0045",
     "got": []
