@@ -7,7 +7,10 @@ import type { FileAnalysis, NamespaceDecl } from "./types.ts";
 const runtimesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "runtimes");
 
 function toNamespaceDecls(raw: Record<string, string>): NamespaceDecl[] {
-	return Object.entries(raw).map(([prefix, namespaceUri]) => ({ prefix, namespaceUri }));
+	// offset: -1 marks these as runtime-injected rather than written in the user's
+	// source — checkUnused skips them so it never flags a "declaration" the user
+	// can't actually see or remove.
+	return Object.entries(raw).map(([prefix, namespaceUri]) => ({ prefix, namespaceUri, offset: -1 }));
 }
 
 const EXISTDB_PREDECLARED_NAMESPACES: Record<string, string> = {
