@@ -238,3 +238,22 @@ code --install-extension xquery-lsp-vscode-*.vsix
 ```
 
 The extension registers `.xq`, `.xql`, `.xqm`, `.xqy`, and `.xquery` files as XQuery, provides syntax highlighting via a bundled TextMate grammar, and starts `xq-lsp` automatically when you open one.
+
+## Claude Code
+
+A plugin lives in [`editors/claude-code/`](./editors/claude-code/) that registers `xq-lsp` as a native LSP server for Claude Code, giving diagnostics, go-to-definition, find-references, and hover for XQuery files.
+
+Make sure the `xq-lsp` binary is on `PATH`:
+
+```sh
+npm install -g xq-lsp
+```
+
+Then, from within Claude Code:
+
+```
+/plugin marketplace add DrRataplan/xq-lsp
+/plugin install xquery-lsp@xq-lsp
+```
+
+See [`editors/claude-code/README.md`](./editors/claude-code/README.md) for local-development setup and details on what the plugin configures.
