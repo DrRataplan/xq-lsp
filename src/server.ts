@@ -17,6 +17,8 @@ import { getBuiltins } from "./builtins.ts";
 import { getCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getDefinition } from "./definition.ts";
+import { getReferences } from "./references.ts";
+import type { FileRecord } from "./references.ts";
 import type { FileAnalysis, TypeDiagnostic } from "./types.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import {
@@ -132,6 +134,35 @@ function getGlobAnalyses(currentUri: string): { byNamespace: Map<string, FileAna
 	return { byNamespace, lib };
 }
 
+// Per-file (not merged-by-namespace) glob analyses, for cross-file reference search.
+// Keyed by config directory; populated lazily and never invalidated, mirroring globAnalysesByConfigDir.
+const globFileRecordsByConfigDir = new Map<string, Map<string, FileRecord>>();
+
+function getGlobFileRecords(currentUri: string): () => FileRecord[] {
+	const found = findConfig(currentUri);
+	if (!found) return () => [];
+	const { config, configDir } = found;
+
+	return () => {
+		if (!globFileRecordsByConfigDir.has(configDir)) {
+			const predeclaredNs = getRuntimePredeclaredNamespaces(config.lib);
+			const records = new Map<string, FileRecord>();
+			for (const filePath of expandGlobs(config.globs, configDir)) {
+				const fileUri = pathToFileURL(filePath).toString();
+				try {
+					const text = fs.readFileSync(filePath, "utf-8");
+					const { analysis } = analyzeWithAst(text, fileUri);
+					records.set(fileUri, { uri: fileUri, text, analysis: withPredeclaredNs(analysis, predeclaredNs) });
+				} catch {
+					/* unreadable file, skip */
+				}
+			}
+			globFileRecordsByConfigDir.set(configDir, records);
+		}
+		return [...globFileRecordsByConfigDir.get(configDir)!.values()];
+	};
+}
+
 function resolveContext(
 	currentUri: string,
 	rawAnalysis: FileAnalysis,
@@ -192,6 +223,7 @@ connection.onInitialize((params) => {
 			},
 			documentSymbolProvider: true,
 			definitionProvider: true,
+			referencesProvider: true,
 			codeActionProvider: { codeActionKinds: [CodeActionKind.QuickFix] },
 		},
 	};
@@ -277,6 +309,21 @@ connection.onDefinition((params) => {
 	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
 	return getDefinition(doc, doc.offsetAt(params.position), analysis, imported, (atPath) =>
 		resolveImportUri(doc.uri, atPath),
+	);
+});
+
+connection.onReferences((params) => {
+	const doc = documents.get(params.textDocument.uri);
+	if (!doc) return [];
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis } = resolveContext(doc.uri, rawAnalysis);
+	return getReferences(
+		doc.uri,
+		doc.getText(),
+		doc.offsetAt(params.position),
+		analysis,
+		params.context.includeDeclaration,
+		getGlobFileRecords(doc.uri),
 	);
 });
 
