@@ -6,53 +6,5 @@
     "got": [
       "XPTY0004"
     ]
-  },
-  {
-    "testCase": "fn-outermost-017",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fn-outermost-018",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fn-outermost-019",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fn-outermost-020",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fn-outermost-021",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fn-outermost-022",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
   }
 ]

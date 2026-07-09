@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "XMark-All",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  }
-]
+[]

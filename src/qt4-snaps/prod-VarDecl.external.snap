@@ -56,14 +56,6 @@
     ]
   },
   {
-    "testCase": "extvardeclwithtype-23",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
     "testCase": "K2-ExternalVariablesWith-1",
     "outcome": "false-negative",
     "expectedCode": "XQST0049",

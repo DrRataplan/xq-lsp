@@ -10,13 +10,5 @@
     "outcome": "false-negative",
     "expectedCode": "XPST0003",
     "got": []
-  },
-  {
-    "testCase": "XML11-c0-001",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
   }
 ]

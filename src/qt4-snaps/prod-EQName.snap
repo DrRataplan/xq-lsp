@@ -1,21 +1,5 @@
 [
   {
-    "testCase": "eqname-018",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "eqname-023",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
     "testCase": "eqname-024",
     "outcome": "false-positive",
     "expectedCode": null,

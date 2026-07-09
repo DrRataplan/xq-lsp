@@ -49,6 +49,8 @@ const SKIP_FEATURES = new Set([
 	"schemaAware",
 	"externalFunctions",
 	"serialization",
+	"namespace-axis", // xq-parser doesn't parse the deprecated `namespace::` axis
+	"XQUpdate", // Update Facility (`declare updating function`, etc.) isn't supported
 ]);
 
 // ── DOM helpers ───────────────────────────────────────────────────────────────
@@ -243,6 +245,20 @@ if (QT4_DIR) {
 			const { expected, code: expectedCode } = getExpected(resultEl);
 			if (expected === "ambiguous") continue;
 
+			// The query is either inline text or, via <test file="...">, a path
+			// relative to the test-set XML's own directory.
+			const testFileAttr = testEl.getAttribute("file");
+			let query: string;
+			if (testFileAttr) {
+				try {
+					query = fs.readFileSync(path.join(path.dirname(xmlPath), testFileAttr), "utf8");
+				} catch {
+					continue;
+				}
+			} else {
+				query = testEl.textContent ?? "";
+			}
+
 			const tcEnvEl = childEls(tc, "environment")[0];
 			let envNamespaces: NsBinding[] = [];
 			let envVariables: VarBinding[] = [];
@@ -260,7 +276,7 @@ if (QT4_DIR) {
 			allInputs.push({
 				testSetSlug: slug,
 				testCase: name,
-				query: testEl.textContent ?? "",
+				query,
 				expected,
 				expectedCode,
 				envNamespaces,
