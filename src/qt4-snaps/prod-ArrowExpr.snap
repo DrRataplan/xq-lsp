@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "ArrowPostfix-111",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  }
-]
+[]

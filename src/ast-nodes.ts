@@ -32,6 +32,28 @@ function resolveQName(raw: string, analysis: FileAnalysis, defaultNs: string): Q
 	return { prefix, localName, namespaceUri };
 }
 
+/** Resolves a variable QName from a node whose first descendant terminal is the bare name (no "$"). */
+function qnameFromRawTerminal(node: Node, analysis: FileAnalysis): QName | null {
+	const rawName = firstTerminalValue(node);
+	if (!rawName) return null;
+	const { prefix, localName, uri } = parseEQName(rawName);
+	return { prefix, localName, namespaceUri: uri ?? (prefix ? resolvePrefix(prefix, analysis) : "") };
+}
+
+function extractParamsFromParamList(
+	paramList: Node | undefined,
+	analysis: FileAnalysis,
+): Array<{ nameNode: Node; qname: QName }> {
+	const paramNodes = paramList ? directChildrenOf(paramList, "Param") : [];
+	return paramNodes.flatMap((p) => {
+		const pNameNode = directChildOf(p, "EQName");
+		if (!pNameNode) return [];
+		const qname = qnameFromRawTerminal(pNameNode, analysis);
+		if (!qname) return [];
+		return [{ nameNode: pNameNode, qname }];
+	});
+}
+
 // ── FunctionCall ──────────────────────────────────────────────────────────────
 
 export interface FunctionCallShape {
@@ -118,17 +140,74 @@ export function asFunctionDecl(node: Node, analysis: FileAnalysis): FunctionDecl
 	if (!rawName) return null;
 	const { prefix, localName, uri } = parseEQName(rawName);
 	const namespaceUri = uri ?? resolvePrefix(prefix, analysis);
-	const paramList = directChildOf(node, "ParamList");
-	const paramNodes = paramList ? directChildrenOf(paramList, "Param") : [];
-	const params = paramNodes.flatMap((p) => {
-		const pNameNode = directChildOf(p, "EQName");
-		const pName = pNameNode ? firstTerminalValue(pNameNode) : null;
-		if (!pName || !pNameNode) return [];
-		const { prefix: pPrefix, localName: pLocalName, uri: pUri } = parseEQName(pName);
-		const pNsUri = pUri ?? (pPrefix ? resolvePrefix(pPrefix, analysis) : "");
-		return [{ nameNode: pNameNode, qname: { prefix: pPrefix, localName: pLocalName, namespaceUri: pNsUri } }];
-	});
+	const params = extractParamsFromParamList(directChildOf(node, "ParamList"), analysis);
 	return { nameNode, qname: { prefix, localName, namespaceUri }, params, body: directChildOf(node, "FunctionBody") ?? null };
+}
+
+// ── InlineFunctionExpr ────────────────────────────────────────────────────────
+
+export interface InlineFunctionExprShape {
+	params: Array<{ nameNode: Node; qname: QName }>;
+	body: Node | null; // FunctionBody node
+}
+
+export function asInlineFunctionExpr(node: Node, analysis: FileAnalysis): InlineFunctionExprShape | null {
+	if (node.type !== "InlineFunctionExpr") return null;
+	const params = extractParamsFromParamList(directChildOf(node, "ParamList"), analysis);
+	return { params, body: directChildOf(node, "FunctionBody") ?? null };
+}
+
+// ── WindowVars (window-clause start/end condition bindings) ─────────────────────
+
+export interface WindowVarsShape {
+	currentItem?: QName;
+	positionalVar?: { nameNode: Node; qname: QName };
+	previousItem?: QName;
+	nextItem?: QName;
+}
+
+/** Resolves the `$current at $pos previous $prev next $next` bindings of a WindowVars node. */
+export function asWindowVars(node: Node, analysis: FileAnalysis): WindowVarsShape | null {
+	if (node.type !== "WindowVars") return null;
+	const result: WindowVarsShape = {};
+	const currentItemNode = directChildOf(node, "CurrentItem");
+	if (currentItemNode) result.currentItem = qnameFromRawTerminal(currentItemNode, analysis) ?? undefined;
+	const posVarNode = directChildOf(node, "PositionalVar");
+	if (posVarNode) result.positionalVar = asPositionalVar(posVarNode, analysis) ?? undefined;
+	const prevNode = directChildOf(node, "PreviousItem");
+	if (prevNode) result.previousItem = qnameFromRawTerminal(prevNode, analysis) ?? undefined;
+	const nextNode = directChildOf(node, "NextItem");
+	if (nextNode) result.nextItem = qnameFromRawTerminal(nextNode, analysis) ?? undefined;
+	return result;
+}
+
+// ── XQUF_TransformExpr (`copy $c := expr modify expr return expr`) ──────────────
+
+export interface CopyBindingShape {
+	qname: QName;
+	initExpr: Node;
+}
+
+export interface TransformExprShape {
+	copyBindings: CopyBindingShape[];
+	modifyExpr: Node | null;
+	returnExpr: Node | null;
+}
+
+export function asTransformExpr(node: Node, analysis: FileAnalysis): TransformExprShape | null {
+	if (node.type !== "XQUF_TransformExpr") return null;
+	const bindingList = directChildOf(node, "XQUF_CopyBindingList");
+	const bindingNodes = bindingList ? directChildrenOf(bindingList, "XQUF_CopyBinding") : [];
+	const copyBindings = bindingNodes.flatMap((b) => {
+		const nameNode = directChildOf(b, "VarName");
+		const initExpr = directChildOf(b, "ExprSingle");
+		if (!nameNode || !initExpr) return [];
+		const qname = qnameFromRawTerminal(nameNode, analysis);
+		if (!qname) return [];
+		return [{ qname, initExpr }];
+	});
+	const [modifyExpr, returnExpr] = directChildrenOf(node, "ExprSingle");
+	return { copyBindings, modifyExpr: modifyExpr ?? null, returnExpr: returnExpr ?? null };
 }
 
 // ── AnnotatedDecl wrappers ────────────────────────────────────────────────────

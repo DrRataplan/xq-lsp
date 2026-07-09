@@ -1,45 +1,5 @@
 [
   {
-    "testCase": "UseCaseR31-012",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "UseCaseR31-016",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "UseCaseR31-017",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "UseCaseR31-018",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "UseCaseR31-025",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
     "testCase": "UseCaseR31-026",
     "outcome": "false-positive",
     "expectedCode": null,
@@ -51,22 +11,6 @@
     "testCase": "UseCaseR31-027",
     "outcome": "false-positive",
     "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "UseCaseR31-032",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "UseCaseR31-034-err",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
     "got": [
       "XPST0008"
     ]

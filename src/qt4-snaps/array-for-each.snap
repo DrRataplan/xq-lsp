@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "array-for-each-001",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  }
-]
+[]

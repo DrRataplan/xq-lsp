@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "revalidate-valtrans-ins-001",
-    "outcome": "false-positive",
-    "expectedCode": "XQDY0027",
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "revalidate-valtrans-ins-002",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  }
-]
+[]

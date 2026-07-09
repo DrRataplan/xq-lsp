@@ -4,16 +4,7 @@
     "outcome": "false-positive",
     "expectedCode": "XPDY0002",
     "got": [
-      "XPDY0002",
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "Lookup-111",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
+      "XPDY0002"
     ]
   }
 ]

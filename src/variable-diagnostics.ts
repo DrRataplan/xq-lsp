@@ -2,7 +2,7 @@ import type { Node, NonTerminal } from "xq-parser";
 import type { FileAnalysis, QName } from "./types.ts";
 import { qnameKey } from "./types.ts";
 import { isTerminal, directChildOf, directChildrenOf } from "./analyzer.ts";
-import { asFunctionDecl, asVarRef, asVarName, asBinding } from "./ast-nodes.ts";
+import { asFunctionDecl, asVarRef, asVarName, asBinding, asInlineFunctionExpr, asWindowVars, asTransformExpr } from "./ast-nodes.ts";
 
 export interface UndeclaredVariableDiagnostic {
 	message: string;
@@ -118,9 +118,29 @@ function walk(
 						const inner =
 							directChildOf(clause, "TumblingWindowClause") ??
 							directChildOf(clause, "SlidingWindowClause");
-						if (inner) addBinding(inner, scope, analysis, moduleVarKeys, out);
-						for (const c of (clause as NonTerminal).children)
-							if (!isTerminal(c)) walk(c, scope, analysis, moduleVarKeys, out);
+						const b = inner ? asBinding(inner, analysis) : null;
+						if (b) {
+							// The "in" source expr is evaluated in the outer scope, before $w exists.
+							if (b.initExpr) walk(b.initExpr, scope, analysis, moduleVarKeys, out);
+							// Start/end condition vars ($current/$positional/$previous/$next) are visible
+							// across both conditions and the return clause — but $w itself is not yet bound
+							// while its own boundary conditions are being evaluated.
+							for (const condType of ["WindowStartCondition", "WindowEndCondition"] as const) {
+								const cond = inner ? directChildOf(inner, condType) : undefined;
+								if (!cond) continue;
+								const windowVarsNode = directChildOf(cond, "WindowVars");
+								const wv = windowVarsNode ? asWindowVars(windowVarsNode, analysis) : null;
+								if (wv) {
+									if (wv.currentItem) scope.add(qnameKey(wv.currentItem));
+									if (wv.positionalVar) scope.add(qnameKey(wv.positionalVar.qname));
+									if (wv.previousItem) scope.add(qnameKey(wv.previousItem));
+									if (wv.nextItem) scope.add(qnameKey(wv.nextItem));
+								}
+								const whenExpr = directChildOf(cond, "ExprSingle");
+								if (whenExpr) walk(whenExpr, scope, analysis, moduleVarKeys, out);
+							}
+							scope.add(qnameKey(b.qname));
+						}
 						break;
 					}
 					default:
@@ -149,6 +169,30 @@ function walk(
 		case "CatchClause":
 			// Skip: implicit $err:* variables inside catch clauses are not tracked in the AST.
 			return;
+
+		case "InlineFunctionExpr": {
+			const fn = asInlineFunctionExpr(node, analysis);
+			if (!fn) break;
+			scope.push();
+			for (const p of fn.params) scope.add(qnameKey(p.qname));
+			if (fn.body) walk(fn.body, scope, analysis, moduleVarKeys, out);
+			scope.pop();
+			return;
+		}
+
+		case "XQUF_TransformExpr": {
+			const tx = asTransformExpr(node, analysis);
+			if (!tx) break;
+			scope.push();
+			for (const b of tx.copyBindings) {
+				walk(b.initExpr, scope, analysis, moduleVarKeys, out);
+				scope.add(qnameKey(b.qname));
+			}
+			if (tx.modifyExpr) walk(tx.modifyExpr, scope, analysis, moduleVarKeys, out);
+			if (tx.returnExpr) walk(tx.returnExpr, scope, analysis, moduleVarKeys, out);
+			scope.pop();
+			return;
+		}
 
 		case "VarRef": {
 			const qname = asVarRef(node, analysis);
