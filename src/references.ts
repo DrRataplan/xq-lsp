@@ -33,6 +33,19 @@ function locAt(uri: string, text: string, start: number, end: number): Location 
 	return Location.create(uri, { start: offsetToPosition(text, start), end: offsetToPosition(text, end) });
 }
 
+/**
+ * Offset where the local-name part of a QName/EQName span begins, skipping any
+ * namespace-prefix qualifier (`prefix:`) or URIQualifiedName brace (`Q{uri}`).
+ * Used by rename to leave the qualifier untouched and only replace the identifier itself.
+ */
+function localNameStart(text: string, start: number, end: number): number {
+	const slice = text.slice(start, end);
+	const braceIdx = slice.lastIndexOf("}");
+	if (braceIdx >= 0) return start + braceIdx + 1;
+	const colonIdx = slice.indexOf(":");
+	return colonIdx >= 0 ? start + colonIdx + 1 : start;
+}
+
 // ── Scope stack (tracks which declaration offset is active for each key) ────
 
 class ScopeStack {
@@ -315,6 +328,7 @@ function getVariableReferences(
 	offset: number,
 	includeDeclaration: boolean,
 	getOtherFiles: () => FileRecord[],
+	trimToLocalName = false,
 ): Location[] {
 	const occurrences: VarOccurrence[] = [];
 	walkVariables(ast, analysis, new ScopeStack(), occurrences);
@@ -322,34 +336,39 @@ function getVariableReferences(
 	const target = occurrences.find((o) => offset >= o.start && offset <= o.end);
 	if (!target) return [];
 
+	const toLoc = (uri: string, text: string, o: VarOccurrence) =>
+		locAt(uri, text, trimToLocalName ? localNameStart(text, o.start, o.end) : o.start, o.end);
+
 	if (target.declOffset !== undefined) {
-		// Local binding — scope is file-local, no cross-file search needed.
+		// Local binding — scope is file-local, no cross-file search needed. Always has a
+		// declaration by construction, so no renameability check is needed here.
 		return occurrences
 			.filter((o) => o.declOffset === target.declOffset && (includeDeclaration || !o.isDeclaration))
-			.map((o) => locAt(currentUri, currentText, o.start, o.end));
+			.map((o) => toLoc(currentUri, currentText, o));
 	}
 
 	// Module-level variable — search current file plus every other file in the glob.
 	const { namespaceUri, localName } = target.qname;
 	const matches = (occs: VarOccurrence[]) =>
-		occs.filter(
-			(o) =>
-				o.declOffset === undefined &&
-				o.qname.namespaceUri === namespaceUri &&
-				o.qname.localName === localName &&
-				(includeDeclaration || !o.isDeclaration),
-		);
+		occs.filter((o) => o.declOffset === undefined && o.qname.namespaceUri === namespaceUri && o.qname.localName === localName);
 
-	const locs = matches(occurrences).map((o) => locAt(currentUri, currentText, o.start, o.end));
+	const all: Array<{ uri: string; text: string; o: VarOccurrence }> = matches(occurrences).map((o) => ({
+		uri: currentUri,
+		text: currentText,
+		o,
+	}));
 
 	for (const file of getOtherFiles()) {
 		if (file.uri === currentUri || !file.analysis.ast) continue;
 		const fileOccs: VarOccurrence[] = [];
 		walkVariables(file.analysis.ast, file.analysis, new ScopeStack(), fileOccs);
-		for (const o of matches(fileOccs)) locs.push(locAt(file.uri, file.text, o.start, o.end));
+		for (const o of matches(fileOccs)) all.push({ uri: file.uri, text: file.text, o });
 	}
 
-	return locs;
+	// Renaming requires a resolvable declaration somewhere (rejects builtins/predeclared symbols).
+	if (trimToLocalName && !all.some((m) => m.o.isDeclaration)) return [];
+
+	return all.filter((m) => includeDeclaration || !m.o.isDeclaration).map((m) => toLoc(m.uri, m.text, m.o));
 }
 
 function getFunctionReferences(
@@ -360,6 +379,7 @@ function getFunctionReferences(
 	offset: number,
 	includeDeclaration: boolean,
 	getOtherFiles: () => FileRecord[],
+	trimToLocalName = false,
 ): Location[] {
 	const occurrences: FnOccurrence[] = [];
 	walkFunctions(ast, analysis, occurrences);
@@ -370,27 +390,65 @@ function getFunctionReferences(
 	const { namespaceUri, localName } = target.qname;
 	const { arity } = target;
 	const matches = (occs: FnOccurrence[]) =>
-		occs.filter(
-			(o) =>
-				o.qname.namespaceUri === namespaceUri &&
-				o.qname.localName === localName &&
-				o.arity === arity &&
-				(includeDeclaration || !o.isDeclaration),
-		);
+		occs.filter((o) => o.qname.namespaceUri === namespaceUri && o.qname.localName === localName && o.arity === arity);
 
-	const locs = matches(occurrences).map((o) => locAt(currentUri, currentText, o.start, o.end));
+	const all: Array<{ uri: string; text: string; o: FnOccurrence }> = matches(occurrences).map((o) => ({
+		uri: currentUri,
+		text: currentText,
+		o,
+	}));
 
 	for (const file of getOtherFiles()) {
 		if (file.uri === currentUri || !file.analysis.ast) continue;
 		const fileOccs: FnOccurrence[] = [];
 		walkFunctions(file.analysis.ast, file.analysis, fileOccs);
-		for (const o of matches(fileOccs)) locs.push(locAt(file.uri, file.text, o.start, o.end));
+		for (const o of matches(fileOccs)) all.push({ uri: file.uri, text: file.text, o });
 	}
 
-	return locs;
+	// Renaming requires a resolvable declaration somewhere (rejects builtins/predeclared symbols).
+	if (trimToLocalName && !all.some((m) => m.o.isDeclaration)) return [];
+
+	return all
+		.filter((m) => includeDeclaration || !m.o.isDeclaration)
+		.map((m) => locAt(m.uri, m.text, trimToLocalName ? localNameStart(m.text, m.o.start, m.o.end) : m.o.start, m.o.end));
 }
 
-// ── Public entry point ────────────────────────────────────────────────────────
+// ── Symbol classification (shared by find-references and rename) ────────────
+
+type SymbolClassification = { kind: "prefix"; prefix: string } | { kind: "variable" } | { kind: "function" };
+
+/**
+ * Determine what kind of symbol sits at `offset` — a namespace prefix (clicking
+ * the part of a name before the `:`, or the bare NCName on its own `import
+ * module namespace` / `declare namespace` statement), a `$variable`, or a
+ * function name — without resolving its occurrences yet.
+ */
+function classifySymbolAt(currentText: string, offset: number, analysis: FileAnalysis): SymbolClassification | null {
+	const { word, start } = wordAt(currentText, offset);
+	if (!word) return null;
+
+	const colonIdx = word.indexOf(":");
+	const onPrefixPart = colonIdx > 0 && offset <= start + colonIdx;
+	if (onPrefixPart) return { kind: "prefix", prefix: word.slice(0, colonIdx) };
+
+	// Clicking the bare NCName of an `import module namespace` or `declare namespace`
+	// statement itself (no colon there — it's the prefix's declaration, not a usage).
+	const onPrefixDecl =
+		analysis.imports.some((i) => i.prefix === word && offset >= i.offset && offset <= i.offset + word.length) ||
+		analysis.namespaceDecls.some(
+			(nd) => nd.offset >= 0 && nd.prefix === word && offset >= nd.offset && offset <= nd.offset + word.length,
+		);
+	if (onPrefixDecl) return { kind: "prefix", prefix: word };
+
+	const hasDollar = start > 0 && currentText[start - 1] === "$";
+	return hasDollar ? { kind: "variable" } : { kind: "function" };
+}
+
+function prefixHasDeclaration(analysis: FileAnalysis, prefix: string): boolean {
+	return analysis.imports.some((i) => i.prefix === prefix) || analysis.namespaceDecls.some((nd) => nd.prefix === prefix && nd.offset >= 0);
+}
+
+// ── Public entry points ───────────────────────────────────────────────────────
 
 /**
  * Find all references to the symbol at `offset` in the current file.
@@ -421,24 +479,66 @@ export function getReferences(
 	const ast = analysis.ast;
 	if (!ast) return [];
 
+	const target = classifySymbolAt(currentText, offset, analysis);
+	if (!target) return [];
+
+	if (target.kind === "prefix") return getPrefixReferences(currentUri, currentText, ast, analysis, target.prefix, includeDeclaration);
+	if (target.kind === "variable") return getVariableReferences(currentUri, currentText, ast, analysis, offset, includeDeclaration, getOtherFiles);
+	return getFunctionReferences(currentUri, currentText, ast, analysis, offset, includeDeclaration, getOtherFiles);
+}
+
+/**
+ * Range of the renameable identifier at `offset`, trimmed to the local-name part
+ * (namespace-prefix qualifiers are left untouched) or the bare prefix NCName for
+ * a namespace-prefix rename. Returns `null` when there's nothing renameable at
+ * `offset` (no word, or a prefix with no local declaration to update). Used by
+ * `textDocument/prepareRename`.
+ */
+export function getRenameRangeAtOffset(currentText: string, offset: number, analysis: FileAnalysis): { start: number; end: number } | null {
+	if (!analysis.ast) return null;
+	const target = classifySymbolAt(currentText, offset, analysis);
+	if (!target) return null;
+
 	const { word, start } = wordAt(currentText, offset);
-	if (!word) return [];
+	if (target.kind === "prefix") {
+		if (!prefixHasDeclaration(analysis, target.prefix)) return null;
+		return { start, end: start + target.prefix.length };
+	}
 
 	const colonIdx = word.indexOf(":");
-	const onPrefixPart = colonIdx > 0 && offset <= start + colonIdx;
-	if (onPrefixPart) return getPrefixReferences(currentUri, currentText, ast, analysis, word.slice(0, colonIdx), includeDeclaration);
+	return { start: colonIdx > 0 ? start + colonIdx + 1 : start, end: start + word.length };
+}
 
-	// Clicking the bare NCName of an `import module namespace` or `declare namespace`
-	// statement itself (no colon there — it's the prefix's declaration, not a usage).
-	const onPrefixDecl =
-		analysis.imports.some((i) => i.prefix === word && offset >= i.offset && offset <= i.offset + word.length) ||
-		analysis.namespaceDecls.some(
-			(nd) => nd.offset >= 0 && nd.prefix === word && offset >= nd.offset && offset <= nd.offset + word.length,
-		);
-	if (onPrefixDecl) return getPrefixReferences(currentUri, currentText, ast, analysis, word, includeDeclaration);
+/**
+ * Locations to rewrite when renaming the symbol at `offset` (declaration plus
+ * every reference, across files for module-scoped symbols), with each range
+ * trimmed to just the identifier being renamed — any namespace-prefix qualifier
+ * is left in place. Returns `null` when the symbol isn't renameable: nothing
+ * recognizable at `offset`, or no resolvable local declaration (e.g. a builtin
+ * function or a predeclared runtime namespace prefix).
+ */
+export function getRenameLocations(
+	currentUri: string,
+	currentText: string,
+	offset: number,
+	analysis: FileAnalysis,
+	getOtherFiles: () => FileRecord[],
+): Location[] | null {
+	const ast = analysis.ast;
+	if (!ast) return null;
 
-	const hasDollar = start > 0 && currentText[start - 1] === "$";
-	if (hasDollar) return getVariableReferences(currentUri, currentText, ast, analysis, offset, includeDeclaration, getOtherFiles);
+	const target = classifySymbolAt(currentText, offset, analysis);
+	if (!target) return null;
 
-	return getFunctionReferences(currentUri, currentText, ast, analysis, offset, includeDeclaration, getOtherFiles);
+	if (target.kind === "prefix") {
+		if (!prefixHasDeclaration(analysis, target.prefix)) return null;
+		return getPrefixReferences(currentUri, currentText, ast, analysis, target.prefix, true);
+	}
+
+	const locs =
+		target.kind === "variable"
+			? getVariableReferences(currentUri, currentText, ast, analysis, offset, true, getOtherFiles, true)
+			: getFunctionReferences(currentUri, currentText, ast, analysis, offset, true, getOtherFiles, true);
+
+	return locs.length > 0 ? locs : null;
 }

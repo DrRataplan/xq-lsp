@@ -7,6 +7,9 @@ import {
 	DiagnosticSeverity,
 	CodeAction,
 	CodeActionKind,
+	TextEdit,
+	ResponseError,
+	ErrorCodes,
 } from "vscode-languageserver/node.js";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as path from "path";
@@ -17,7 +20,7 @@ import { getBuiltins } from "./builtins.ts";
 import { getCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getDefinition } from "./definition.ts";
-import { getReferences } from "./references.ts";
+import { getReferences, getRenameRangeAtOffset, getRenameLocations } from "./references.ts";
 import type { FileRecord } from "./references.ts";
 import type { FileAnalysis, TypeDiagnostic } from "./types.ts";
 import { findConfig, expandGlobs } from "./config.ts";
@@ -229,6 +232,7 @@ connection.onInitialize((params) => {
 			documentSymbolProvider: true,
 			definitionProvider: true,
 			referencesProvider: true,
+			renameProvider: { prepareProvider: true },
 			codeActionProvider: { codeActionKinds: [CodeActionKind.QuickFix] },
 		},
 	};
@@ -328,6 +332,36 @@ connection.onReferences((params) => {
 		params.context.includeDeclaration,
 		getGlobFileRecords(doc.uri),
 	);
+});
+
+const NCNAME_RE = /^[A-Za-z_][\w.-]*$/;
+
+connection.onPrepareRename((params) => {
+	const doc = documents.get(params.textDocument.uri);
+	if (!doc) return null;
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis } = resolveContext(doc.uri, rawAnalysis);
+	const range = getRenameRangeAtOffset(doc.getText(), doc.offsetAt(params.position), analysis);
+	if (!range) return null;
+	return { start: doc.positionAt(range.start), end: doc.positionAt(range.end) };
+});
+
+connection.onRenameRequest((params) => {
+	const doc = documents.get(params.textDocument.uri);
+	if (!doc) return null;
+	if (!NCNAME_RE.test(params.newName)) {
+		throw new ResponseError(ErrorCodes.InvalidParams, `"${params.newName}" is not a valid XQuery name`);
+	}
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis } = resolveContext(doc.uri, rawAnalysis);
+	const locations = getRenameLocations(doc.uri, doc.getText(), doc.offsetAt(params.position), analysis, getGlobFileRecords(doc.uri));
+	if (!locations) return null;
+
+	const changes: Record<string, TextEdit[]> = {};
+	for (const loc of locations) {
+		(changes[loc.uri] ??= []).push(TextEdit.replace(loc.range, params.newName));
+	}
+	return { changes };
 });
 
 connection.onCodeAction((params) => {

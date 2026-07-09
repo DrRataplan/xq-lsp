@@ -4,7 +4,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { pathToFileURL } from "node:url";
 import { analyzeWithAst } from "./analyzer.ts";
-import { getReferences } from "./references.ts";
+import { getReferences, getRenameLocations, getRenameRangeAtOffset } from "./references.ts";
 import type { FileRecord } from "./references.ts";
 import { expandGlobs } from "./config.ts";
 import { withTmpDir } from "./test-utils.ts";
@@ -199,5 +199,125 @@ ex:foo()
 		const offset = offsetOf(src, "declare namespace ex") + "declare namespace ".length;
 		const locs = refs(src, offset);
 		assert.equal(locs.length, 2); // the declare-namespace decl itself + ex:foo
+	});
+});
+
+// ── Rename ────────────────────────────────────────────────────────────────────
+
+function rename(src: string, offset: number, getOtherFiles: () => FileRecord[] = () => []) {
+	const { analysis } = analyzeWithAst(src, "file:///main.xq");
+	return getRenameLocations("file:///main.xq", src, offset, analysis, getOtherFiles);
+}
+
+function prepareRename(src: string, offset: number) {
+	const { analysis } = analyzeWithAst(src, "file:///main.xq");
+	return getRenameRangeAtOffset(src, offset, analysis);
+}
+
+describe("getRenameLocations: variables", () => {
+	test("local let-binding: same locations as find-references", () => {
+		const src = `
+let $x := 1
+return ($x, $x)
+`;
+		const decl = offsetOf(src, "$x", 0) + 1;
+		const locs = rename(src, decl);
+		assert.equal(locs?.length, 3);
+	});
+
+	test("module variable: cross-file, prefix qualifier untouched", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "lib.xq"),
+				`module namespace lib = "http://example.com/lib";\ndeclare variable $lib:x := 42;\n`,
+			);
+			const mainPath = path.join(dir, "main.xq");
+			fs.writeFileSync(mainPath, `import module namespace lib = "http://example.com/lib" at "lib.xq";\n$lib:x\n`);
+
+			const mainUri = pathToFileURL(mainPath).toString();
+			const mainText = fs.readFileSync(mainPath, "utf-8");
+			const { analysis } = analyzeWithAst(mainText, mainUri);
+			const offset = offsetOf(mainText, "lib:x") + "lib:".length;
+
+			const locs = getRenameLocations(mainUri, mainText, offset, analysis, () => buildRecords(dir));
+			assert.equal(locs?.length, 2);
+			const usage = locs!.find((l) => l.uri.endsWith("main.xq"))!;
+			const lines = mainText.split("\n");
+			assert.equal(lines[usage.range.start.line].slice(usage.range.start.character, usage.range.end.character), "x");
+		});
+	});
+
+	test("builtin/predeclared function has no local declaration: not renameable", () => {
+		const src = `string-length("abc")`;
+		const offset = offsetOf(src, "string-length");
+		assert.equal(rename(src, offset), null);
+	});
+});
+
+describe("getRenameLocations: functions", () => {
+	test("cross-file: declaration plus calls, prefix qualifier untouched", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "lib.xq"),
+				`module namespace lib = "http://example.com/lib";\ndeclare function lib:greet($name) { concat("hi ", $name) };\n`,
+			);
+			const mainPath = path.join(dir, "main.xq");
+			fs.writeFileSync(
+				mainPath,
+				`import module namespace lib = "http://example.com/lib" at "lib.xq";\nlib:greet("a"), lib:greet("b")\n`,
+			);
+
+			const mainUri = pathToFileURL(mainPath).toString();
+			const mainText = fs.readFileSync(mainPath, "utf-8");
+			const { analysis } = analyzeWithAst(mainText, mainUri);
+			const offset = offsetOf(mainText, `lib:greet("a")`) + "lib:".length;
+
+			const locs = getRenameLocations(mainUri, mainText, offset, analysis, () => buildRecords(dir));
+			assert.equal(locs?.length, 3);
+			const lines = mainText.split("\n");
+			const usageTexts = locs!
+				.filter((l) => l.uri.endsWith("main.xq"))
+				.map((l) => lines[l.range.start.line].slice(l.range.start.character, l.range.end.character));
+			assert.deepEqual(usageTexts.sort(), ["greet", "greet"]);
+		});
+	});
+});
+
+describe("getRenameLocations: namespace prefixes", () => {
+	test("declared prefix: same locations as find-references", () => {
+		const src = `
+import module namespace ex = "http://example.com/ex" at "ex.xq";
+ex:foo(), ex:bar()
+`;
+		const locs = rename(src, offsetOf(src, "ex:foo"));
+		assert.equal(locs?.length, 3);
+	});
+
+	test("undeclared prefix: not renameable", () => {
+		const src = `ex:foo()`;
+		assert.equal(rename(src, offsetOf(src, "ex:foo")), null);
+	});
+});
+
+describe("getRenameRangeAtOffset", () => {
+	test("variable: range excludes the leading $", () => {
+		const src = `let $x := 1 return $x`;
+		const range = prepareRename(src, offsetOf(src, "$x", 1) + 1);
+		assert.deepEqual(range, { start: offsetOf(src, "$x", 1) + 1, end: offsetOf(src, "$x", 1) + 2 });
+	});
+
+	test("prefixed function call: range excludes the prefix", () => {
+		const src = `
+import module namespace ex = "http://example.com/ex" at "ex.xq";
+ex:foo()
+`;
+		const callOffset = offsetOf(src, "ex:foo");
+		const range = prepareRename(src, callOffset + "ex:".length);
+		assert.deepEqual(range, { start: callOffset + "ex:".length, end: callOffset + "ex:foo".length });
+	});
+
+	test("undeclared prefix: null", () => {
+		const src = `ex:foo()`;
+		assert.equal(prepareRename(src, offsetOf(src, "ex:foo")), null);
 	});
 });
