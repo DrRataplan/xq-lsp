@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.6.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.5.0...lsp-v1.6.0) (2026-07-09)
+
+
+### Features
+
+* add diagnostics for unused imports and namespace declarations ([0ded7ba](https://github.com/DrRataplan/xq-lsp/commit/0ded7ba26b98bc308ca59cf7061f8ade197a4d13))
+* **claude-code:** add xq-lsp plugin for Claude Code ([aa96a4d](https://github.com/DrRataplan/xq-lsp/commit/aa96a4d5fdd9192e33be862608674d71e020017f))
+* **vscode:** add XQuery 4.0 syntax highlighting grammar ([f2ee489](https://github.com/DrRataplan/xq-lsp/commit/f2ee489ff1ec3ab67f9142d6c039c559d28d5e67))
+
+
+### Bug Fixes
+
+* add the $exist:* variables to the exist runtime ([4798582](https://github.com/DrRataplan/xq-lsp/commit/4798582c28f036c959432dbcca56edc81f7cca93))
+* copy runtime files to dist and inline existdb predeclared namespaces ([e98b6d6](https://github.com/DrRataplan/xq-lsp/commit/e98b6d672ba504bba5dda30980b7a58cbdfcf847))
+* **vscode:** recognize .xquery file extension ([7afc049](https://github.com/DrRataplan/xq-lsp/commit/7afc04913c1b02419c1965c489c32d09df1834b6))
+
 ## [1.5.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.4.1...lsp-v1.5.0) (2026-06-18)
 
 
