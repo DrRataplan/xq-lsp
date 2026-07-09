@@ -50,7 +50,6 @@ const SKIP_FEATURES = new Set([
 	"externalFunctions",
 	"serialization",
 	"namespace-axis", // xq-parser doesn't parse the deprecated `namespace::` axis
-	"XQUpdate", // Update Facility (`declare updating function`, etc.) isn't supported
 ]);
 
 // ── DOM helpers ───────────────────────────────────────────────────────────────
