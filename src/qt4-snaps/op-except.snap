@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "combiningnodeseqexcepthc5",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "combiningnodeseqexcepthc6",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  }
-]
+[]

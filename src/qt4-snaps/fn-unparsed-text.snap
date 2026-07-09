@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "fn-unparsed-text-053",
-    "outcome": "false-positive",
-    "expectedCode": "FOUT1170",
-    "got": [
-      "XPST0008"
-    ]
-  }
-]
+[]
