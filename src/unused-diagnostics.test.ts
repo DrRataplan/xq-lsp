@@ -172,3 +172,115 @@ ${body}
 		});
 	}
 });
+
+// ── unused imports / namespace declarations ───────────────────────────────────
+
+describe("unused-diagnostics: unused imports", () => {
+	test("imported module never referenced → xq-lsp:unused-import", () => {
+		const ds = unusedDiags(`
+import module namespace foo = "http://foo" at "foo.xq";
+1
+`);
+		const d = ds.find((d) => d.code === "xq-lsp:unused-import");
+		assert.ok(d, `expected xq-lsp:unused-import, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("foo"), `got: ${d!.message}`);
+	});
+
+	test("imported module used via function call → not flagged", () => {
+		const ds = unusedDiags(`
+import module namespace foo = "http://foo" at "foo.xq";
+foo:bar()
+`);
+		assert.equal(ds.filter((d) => d.code === "xq-lsp:unused-import").length, 0, `got ${JSON.stringify(ds)}`);
+	});
+
+	test("imported module used only in a type annotation → not flagged", () => {
+		const ds = unusedDiags(`
+import module namespace foo = "http://foo" at "foo.xq";
+declare function local:f() as foo:mytype { 1 };
+1
+`);
+		assert.equal(ds.filter((d) => d.code === "xq-lsp:unused-import").length, 0, `got ${JSON.stringify(ds)}`);
+	});
+
+	test("imported module used only in an element constructor → not flagged", () => {
+		const ds = unusedDiags(`
+import module namespace foo = "http://foo" at "foo.xq";
+element foo:name { "x" }
+`);
+		assert.equal(ds.filter((d) => d.code === "xq-lsp:unused-import").length, 0, `got ${JSON.stringify(ds)}`);
+	});
+
+	test("two imports, only one used → only the unused one is flagged", () => {
+		const ds = unusedDiags(`
+import module namespace foo = "http://foo" at "foo.xq";
+import module namespace bar = "http://bar" at "bar.xq";
+foo:used()
+`);
+		const flagged = ds.filter((d) => d.code === "xq-lsp:unused-import");
+		assert.equal(flagged.length, 1, `got ${JSON.stringify(ds)}`);
+		assert.ok(flagged[0].message.includes("bar"));
+	});
+});
+
+describe("unused-diagnostics: unused namespace declarations", () => {
+	test("declared namespace never referenced → xq-lsp:unused-namespace", () => {
+		const ds = unusedDiags(`
+declare namespace ns = "http://ns";
+1
+`);
+		const d = ds.find((d) => d.code === "xq-lsp:unused-namespace");
+		assert.ok(d, `expected xq-lsp:unused-namespace, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("ns"), `got: ${d!.message}`);
+	});
+
+	test("declared namespace used via variable reference → not flagged", () => {
+		const ds = unusedDiags(`
+declare namespace ns = "http://ns";
+declare variable $ns:x := 1;
+$ns:x
+`);
+		assert.equal(ds.filter((d) => d.code === "xq-lsp:unused-namespace").length, 0, `got ${JSON.stringify(ds)}`);
+	});
+
+	test("declared namespace used via attribute constructor → not flagged", () => {
+		const ds = unusedDiags(`
+declare namespace ns = "http://ns";
+<elem>{ attribute ns:attr { "x" } }</elem>
+`);
+		assert.equal(ds.filter((d) => d.code === "xq-lsp:unused-namespace").length, 0, `got ${JSON.stringify(ds)}`);
+	});
+
+	test("declared namespace used via direct-syntax element name → not flagged", () => {
+		const ds = unusedDiags(`
+declare namespace ns = "http://ns";
+<ns:elem/>
+`);
+		assert.equal(ds.filter((d) => d.code === "xq-lsp:unused-namespace").length, 0, `got ${JSON.stringify(ds)}`);
+	});
+
+	test("declared namespace used via kind test wildcard (ns:*) → not flagged", () => {
+		const ds = unusedDiags(`
+declare namespace ns = "http://ns";
+try { 1 } catch ns:* { 0 }
+`);
+		assert.equal(ds.filter((d) => d.code === "xq-lsp:unused-namespace").length, 0, `got ${JSON.stringify(ds)}`);
+	});
+
+	test("inline xmlns:prefix declaration is not treated as a usage of an unrelated declared namespace", () => {
+		const ds = unusedDiags(`
+declare namespace ns = "http://ns";
+<elem xmlns:other="http://other"/>
+`);
+		const d = ds.find((d) => d.code === "xq-lsp:unused-namespace");
+		assert.ok(d, `expected 'ns' to still be flagged as unused, got ${JSON.stringify(ds)}`);
+	});
+
+	test("module's own prefix is never flagged as an unused namespace decl", () => {
+		const ds = unusedDiags(`
+module namespace m = "http://m";
+declare function m:f() { 1 };
+`);
+		assert.equal(ds.filter((d) => d.code === "xq-lsp:unused-namespace").length, 0, `got ${JSON.stringify(ds)}`);
+	});
+});

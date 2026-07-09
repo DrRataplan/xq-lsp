@@ -324,7 +324,7 @@ function extractNamespaceDecls(ast: Node): NamespaceDecl[] {
 		const uriNode = directChildOf(nd, "URILiteral");
 		const namespaceUri = uriNode ? stripQuotes(firstTerminalValue(uriNode) ?? "") : null;
 		if (!namespaceUri) continue;
-		results.push({ prefix, namespaceUri });
+		results.push({ prefix, namespaceUri, offset: ncname!.start ?? nd.start ?? 0 });
 	}
 	return results;
 }
@@ -340,7 +340,7 @@ function extractImports(ast: Node): ImportInfo[] {
 		if (uris.length < 1) continue;
 		const namespaceUri = stripQuotes(firstTerminalValue(uris[0]) ?? "");
 		const atPath = uris.length >= 2 ? stripQuotes(firstTerminalValue(uris[1]) ?? "") : undefined;
-		results.push({ prefix, namespaceUri, atPath });
+		results.push({ prefix, namespaceUri, atPath, offset: ncname!.start ?? mi.start ?? 0 });
 	}
 	return results;
 }
@@ -375,8 +375,8 @@ const RE_FUNC = /declare\s+(?:%[\w:\-]+(?:\([^)]*\))?\s+)*function\s+([\w:\-]+)\
 const RE_VAR_DECL = /declare\s+(?:%[\w:\-]+(?:\([^)]*\))?\s+)*variable\s+\$([\w:\-]+)/g;
 const RE_LET = /\blet\s+\$([\w:\-]+)\s*:=/g;
 const RE_FOR = /\bfor\s+\$([\w:\-]+)\s+in\b/g;
-const RE_IMPORT = /import\s+module\s+namespace\s+([\w\-]+)\s*=\s*["']([^"']*)["'](?:\s+at\s+["']([^"']*)["'])?/g;
-const RE_NS_DECL = /declare\s+namespace\s+([\w\-]+)\s*=\s*["']([^"']*)["']/g;
+const RE_IMPORT = /import\s+module\s+namespace\s+([\w\-]+)\s*=\s*["']([^"']*)["'](?:\s+at\s+["']([^"']*)["'])?/gd;
+const RE_NS_DECL = /declare\s+namespace\s+([\w\-]+)\s*=\s*["']([^"']*)["']/gd;
 
 function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	const moduleVariables: VariableSymbol[] = [];
@@ -390,7 +390,8 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	const imports: ImportInfo[] = [];
 	RE_IMPORT.lastIndex = 0;
 	while ((m = RE_IMPORT.exec(text)) !== null) {
-		const imp: ImportInfo = { prefix: m[1], namespaceUri: m[2] };
+		const indices = (m as RegExpExecArray & { indices: Array<[number, number]> }).indices;
+		const imp: ImportInfo = { prefix: m[1], namespaceUri: m[2], offset: indices[1][0] };
 		if (m[3]) imp.atPath = m[3];
 		imports.push(imp);
 	}
@@ -398,7 +399,8 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	const namespaceDecls: NamespaceDecl[] = [];
 	RE_NS_DECL.lastIndex = 0;
 	while ((m = RE_NS_DECL.exec(text)) !== null) {
-		namespaceDecls.push({ prefix: m[1], namespaceUri: m[2] });
+		const indices = (m as RegExpExecArray & { indices: Array<[number, number]> }).indices;
+		namespaceDecls.push({ prefix: m[1], namespaceUri: m[2], offset: indices[1][0] });
 	}
 
 	const prefixMap = buildPrefixMap(moduleNs, imports, namespaceDecls);

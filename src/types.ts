@@ -47,11 +47,13 @@ export interface ImportInfo {
 	prefix: string;
 	namespaceUri: string;
 	atPath?: string; // as written in source, e.g. "./other.xq"; absent when the import has no "at" clause
+	offset: number; // char offset of the prefix in source
 }
 
 export interface NamespaceDecl {
 	prefix: string;
 	namespaceUri: string;
+	offset: number; // char offset of the prefix in source
 }
 
 export interface FileAnalysis {

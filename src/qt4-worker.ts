@@ -29,7 +29,7 @@ function runDiagnostics(query: string, envNamespaces: Array<{ prefix: string; ur
 		const { analysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq");
 		for (const ns of envNamespaces) {
 			if (ns.prefix && !analysis.namespaceDecls.some((d) => d.prefix === ns.prefix)) {
-				analysis.namespaceDecls.push({ prefix: ns.prefix, namespaceUri: ns.uri });
+				analysis.namespaceDecls.push({ prefix: ns.prefix, namespaceUri: ns.uri, offset: -1 });
 			}
 		}
 		const codes: string[] = [];

@@ -1,7 +1,7 @@
 import type { Node, NonTerminal } from "xq-parser";
 import type { FileAnalysis } from "./types.ts";
 import { qnameKey, formatQName } from "./types.ts";
-import { isTerminal, directChildOf, directChildrenOf, findAll } from "./analyzer.ts";
+import { isTerminal, directChildOf, directChildrenOf, findAll, firstTerminalValue } from "./analyzer.ts";
 import {
 	asFunctionCall,
 	asNamedFunctionRef,
@@ -16,7 +16,7 @@ import {
 
 export interface UnusedDiagnostic {
 	message: string;
-	code: "xq-lsp:unused-function" | "xq-lsp:unused-variable";
+	code: "xq-lsp:unused-function" | "xq-lsp:unused-variable" | "xq-lsp:unused-import" | "xq-lsp:unused-namespace";
 	offset: number;
 	length: number;
 }
@@ -172,6 +172,38 @@ function walk(
 	}
 }
 
+// ── Namespace-prefix usage scan ─────────────────────────────────────────────
+
+/**
+ * Every prefixed name in the query — function calls, variable refs, element
+ * and attribute names (direct and computed constructors), type names, kind
+ * tests, options, and pragmas — bottoms out in a `QName` (or `Wildcard`, for
+ * `ns:*`) terminal whose value is the raw "prefix:local" text. Walking those
+ * two terminal types catches every usage site without enumerating each
+ * grammar production that can carry a prefix.
+ */
+function collectUsedPrefixes(ast: Node): Set<string> {
+	const used = new Set<string>();
+
+	for (const node of findAll(ast, "QName")) {
+		const value = firstTerminalValue(node);
+		if (!value || value.startsWith("xmlns") || value.startsWith("Q{")) continue;
+		const colonIdx = value.indexOf(":");
+		if (colonIdx > 0) used.add(value.slice(0, colonIdx));
+	}
+
+	for (const node of findAll(ast, "Wildcard")) {
+		const value = firstTerminalValue(node);
+		if (!value) continue;
+		const colonIdx = value.indexOf(":");
+		if (colonIdx <= 0) continue;
+		const prefix = value.slice(0, colonIdx);
+		if (prefix !== "*") used.add(prefix);
+	}
+
+	return used;
+}
+
 // ── Public entry point ────────────────────────────────────────────────────────
 
 /**
@@ -225,6 +257,31 @@ export function checkUnused(ast: Node, analysis: FileAnalysis): UnusedDiagnostic
 			code: "xq-lsp:unused-variable",
 			offset: varDecl.nameNode.start ?? 0,
 			length: varName.length,
+		});
+	}
+
+	// ── Check imports and namespace declarations ─────────────────────────────
+
+	const usedPrefixes = collectUsedPrefixes(ast);
+
+	for (const imp of analysis.imports) {
+		if (usedPrefixes.has(imp.prefix)) continue;
+		out.push({
+			message: `Imported namespace prefix '${imp.prefix}' is never used`,
+			code: "xq-lsp:unused-import",
+			offset: imp.offset,
+			length: imp.prefix.length,
+		});
+	}
+
+	for (const nd of analysis.namespaceDecls) {
+		if (nd.offset < 0) continue; // runtime-injected predeclared namespace, not written in source
+		if (usedPrefixes.has(nd.prefix)) continue;
+		out.push({
+			message: `Namespace prefix '${nd.prefix}' is declared but never used`,
+			code: "xq-lsp:unused-namespace",
+			offset: nd.offset,
+			length: nd.prefix.length,
 		});
 	}
 
