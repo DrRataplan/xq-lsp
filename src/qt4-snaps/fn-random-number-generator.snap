@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "testCase": "fn-random-number-generator-44",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]

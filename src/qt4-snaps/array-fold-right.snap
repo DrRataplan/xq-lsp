@@ -1,1 +1,82 @@
-[]
+[
+  {
+    "testCase": "array-fold-right-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-right-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-right-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-right-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-right-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-right-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-right-007",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-right-008",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-right-009",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-right-010",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]

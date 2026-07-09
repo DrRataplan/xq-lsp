@@ -332,18 +332,6 @@
     ]
   },
   {
-    "testCase": "XQST0125_1",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0125",
-    "got": []
-  },
-  {
-    "testCase": "XQST0125_2",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0125",
-    "got": []
-  },
-  {
     "testCase": "typeswitch-in-xpath",
     "outcome": "false-negative",
     "expectedCode": "XPST0003",

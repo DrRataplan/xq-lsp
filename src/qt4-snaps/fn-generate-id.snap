@@ -14,5 +14,13 @@
     "got": [
       "XPST0003"
     ]
+  },
+  {
+    "testCase": "generate-id-902",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0008"
+    ]
   }
 ]

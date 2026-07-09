@@ -1,1 +1,130 @@
-[]
+[
+  {
+    "testCase": "map-for-each-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-007",
+    "outcome": "false-positive",
+    "expectedCode": "XQDY0137",
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-008",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-009",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-010",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-011",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-012",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-013",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-014",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-015",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-016",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "map-for-each-017",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]

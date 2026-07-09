@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "testCase": "json-to-xml-026",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "json-to-xml-027",
+    "outcome": "false-positive",
+    "expectedCode": "FOJS0005",
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "json-to-xml-028",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "json-to-xml-039",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]

@@ -1,1 +1,74 @@
-[]
+[
+  {
+    "testCase": "array-fold-left-101",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-left-102",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-left-103",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-left-104",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-left-105",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-left-107",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-left-108",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-left-109",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-fold-left-110",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]

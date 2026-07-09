@@ -1,1 +1,178 @@
-[]
+[
+  {
+    "testCase": "fold-right-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-008",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-009",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-010",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-011",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-012",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-013",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-014",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-015",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-016",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-018",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-019",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-020",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-101",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-102",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-103",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-104",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "fold-right-105",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]

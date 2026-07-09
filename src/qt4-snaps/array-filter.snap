@@ -1,5 +1,37 @@
 [
   {
+    "testCase": "array-filter-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-filter-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-filter-004",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "array-filter-010",
+    "outcome": "false-positive",
+    "expectedCode": "FOAR0001",
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
     "testCase": "array-filter-013",
     "outcome": "false-positive",
     "expectedCode": "XPTY0004",

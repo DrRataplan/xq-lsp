@@ -6,5 +6,21 @@
     "got": [
       "XPST0008"
     ]
+  },
+  {
+    "testCase": "UseCaseNLP-006a",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "UseCaseNLP-006b",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
   }
 ]

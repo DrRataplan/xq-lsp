@@ -14,5 +14,13 @@
     "got": [
       "XPST0008"
     ]
+  },
+  {
+    "testCase": "except-100",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
   }
 ]
