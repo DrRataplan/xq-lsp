@@ -11,6 +11,7 @@ import { checkFunctionCalls } from "./functioncall-diagnostics.ts";
 import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
 import { checkContextItemUsage } from "./context-item-diagnostics.ts";
 import { checkUndeclaredVariables } from "./variable-diagnostics.ts";
+import { checkDuplicateFunctions } from "./duplicate-function-diagnostics.ts";
 import { checkUnused } from "./unused-diagnostics.ts";
 
 /**
@@ -31,6 +32,7 @@ export function runDiagnostics(
 		...findUndeclaredPrefixUsages(ast, analysis),
 		...checkContextItemUsage(ast),
 		...checkUndeclaredVariables(ast, analysis, imports),
+		...checkDuplicateFunctions(ast, analysis, imports),
 	];
 }
 
