@@ -1,14 +1,16 @@
 [
   {
+    "testCase": "VarDecl065",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
     "testCase": "vardeclerr",
     "outcome": "false-negative",
     "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
-    "testCase": "vardeclerr-3",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
     "got": []
   },
   {

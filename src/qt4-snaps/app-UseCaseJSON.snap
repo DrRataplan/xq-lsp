@@ -1,5 +1,13 @@
 [
   {
+    "testCase": "UseCaseJSON-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
     "testCase": "UseCaseJSON-008",
     "outcome": "false-positive",
     "expectedCode": null,

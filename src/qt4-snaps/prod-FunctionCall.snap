@@ -1,15 +1,57 @@
 [
   {
-    "testCase": "FunctionCall-027",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0051",
-    "got": []
+    "testCase": "FunctionCall-006",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "FunctionCall-010",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "FunctionCall-014",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "FunctionCall-025",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  },
+  {
+    "testCase": "FunctionCall-026",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
   },
   {
     "testCase": "FunctionCall-044",
     "outcome": "false-negative",
     "expectedCode": "XPST0003",
     "got": []
+  },
+  {
+    "testCase": "FunctionCall-058",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0008"
+    ]
   },
   {
     "testCase": "K-FunctionCallExpr-4",

@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "testCase": "function-literal-426",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0008"
+    ]
+  }
+]
