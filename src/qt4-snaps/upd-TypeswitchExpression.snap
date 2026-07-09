@@ -6,53 +6,5 @@
     "got": [
       "XPST0008"
     ]
-  },
-  {
-    "testCase": "id-typeswitch-expr-030",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "id-typeswitch-expr-031",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "id-typeswitch-expr-032",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "id-typeswitch-expr-033",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "id-typeswitch-expr-034",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "id-typeswitch-expr-035",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
   }
 ]

@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "UnaryLookup-011",
-    "outcome": "false-positive",
-    "expectedCode": "XPDY0002",
-    "got": [
-      "XPST0008"
-    ]
-  }
-]
+[]

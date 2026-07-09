@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "fn-function-arity-018",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "fn-function-arity-019",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  }
-]
+[]

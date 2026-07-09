@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "statictyp-xqupd-056",
-    "outcome": "false-positive",
-    "expectedCode": "XUTY0013",
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "statictyp-xqupd-057",
-    "outcome": "false-positive",
-    "expectedCode": "XUTY0013",
-    "got": [
-      "XPST0008"
-    ]
-  }
-]
+[]
