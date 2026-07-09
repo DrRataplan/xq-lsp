@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "fn-string-27",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  }
-]
+[]

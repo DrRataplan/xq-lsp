@@ -4,7 +4,7 @@
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0003"
+      "XPDY0002"
     ]
   },
   {
@@ -13,14 +13,6 @@
     "expectedCode": null,
     "got": [
       "XPDY0002"
-    ]
-  },
-  {
-    "testCase": "RexParser",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
     ]
   }
 ]

@@ -6,21 +6,5 @@
     "got": [
       "XPTY0004"
     ]
-  },
-  {
-    "testCase": "fn-has-children-020",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fn-has-children-021",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
   }
 ]

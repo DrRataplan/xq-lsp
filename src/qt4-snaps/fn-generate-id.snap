@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "generate-id-007",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "generate-id-011",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  }
-]
+[]
