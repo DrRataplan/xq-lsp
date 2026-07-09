@@ -61,10 +61,12 @@ function childEls(parent: slimdom.Element, localName?: string): slimdom.Element[
 	return out;
 }
 
-// ── Environment namespace extraction ─────────────────────────────────────────
+// ── Environment namespace/variable extraction ────────────────────────────────
 
 type NsBinding = { prefix: string; uri: string };
+type VarBinding = { prefix: string; localName: string };
 type EnvMap = Map<string, NsBinding[]>;
+type EnvVarMap = Map<string, VarBinding[]>;
 
 function extractEnvNamespaces(envEl: slimdom.Element): NsBinding[] {
 	return childEls(envEl, "namespace")
@@ -72,11 +74,41 @@ function extractEnvNamespaces(envEl: slimdom.Element): NsBinding[] {
 		.filter((ns) => ns.prefix !== "");
 }
 
+// <param name="..."> and <source role="$..."> bind variables that are in scope
+// for the test's query without being declared in the query text itself — the
+// harness equivalent of `declare variable $x external;`. `role="."` sets the
+// context item, not a variable, so it's excluded.
+function splitVarName(raw: string): VarBinding {
+	const idx = raw.indexOf(":");
+	return idx === -1 ? { prefix: "", localName: raw } : { prefix: raw.slice(0, idx), localName: raw.slice(idx + 1) };
+}
+
+function extractEnvVariables(envEl: slimdom.Element): VarBinding[] {
+	const fromParams = childEls(envEl, "param")
+		.map((n) => n.getAttribute("name"))
+		.filter((n): n is string => !!n)
+		.map(splitVarName);
+	const fromSources = childEls(envEl, "source")
+		.map((n) => n.getAttribute("role"))
+		.filter((r): r is string => !!r && r !== "." && r.startsWith("$"))
+		.map((r) => splitVarName(r.slice(1)));
+	return [...fromParams, ...fromSources];
+}
+
 function buildEnvMap(root: slimdom.Element): EnvMap {
 	const map: EnvMap = new Map();
 	for (const envEl of childEls(root, "environment")) {
 		const name = envEl.getAttribute("name");
 		if (name) map.set(name, extractEnvNamespaces(envEl));
+	}
+	return map;
+}
+
+function buildEnvVarMap(root: slimdom.Element): EnvVarMap {
+	const map: EnvVarMap = new Map();
+	for (const envEl of childEls(root, "environment")) {
+		const name = envEl.getAttribute("name");
+		if (name) map.set(name, extractEnvVariables(envEl));
 	}
 	return map;
 }
@@ -166,6 +198,7 @@ if (QT4_DIR) {
 	const catalogXml = fs.readFileSync(path.join(QT4_DIR, "catalog.xml"), "utf8");
 	const catalogDoc = slimdom.parseXmlDocument(catalogXml);
 	const catalogEnvMap = buildEnvMap(catalogDoc.documentElement as slimdom.Element);
+	const catalogEnvVarMap = buildEnvVarMap(catalogDoc.documentElement as slimdom.Element);
 	const testSetFiles = Array.from(catalogDoc.getElementsByTagNameNS(NS, "test-set"))
 		.map((el) => (el as slimdom.Element).getAttribute("file"))
 		.filter((f): f is string => f !== null);
@@ -195,6 +228,7 @@ if (QT4_DIR) {
 		const tsDepsList = getDeps(root);
 		const slug = tsFile.replace(/[/\\]/g, "-").replace(/\.xml$/, "");
 		const tsEnvMap = buildEnvMap(root);
+		const tsEnvVarMap = buildEnvVarMap(root);
 
 		for (const tc of childEls(root, "test-case")) {
 			const name = tc.getAttribute("name") ?? "";
@@ -211,12 +245,15 @@ if (QT4_DIR) {
 
 			const tcEnvEl = childEls(tc, "environment")[0];
 			let envNamespaces: NsBinding[] = [];
+			let envVariables: VarBinding[] = [];
 			if (tcEnvEl) {
 				const ref = tcEnvEl.getAttribute("ref");
 				if (ref) {
 					envNamespaces = tsEnvMap.get(ref) ?? catalogEnvMap.get(ref) ?? [];
+					envVariables = tsEnvVarMap.get(ref) ?? catalogEnvVarMap.get(ref) ?? [];
 				} else {
 					envNamespaces = extractEnvNamespaces(tcEnvEl);
+					envVariables = extractEnvVariables(tcEnvEl);
 				}
 			}
 
@@ -227,6 +264,7 @@ if (QT4_DIR) {
 				expected,
 				expectedCode,
 				envNamespaces,
+				envVariables,
 			});
 
 			if (!seenSlugs.has(slug)) {

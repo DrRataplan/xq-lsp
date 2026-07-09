@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "xmp-queries-results-q5",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  }
-]
+[]

@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "EXPath-binary-bitwise-not-001",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "EXPath-binary-bitwise-not-002",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  }
-]
+[]
