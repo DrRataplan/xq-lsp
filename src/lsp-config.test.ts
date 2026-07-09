@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { pathToFileURL } from "node:url";
+import { TextDocument } from "vscode-languageserver-textdocument";
 import { analyze } from "./analyzer.ts";
 import { getCompletions } from "./completion.ts";
+import { getDefinition } from "./definition.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import { withTmpDir } from "./test-utils.ts";
 
@@ -207,5 +209,76 @@ declare function util:pad($s as xs:string, $n as xs:integer) as xs:string { $s }
 		);
 		assert.ok(labels.includes("trim"), `expected trim, got ${labels}`);
 		assert.ok(labels.includes("pad"), `expected pad, got ${labels}`);
+	});
+});
+
+// ── at-path location hint falls back to glob resolution ────────────────────────
+// When the "at" clause on an import can't be resolved (e.g. the location hint is
+// stale or wrong), the module namespace should still resolve against glob-loaded
+// modules instead of dropping the import entirely.
+
+test("unresolvable at-path falls back to glob-matched namespace in completions", () => {
+	withTmpDir((dir) => {
+		const ns = "http://example.com/util";
+		const libSrc = `module namespace util="${ns}";
+declare function util:trim($s as xs:string) as xs:string { $s };`;
+		fs.writeFileSync(path.join(dir, "util.xq"), libSrc);
+
+		// "at" points at a path that doesn't exist on disk.
+		const mainSrc = `import module namespace util="${ns}" at "./missing/util.xq";
+util:trim("x")`;
+		const mainAnalysis = analyze(mainSrc, pathToFileURL(path.join(dir, "main.xq")).toString());
+
+		const libAnalysis = analyze(libSrc, pathToFileURL(path.join(dir, "util.xq")).toString());
+		const globAnalyses = new Map([[libAnalysis.moduleNamespaceUri!, libAnalysis]]);
+
+		// Mirrors resolveContext in server.ts: the at-path resolution fails (no such file),
+		// so it falls back to matching the namespace URI against glob-loaded modules.
+		const imported = new Map<string, ReturnType<typeof analyze>>();
+		for (const imp of mainAnalysis.imports) {
+			const resolved = globAnalyses.get(imp.namespaceUri);
+			if (resolved) {
+				if (imp.atPath) imported.set(imp.atPath, resolved);
+				imported.set(imp.namespaceUri, resolved);
+			}
+		}
+
+		const labels = getCompletions({ textBeforeCursor: "util:", cursorOffset: 5 }, mainAnalysis, imported).map(
+			(i) => i.label,
+		);
+		assert.ok(labels.includes("trim"), `expected trim via at-path fallback to glob match, got ${labels}`);
+	});
+});
+
+test("getDefinition follows glob fallback when at-path is unresolvable", () => {
+	withTmpDir((dir) => {
+		const ns = "http://example.com/util";
+		const libSrc = `module namespace util="${ns}";
+declare function util:trim($s as xs:string) as xs:string { $s };`;
+		const libPath = path.join(dir, "util.xq");
+		fs.writeFileSync(libPath, libSrc);
+
+		const mainSrc = `import module namespace util="${ns}" at "./missing/util.xq";
+util:trim("x")`;
+		const mainUri = pathToFileURL(path.join(dir, "main.xq")).toString();
+		const mainAnalysis = analyze(mainSrc, mainUri);
+
+		const libAnalysis = analyze(libSrc, pathToFileURL(libPath).toString());
+		const globAnalyses = new Map([[libAnalysis.moduleNamespaceUri!, libAnalysis]]);
+
+		const imported = new Map<string, ReturnType<typeof analyze>>();
+		for (const imp of mainAnalysis.imports) {
+			const resolved = globAnalyses.get(imp.namespaceUri);
+			if (resolved) {
+				if (imp.atPath) imported.set(imp.atPath, resolved);
+				imported.set(imp.namespaceUri, resolved);
+			}
+		}
+
+		const doc = TextDocument.create(mainUri, "xquery", 1, mainSrc);
+		const callOffset = mainSrc.indexOf("trim");
+		const loc = getDefinition(doc, callOffset, mainAnalysis, imported);
+		assert.ok(loc, "expected a definition location");
+		assert.equal(loc!.uri, pathToFileURL(libPath).toString());
 	});
 });

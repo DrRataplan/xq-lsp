@@ -184,14 +184,19 @@ function resolveContext(
 		}
 	}
 	for (const imp of rawAnalysis.imports) {
+		let imported: FileAnalysis | undefined;
 		if (imp.atPath) {
 			const uri = resolveImportUri(currentUri, imp.atPath);
-			const imported = getImportedAnalysis(uri);
-			if (imported) result.set(imp.atPath, imported);
-		} else {
-			// No "at" path: resolve by matching namespace URI against glob-loaded modules or runtime defs
-			const imported = globAnalyses.get(imp.namespaceUri) ?? runtimeByNamespace.get(imp.namespaceUri);
-			if (imported) result.set(imp.namespaceUri, imported);
+			imported = getImportedAnalysis(uri) ?? undefined;
+		}
+		if (!imported) {
+			// No "at" path, or the location hint didn't resolve: fall back to matching the
+			// namespace URI against glob-loaded modules or runtime defs.
+			imported = globAnalyses.get(imp.namespaceUri) ?? runtimeByNamespace.get(imp.namespaceUri);
+		}
+		if (imported) {
+			if (imp.atPath) result.set(imp.atPath, imported);
+			result.set(imp.namespaceUri, imported);
 		}
 	}
 	// Add pre-declared runtime analyses directly — available without explicit import
@@ -307,9 +312,7 @@ connection.onDefinition((params) => {
 	if (!doc) return null;
 	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
 	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
-	return getDefinition(doc, doc.offsetAt(params.position), analysis, imported, (atPath) =>
-		resolveImportUri(doc.uri, atPath),
-	);
+	return getDefinition(doc, doc.offsetAt(params.position), analysis, imported);
 });
 
 connection.onReferences((params) => {
