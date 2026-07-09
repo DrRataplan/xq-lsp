@@ -25,7 +25,6 @@ export function getDefinition(
 	offset: number,
 	current: FileAnalysis,
 	imported: Map<string, FileAnalysis>,
-	resolveUri: (atPath: string) => string,
 ): Location | null {
 	const text = doc.getText();
 	const { word, start } = wordAt(text, offset);
@@ -64,7 +63,7 @@ export function getDefinition(
 			(f) => f.qname.namespaceUri === targetUri && f.qname.localName === wordLocalName,
 		);
 		if (!fn) continue;
-		const uri = imp.atPath ? resolveUri(imp.atPath) : fn.sourceUri;
+		const uri = fn.sourceUri;
 		let pos: Position = { line: 0, character: 0 };
 		if (fn.sourceOffset !== undefined) {
 			try {
