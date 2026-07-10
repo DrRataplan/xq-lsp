@@ -3,8 +3,9 @@ import assert from "node:assert/strict";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { pathToFileURL } from "node:url";
+import { DocumentHighlightKind } from "vscode-languageserver/node.js";
 import { analyzeWithAst } from "./analyzer.ts";
-import { getReferences, getRenameLocations, getRenameRangeAtOffset } from "./references.ts";
+import { getReferences, getRenameLocations, getRenameRangeAtOffset, getDocumentHighlights } from "./references.ts";
 import type { FileRecord } from "./references.ts";
 import { expandGlobs } from "./config.ts";
 import { withTmpDir } from "./test-utils.ts";
@@ -319,5 +320,75 @@ ex:foo()
 	test("undeclared prefix: null", () => {
 		const src = `ex:foo()`;
 		assert.equal(prepareRename(src, offsetOf(src, "ex:foo")), null);
+	});
+});
+
+// ── Document highlights ─────────────────────────────────────────────────────────
+
+function highlights(src: string, offset: number) {
+	const { analysis } = analyzeWithAst(src, "file:///main.xq");
+	return getDocumentHighlights(src, offset, analysis);
+}
+
+describe("getDocumentHighlights", () => {
+	test("local let-binding: declaration is Write, usages are Read", () => {
+		const src = `
+let $x := 1
+return ($x, $x)
+`;
+		const hl = highlights(src, offsetOf(src, "$x", 0) + 1)!;
+		assert.equal(hl.length, 3);
+		assert.equal(hl.filter((h) => h.kind === DocumentHighlightKind.Write).length, 1);
+		assert.equal(hl.filter((h) => h.kind === DocumentHighlightKind.Read).length, 2);
+	});
+
+	test("module variable: same-file only, declaration in another file is not included", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "lib.xq"),
+				`module namespace lib = "http://example.com/lib";\ndeclare variable $lib:x := 42;\n`,
+			);
+			const mainPath = path.join(dir, "main.xq");
+			fs.writeFileSync(mainPath, `import module namespace lib = "http://example.com/lib" at "lib.xq";\n$lib:x, $lib:x\n`);
+			const mainText = fs.readFileSync(mainPath, "utf-8");
+
+			const hl = highlights(mainText, offsetOf(mainText, "lib:x") + "lib:".length)!;
+			assert.equal(hl.length, 2); // two same-file usages; declaration lives in lib.xq
+			assert.equal(hl.filter((h) => h.kind === DocumentHighlightKind.Write).length, 0);
+		});
+	});
+
+	test("function: declaration Write, calls Read, arity-matched only", () => {
+		const src = `
+declare function local:f($x) { $x };
+declare function local:f($x, $y) { $x + $y };
+local:f(1), local:f(2)
+`;
+		const hl = highlights(src, offsetOf(src, "local:f(1)") + "local:".length)!;
+		assert.equal(hl.length, 3); // arity-1 decl + two arity-1 calls
+		assert.equal(hl.filter((h) => h.kind === DocumentHighlightKind.Write).length, 1);
+	});
+
+	test("namespace prefix: import decl is Write, usages are Read", () => {
+		const src = `
+import module namespace ex = "http://example.com/ex" at "ex.xq";
+ex:foo(), ex:bar()
+`;
+		const hl = highlights(src, offsetOf(src, "ex:foo"))!;
+		assert.equal(hl.length, 3);
+		assert.equal(hl.filter((h) => h.kind === DocumentHighlightKind.Write).length, 1);
+		assert.equal(hl.filter((h) => h.kind === DocumentHighlightKind.Read).length, 2);
+	});
+
+	test("builtin function: still highlights call sites, just no Write occurrence", () => {
+		const src = `string-length("a"), string-length("b")`;
+		const hl = highlights(src, offsetOf(src, "string-length"))!;
+		assert.equal(hl.length, 2);
+		assert.ok(hl.every((h) => h.kind === DocumentHighlightKind.Read));
+	});
+
+	test("no symbol at offset: null", () => {
+		const src = `1 + 1`;
+		assert.equal(highlights(src, 1), null);
 	});
 });
