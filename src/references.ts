@@ -1,5 +1,5 @@
 import type { Node, NonTerminal } from "xq-parser";
-import { Location } from "vscode-languageserver/node.js";
+import { Location, DocumentHighlight, DocumentHighlightKind } from "vscode-languageserver/node.js";
 import type { FileAnalysis, QName } from "./types.ts";
 import { qnameKey } from "./types.ts";
 import { isTerminal, directChildOf, directChildrenOf, findAll, firstTerminalValue } from "./analyzer.ts";
@@ -541,4 +541,62 @@ export function getRenameLocations(
 			: getFunctionReferences(currentUri, currentText, ast, analysis, offset, true, getOtherFiles, true);
 
 	return locs.length > 0 ? locs : null;
+}
+
+/**
+ * Highlight every occurrence of the symbol at `offset` within the current
+ * document only (`textDocument/documentHighlight` is file-scoped by spec, even
+ * for module-level variables and functions that `getReferences` would otherwise
+ * search for across files). Declaration sites are tagged `Write`, usages `Read`.
+ * Spans are left untrimmed — a full `prefix:localName` highlights as one span,
+ * matching how `getReferences` reports occurrences.
+ */
+export function getDocumentHighlights(currentText: string, offset: number, analysis: FileAnalysis): DocumentHighlight[] | null {
+	const ast = analysis.ast;
+	if (!ast) return null;
+
+	const target = classifySymbolAt(currentText, offset, analysis);
+	if (!target) return null;
+
+	const toHighlight = (start: number, end: number, isDeclaration: boolean): DocumentHighlight =>
+		DocumentHighlight.create(
+			{ start: offsetToPosition(currentText, start), end: offsetToPosition(currentText, end) },
+			isDeclaration ? DocumentHighlightKind.Write : DocumentHighlightKind.Read,
+		);
+
+	if (target.kind === "prefix") {
+		const highlights = collectPrefixOccurrences(ast, target.prefix).map((o) => toHighlight(o.start, o.end, false));
+		for (const imp of analysis.imports) {
+			if (imp.prefix === target.prefix) highlights.push(toHighlight(imp.offset, imp.offset + target.prefix.length, true));
+		}
+		for (const nd of analysis.namespaceDecls) {
+			if (nd.prefix === target.prefix && nd.offset >= 0) highlights.push(toHighlight(nd.offset, nd.offset + target.prefix.length, true));
+		}
+		return highlights.length > 0 ? highlights : null;
+	}
+
+	if (target.kind === "variable") {
+		const occurrences: VarOccurrence[] = [];
+		walkVariables(ast, analysis, new ScopeStack(), occurrences);
+		const t = occurrences.find((o) => offset >= o.start && offset <= o.end);
+		if (!t) return null;
+
+		const matches =
+			t.declOffset !== undefined
+				? occurrences.filter((o) => o.declOffset === t.declOffset)
+				: occurrences.filter(
+						(o) => o.declOffset === undefined && o.qname.namespaceUri === t.qname.namespaceUri && o.qname.localName === t.qname.localName,
+					);
+		return matches.map((o) => toHighlight(o.start, o.end, o.isDeclaration));
+	}
+
+	const occurrences: FnOccurrence[] = [];
+	walkFunctions(ast, analysis, occurrences);
+	const t = occurrences.find((o) => offset >= o.start && offset <= o.end);
+	if (!t) return null;
+
+	const matches = occurrences.filter(
+		(o) => o.qname.namespaceUri === t.qname.namespaceUri && o.qname.localName === t.qname.localName && o.arity === t.arity,
+	);
+	return matches.map((o) => toHighlight(o.start, o.end, o.isDeclaration));
 }

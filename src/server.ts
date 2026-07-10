@@ -20,7 +20,7 @@ import { getBuiltins } from "./builtins.ts";
 import { getCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getDefinition } from "./definition.ts";
-import { getReferences, getRenameRangeAtOffset, getRenameLocations } from "./references.ts";
+import { getReferences, getRenameRangeAtOffset, getRenameLocations, getDocumentHighlights } from "./references.ts";
 import type { FileRecord } from "./references.ts";
 import type { FileAnalysis, TypeDiagnostic } from "./types.ts";
 import { findConfig, expandGlobs } from "./config.ts";
@@ -233,6 +233,7 @@ connection.onInitialize((params) => {
 			definitionProvider: true,
 			referencesProvider: true,
 			renameProvider: { prepareProvider: true },
+			documentHighlightProvider: true,
 			codeActionProvider: { codeActionKinds: [CodeActionKind.QuickFix] },
 		},
 	};
@@ -362,6 +363,14 @@ connection.onRenameRequest((params) => {
 		(changes[loc.uri] ??= []).push(TextEdit.replace(loc.range, params.newName));
 	}
 	return { changes };
+});
+
+connection.onDocumentHighlight((params) => {
+	const doc = documents.get(params.textDocument.uri);
+	if (!doc) return null;
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis } = resolveContext(doc.uri, rawAnalysis);
+	return getDocumentHighlights(doc.getText(), doc.offsetAt(params.position), analysis);
 });
 
 connection.onCodeAction((params) => {
