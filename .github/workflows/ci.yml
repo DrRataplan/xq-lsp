@@ -46,6 +46,19 @@ jobs:
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
 
+    test-demo:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 26
+                  cache: npm
+            - run: npm ci
+              working-directory: demo
+            - run: npm run build
+              working-directory: demo
+
     test-vscode-extension:
         runs-on: ubuntu-latest
         steps:
