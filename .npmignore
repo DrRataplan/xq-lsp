@@ -9,5 +9,5 @@ src/*.test.ts
 src/qt4-snaps/
 firebase.json
 release-please-config.json
-qt4-tests/
+qt4tests/
 scripts/
