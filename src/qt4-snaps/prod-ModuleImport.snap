@@ -1,11 +1,5 @@
 [
   {
-    "testCase": "modules-bad-ns",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0059",
-    "got": []
-  },
-  {
     "testCase": "module-URIs-4",
     "outcome": "false-negative",
     "expectedCode": "XQST0059",
@@ -36,77 +30,15 @@
     "got": []
   },
   {
-    "testCase": "modules-collide-fn-002",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0034",
-    "got": []
-  },
-  {
     "testCase": "modules-emptyns",
     "outcome": "false-negative",
     "expectedCode": "XQST0088",
     "got": []
   },
   {
-    "testCase": "modules-4",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "modules-5",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "modules-6",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "modules-7",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "modules-12",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "modules-13",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "modules-14",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "modules-15",
+    "testCase": "modules-16",
     "outcome": "false-negative",
-    "expectedCode": "XQST0088",
+    "expectedCode": "XQST0070",
     "got": []
   },
   {
@@ -116,34 +48,10 @@
     "got": []
   },
   {
-    "testCase": "modules-28a",
-    "outcome": "false-positive",
-    "expectedCode": "XQDY0054",
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "modules-29",
+    "testCase": "modules-28",
     "outcome": "false-negative",
-    "expectedCode": "XQST0070",
+    "expectedCode": "XQST0093",
     "got": []
-  },
-  {
-    "testCase": "modules-30",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "modules-31",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
   },
   {
     "testCase": "modules-34",
@@ -194,12 +102,10 @@
     "got": []
   },
   {
-    "testCase": "modules-pub-priv-3",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
+    "testCase": "modules-pub-priv-4",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
   },
   {
     "testCase": "modules-pub-priv-14",
@@ -208,12 +114,10 @@
     "got": []
   },
   {
-    "testCase": "modules-pub-priv-15",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
+    "testCase": "modules-pub-priv-16",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
   },
   {
     "testCase": "modules-pub-priv-22",
@@ -222,20 +126,10 @@
     "got": []
   },
   {
-    "testCase": "modules-pub-priv-23",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
-    "testCase": "modules-pub-priv-26",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
+    "testCase": "modules-pub-priv-24",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
   },
   {
     "testCase": "modules-pub-priv-28",
@@ -298,25 +192,9 @@
     "got": []
   },
   {
-    "testCase": "cbcl-module-002",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  },
-  {
     "testCase": "cbcl-module-003",
     "outcome": "false-negative",
     "expectedCode": "XPST0008",
     "got": []
-  },
-  {
-    "testCase": "cbcl-module-004",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
   }
 ]

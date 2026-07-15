@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "fn-load-xquery-module-038",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  }
-]
+[]

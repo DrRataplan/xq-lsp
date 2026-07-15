@@ -332,6 +332,21 @@ if (QT4_DIR) {
 				}
 			}
 
+			// <module uri="..." file="..."/> is the catalog's own namespace-to-file
+			// association — the harness equivalent of a resolved "at" location hint,
+			// used to detect XQST0059 (target namespace mismatch) on bare imports.
+			const moduleCatalog: Array<{ uri: string; text: string }> = [];
+			for (const modEl of childEls(tc, "module")) {
+				const uri = modEl.getAttribute("uri");
+				const file = modEl.getAttribute("file");
+				if (!uri || !file) continue;
+				try {
+					moduleCatalog.push({ uri, text: fs.readFileSync(path.join(path.dirname(xmlPath), file), "utf8") });
+				} catch {
+					/* referenced module file unreadable, skip */
+				}
+			}
+
 			allInputs.push({
 				testSetSlug: slug,
 				testCase: name,
@@ -340,6 +355,7 @@ if (QT4_DIR) {
 				expectedCode,
 				envNamespaces,
 				envVariables,
+				moduleCatalog,
 			});
 
 			if (!seenSlugs.has(slug)) {
