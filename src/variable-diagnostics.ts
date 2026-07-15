@@ -1,7 +1,7 @@
 import type { Node, NonTerminal } from "xq-parser";
 import type { FileAnalysis, QName } from "./types.ts";
 import { qnameKey } from "./types.ts";
-import { isTerminal, directChildOf, directChildrenOf, firstTerminalValue, parseEQName, resolvePrefix } from "./analyzer.ts";
+import { isTerminal, directChildOf, directChildrenOf } from "./analyzer.ts";
 import { asFunctionDecl, asVarRef, asVarName, asBinding, asInlineFunctionExpr, asWindowVars, asTransformExpr } from "./ast-nodes.ts";
 
 export interface UndeclaredVariableDiagnostic {
@@ -167,17 +167,11 @@ function walk(
 		}
 
 		case "InlineFunctionExpr": {
+			const fn = asInlineFunctionExpr(node, analysis);
+			if (!fn) break;
 			scope.push();
-			const paramList = directChildOf(node, "ParamList");
-			for (const param of paramList ? (paramList as NonTerminal).children.filter((c) => c.type === "Param") : []) {
-				const nameNode = directChildOf(param, "EQName");
-				const rawName = nameNode ? firstTerminalValue(nameNode) : null;
-				if (!rawName) continue;
-				const { prefix, localName, uri } = parseEQName(rawName);
-				scope.add(qnameKey({ prefix, localName, namespaceUri: uri ?? (prefix ? resolvePrefix(prefix, analysis) : "") }));
-			}
-			const body = directChildOf(node, "FunctionBody");
-			if (body) walk(body, scope, analysis, moduleVarKeys, out);
+			for (const p of fn.params) scope.add(qnameKey(p.qname));
+			if (fn.body) walk(fn.body, scope, analysis, moduleVarKeys, out);
 			scope.pop();
 			return;
 		}
@@ -186,12 +180,26 @@ function walk(
 			// Skip: implicit $err:* variables inside catch clauses are not tracked in the AST.
 			return;
 
-		case "InlineFunctionExpr": {
-			const fn = asInlineFunctionExpr(node, analysis);
-			if (!fn) break;
+		case "TypeswitchExpr": {
+			const operand = directChildOf(node, "Expr");
+			if (operand) walk(operand, scope, analysis, moduleVarKeys, out);
+			for (const caseClause of directChildrenOf(node, "CaseClause")) {
+				scope.push();
+				const varNameNode = directChildOf(caseClause, "VarName");
+				const qname = varNameNode ? asVarName(varNameNode, analysis) : null;
+				if (qname) scope.add(qnameKey(qname));
+				const returnExpr = directChildOf(caseClause, "ExprSingle");
+				if (returnExpr) walk(returnExpr, scope, analysis, moduleVarKeys, out);
+				scope.pop();
+			}
+			// `default $v return ...` — $v (optional) and the return expr are direct
+			// children of TypeswitchExpr itself, following the last CaseClause.
 			scope.push();
-			for (const p of fn.params) scope.add(qnameKey(p.qname));
-			if (fn.body) walk(fn.body, scope, analysis, moduleVarKeys, out);
+			const defaultVarNode = directChildOf(node, "VarName");
+			const defaultQname = defaultVarNode ? asVarName(defaultVarNode, analysis) : null;
+			if (defaultQname) scope.add(qnameKey(defaultQname));
+			const defaultExpr = directChildOf(node, "ExprSingle");
+			if (defaultExpr) walk(defaultExpr, scope, analysis, moduleVarKeys, out);
 			scope.pop();
 			return;
 		}

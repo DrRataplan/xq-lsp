@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "id-typeswitch-expr-029",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  }
-]
+[]

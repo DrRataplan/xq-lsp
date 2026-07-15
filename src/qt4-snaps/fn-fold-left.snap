@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "fold-left-016",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0008"
-    ]
-  }
-]
+[]

@@ -195,6 +195,16 @@ function resolveNamespaceUri(prefix: string, prefixMap: Map<string, string>): st
 }
 
 /**
+ * Per the BracedURILiteral grammar, whitespace inside `Q{...}` is insignificant:
+ * leading/trailing whitespace is trimmed and internal runs are collapsed to a
+ * single space, so `Q{ urn:foo bar }` and `Q{urn:foo   bar}` name the same URI.
+ * This does not decode percent-escapes — `Q{foo%20bar}` stays distinct from `Q{foo bar}`.
+ */
+function normalizeBracedUri(uri: string): string {
+	return uri.trim().replace(/\s+/g, " ");
+}
+
+/**
  * Split a raw EQName terminal into its components, handling both the
  * conventional `prefix:local` form and the `Q{uri}local` URIQualifiedName form.
  * For `Q{uri}local` the uri is returned directly and needs no prefix lookup.
@@ -202,7 +212,7 @@ function resolveNamespaceUri(prefix: string, prefixMap: Map<string, string>): st
 export function parseEQName(raw: string): { prefix: string; localName: string; uri?: string } {
 	if (raw.startsWith("Q{")) {
 		const close = raw.indexOf("}");
-		if (close >= 0) return { prefix: "", localName: raw.slice(close + 1), uri: raw.slice(2, close) };
+		if (close >= 0) return { prefix: "", localName: raw.slice(close + 1), uri: normalizeBracedUri(raw.slice(2, close)) };
 	}
 	const ci = raw.indexOf(":");
 	return ci >= 0 ? { prefix: raw.slice(0, ci), localName: raw.slice(ci + 1) } : { prefix: "", localName: raw };
