@@ -20,6 +20,7 @@ import { getBuiltins } from "./builtins.ts";
 import { getCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getDefinition } from "./definition.ts";
+import { getDocumentLinks } from "./document-links.ts";
 import { getReferences, getRenameRangeAtOffset, getRenameLocations, getDocumentHighlights } from "./references.ts";
 import type { FileRecord } from "./references.ts";
 import { buildCodeLenses, resolveCodeLens } from "./code-lens.ts";
@@ -239,6 +240,7 @@ connection.onInitialize((params) => {
 			documentHighlightProvider: true,
 			codeActionProvider: { codeActionKinds: [CodeActionKind.QuickFix] },
 			codeLensProvider: { resolveProvider: true },
+			documentLinkProvider: { resolveProvider: false },
 		},
 	};
 });
@@ -426,6 +428,14 @@ connection.onCodeLensResolve((lens) => {
 	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
 	const { analysis } = resolveContext(doc.uri, rawAnalysis);
 	return resolveCodeLens(lens, doc.getText(), analysis, getGlobFileRecords(doc.uri));
+});
+
+connection.onDocumentLinks((params) => {
+	const doc = documents.get(params.textDocument.uri);
+	if (!doc) return [];
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis } = resolveContext(doc.uri, rawAnalysis);
+	return getDocumentLinks(analysis, doc);
 });
 
 connection.onCodeAction((params) => {
