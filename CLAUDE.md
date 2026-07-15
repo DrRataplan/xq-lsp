@@ -52,7 +52,7 @@ The server is a standard LSP over stdio. `src/server.ts` is the entry point and 
 **Predeclared namespaces** — namespace prefixes that are in scope without any declaration in the source.
 
 - `src/analyzer.ts` `BUILTIN_PREFIXES` — always-known prefixes: `fn`, `local`, `xs`, `xml`, `math`, `map`, `array`. These are the XQuery 3.1 spec-mandated and universally predeclared namespaces.
-- `src/runtimes/existdb/predeclared-namespaces.json` — eXist-db-specific prefixes (`util`, `xmldb`, `sm`, …). Active when `lib: ["existdb"]` is configured. Loaded by `getRuntimePredeclaredNamespaces(runtimes)` in `runtimes.ts`.
+- `src/runtimes.ts` `EXISTDB_PREDECLARED_NAMESPACES` — eXist-db-specific prefixes (`util`, `xmldb`, `sm`, …), inlined as a TS constant (not a JSON file, so it survives `tsc`'s build without a copy step). Active when `lib: ["existdb"]` is configured. Loaded by `getRuntimePredeclaredNamespaces(runtimes)` in `runtimes.ts`.
 
 `withPredeclaredNs(analysis, ns)` merges runtime-specific namespace declarations into `analysis.namespaceDecls` so `resolvePrefix` picks them up and `findUndeclaredPrefixUsages` doesn't flag them.
 
