@@ -20,7 +20,7 @@ export const XMLNS_MATH = "http://www.w3.org/2005/xpath-functions/math";
 export const XMLNS_MAP = "http://www.w3.org/2005/xpath-functions/map";
 export const XMLNS_ARRAY = "http://www.w3.org/2005/xpath-functions/array";
 
-const BUILTIN_PREFIXES: Record<string, string> = {
+export const BUILTIN_PREFIXES: Record<string, string> = {
 	fn: XMLNS_FN,
 	local: XMLNS_LOCAL,
 	xs: XMLNS_XS,
