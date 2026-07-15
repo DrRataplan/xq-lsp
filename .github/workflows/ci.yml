@@ -37,7 +37,13 @@ jobs:
                   cache: npm
             - run: npm ci
             - run: npm run build
-            - run: npm install --prefix editors/vscode
+            - name: npm pack (creates tarball referenced by editors/vscode/package.json)
+              run: npm pack
+            - name: Install extension deps, override xq-lsp with packed tarball
+              working-directory: editors/vscode
+              run: |
+                  npm install
+                  npm install ../../xq-lsp-*.tgz
             - run: npm run test:coverage
               env:
                   QT4_TESTS_DIR: ${{ github.workspace }}/qt4tests
@@ -69,7 +75,13 @@ jobs:
                   cache: npm
             - run: npm ci
             - run: npm run build
-            - run: npm install --prefix editors/vscode
+            - name: npm pack (creates tarball referenced by editors/vscode/package.json)
+              run: npm pack
+            - name: Install extension deps, override xq-lsp with packed tarball
+              working-directory: editors/vscode
+              run: |
+                  npm install
+                  npm install ../../xq-lsp-*.tgz
             - name: Build extension bundle
               run: node build.mjs
               working-directory: editors/vscode
