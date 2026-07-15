@@ -22,6 +22,8 @@ import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getDefinition } from "./definition.ts";
 import { getReferences, getRenameRangeAtOffset, getRenameLocations, getDocumentHighlights } from "./references.ts";
 import type { FileRecord } from "./references.ts";
+import { buildCodeLenses, resolveCodeLens } from "./code-lens.ts";
+import type { CodeLensData } from "./code-lens.ts";
 import type { FileAnalysis, TypeDiagnostic } from "./types.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import {
@@ -236,6 +238,7 @@ connection.onInitialize((params) => {
 			renameProvider: { prepareProvider: true },
 			documentHighlightProvider: true,
 			codeActionProvider: { codeActionKinds: [CodeActionKind.QuickFix] },
+			codeLensProvider: { resolveProvider: true },
 		},
 	};
 });
@@ -406,6 +409,23 @@ connection.onDocumentHighlight((params) => {
 	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
 	const { analysis } = resolveContext(doc.uri, rawAnalysis);
 	return getDocumentHighlights(doc.getText(), doc.offsetAt(params.position), analysis);
+});
+
+connection.onCodeLens((params) => {
+	const doc = documents.get(params.textDocument.uri);
+	if (!doc) return [];
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis } = resolveContext(doc.uri, rawAnalysis);
+	return buildCodeLenses(doc, analysis);
+});
+
+connection.onCodeLensResolve((lens) => {
+	const data = lens.data as CodeLensData | undefined;
+	const doc = data && documents.get(data.uri);
+	if (!doc) return { ...lens, command: { title: "0 references", command: "" } };
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis } = resolveContext(doc.uri, rawAnalysis);
+	return resolveCodeLens(lens, doc.getText(), analysis, getGlobFileRecords(doc.uri));
 });
 
 connection.onCodeAction((params) => {
