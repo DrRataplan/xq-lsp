@@ -1,5 +1,3 @@
-import * as path from "path";
-import { fileURLToPath } from "url";
 import type { Node } from "xq-parser";
 import type { FileAnalysis } from "./types.ts";
 import { isTerminal, directChildOf, firstTerminalValue, resolvePrefix } from "./analyzer.ts";
@@ -152,10 +150,25 @@ export function findDeclareNsInsertPosition(text: string): { line: number; chara
 
 /** Compute a relative file path from one URI to another, always using forward slashes and a leading `./`. */
 export function computeRelativePath(fromUri: string, toUri: string): string {
-	const fromPath = fileURLToPath(fromUri);
-	const toPath = fileURLToPath(toUri);
-	const fromDir = path.dirname(fromPath);
-	let rel = path.relative(fromDir, toPath).replace(/\\/g, "/");
-	if (!rel.startsWith(".")) rel = "./" + rel;
-	return rel;
+	// Uses only the global URL (Node + browser) so this module stays bundlable for the browser demo.
+	const fromSegments = new URL(".", fromUri)
+		.pathname.split("/")
+		.filter(Boolean)
+		.map(decodeURIComponent);
+	const toSegments = new URL(toUri).pathname
+		.split("/")
+		.filter(Boolean)
+		.map(decodeURIComponent);
+
+	let common = 0;
+	while (
+		common < fromSegments.length &&
+		common < toSegments.length &&
+		fromSegments[common] === toSegments[common]
+	)
+		common++;
+
+	const ups = fromSegments.length - common;
+	const rel = [...Array(ups).fill(".."), ...toSegments.slice(common)].join("/");
+	return rel.startsWith(".") ? rel : "./" + rel;
 }
