@@ -25,6 +25,7 @@ import { getReferences, getRenameRangeAtOffset, getRenameLocations, getDocumentH
 import type { FileRecord } from "./references.ts";
 import { buildCodeLenses, resolveCodeLens } from "./code-lens.ts";
 import type { CodeLensData } from "./code-lens.ts";
+import { prepareCallHierarchy, getIncomingCalls, getOutgoingCalls } from "./call-hierarchy.ts";
 import type { FileAnalysis, TypeDiagnostic } from "./types.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import {
@@ -105,6 +106,19 @@ function getImportedAnalysis(importUri: string): FileAnalysis | null {
 		const { analysis } = analyzeWithAst(text, importUri);
 		analysisCache.set(importUri, analysis);
 		return analysis;
+	} catch {
+		return null;
+	}
+}
+
+// Loads text + analysis for a call-hierarchy item's uri, which may not be an open document.
+function loadAnalysisForUri(uri: string): { text: string; analysis: FileAnalysis } | null {
+	const doc = documents.get(uri);
+	if (doc) return { text: doc.getText(), analysis: analysisCache.get(uri) ?? analyzeDocument(doc) };
+	try {
+		const text = fs.readFileSync(uriToPath(uri), "utf-8");
+		const { analysis } = analyzeWithAst(text, uri);
+		return { text, analysis };
 	} catch {
 		return null;
 	}
@@ -241,6 +255,7 @@ connection.onInitialize((params) => {
 			codeActionProvider: { codeActionKinds: [CodeActionKind.QuickFix] },
 			codeLensProvider: { resolveProvider: true },
 			documentLinkProvider: { resolveProvider: false },
+			callHierarchyProvider: true,
 		},
 	};
 });
@@ -436,6 +451,28 @@ connection.onDocumentLinks((params) => {
 	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
 	const { analysis } = resolveContext(doc.uri, rawAnalysis);
 	return getDocumentLinks(analysis, doc);
+});
+
+connection.languages.callHierarchy.onPrepare((params) => {
+	const doc = documents.get(params.textDocument.uri);
+	if (!doc) return null;
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
+	return prepareCallHierarchy(doc.uri, doc.getText(), doc.offsetAt(params.position), analysis, imported);
+});
+
+connection.languages.callHierarchy.onIncomingCalls((params) => {
+	const loaded = loadAnalysisForUri(params.item.uri);
+	if (!loaded) return null;
+	const { analysis } = resolveContext(params.item.uri, loaded.analysis);
+	return getIncomingCalls(params.item, loaded.text, analysis, getGlobFileRecords(params.item.uri));
+});
+
+connection.languages.callHierarchy.onOutgoingCalls((params) => {
+	const loaded = loadAnalysisForUri(params.item.uri);
+	if (!loaded) return null;
+	const { analysis, imported } = resolveContext(params.item.uri, loaded.analysis);
+	return getOutgoingCalls(params.item, loaded.text, analysis, imported);
 });
 
 connection.onCodeAction((params) => {
