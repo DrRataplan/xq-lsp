@@ -3,6 +3,7 @@ import { analyzeWithAst, resolvePrefix } from "./analyzer.ts";
 import { runDiagnostics } from "./diagnostics.ts";
 import { getBuiltins } from "./builtins.ts";
 import { qnameKey } from "./types.ts";
+import type { FileAnalysis } from "./types.ts";
 
 export interface TestInput {
 	testSetSlug: string;
@@ -12,6 +13,12 @@ export interface TestInput {
 	expectedCode: string | null;
 	envNamespaces: Array<{ prefix: string; uri: string }>;
 	envVariables: Array<{ prefix: string; localName: string }>;
+	// Catalog <module uri="..." file="..."/> entries: the test harness's own
+	// namespace-to-file association, used when a query imports a module
+	// without (or without a resolvable) "at" location hint. Keyed by the
+	// catalog's declared uri so mismatches against the file's own `module
+	// namespace` decl can be caught the same way a resolved "at" hint would be.
+	moduleCatalog: Array<{ uri: string; text: string }>;
 }
 
 export interface TestOutput {
@@ -28,9 +35,28 @@ function collectCodes(
 	query: string,
 	envNamespaces: Array<{ prefix: string; uri: string }>,
 	envVariables: Array<{ prefix: string; localName: string }>,
+	moduleCatalog: Array<{ uri: string; text: string }>,
 ): string[] {
 	try {
 		const { analysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq");
+		const imports = new Map<string, FileAnalysis>(BUILTINS);
+		for (const m of moduleCatalog) {
+			const modAnalysis = analyzeWithAst(m.text, "file:///catalog-module.xq").analysis;
+			// Multiple <module> catalog entries can share the same uri (alternate
+			// location-hint candidates for one namespace) — merge their symbols
+			// rather than letting the last one clobber the others.
+			const existing = imports.get(m.uri);
+			imports.set(
+				m.uri,
+				existing
+					? {
+							...existing,
+							functions: [...existing.functions, ...modAnalysis.functions],
+							moduleVariables: [...existing.moduleVariables, ...modAnalysis.moduleVariables],
+						}
+					: modAnalysis,
+			);
+		}
 		for (const ns of envNamespaces) {
 			if (ns.prefix && !analysis.namespaceDecls.some((d) => d.prefix === ns.prefix)) {
 				analysis.namespaceDecls.push({ prefix: ns.prefix, namespaceUri: ns.uri, offset: -1 });
@@ -54,7 +80,7 @@ function collectCodes(
 		const codes: string[] = [];
 		if (parseError) codes.push("XPST0003");
 		if (ast) {
-			for (const d of runDiagnostics(ast, query, analysis, BUILTINS)) codes.push(d.code);
+			for (const d of runDiagnostics(ast, query, analysis, imports)) codes.push(d.code);
 		}
 		return [...new Set(codes)];
 	} catch {
@@ -64,7 +90,7 @@ function collectCodes(
 
 const batch = workerData as TestInput[];
 const results: TestOutput[] = batch.map((tc) => {
-	const got = collectCodes(tc.query, tc.envNamespaces, tc.envVariables);
+	const got = collectCodes(tc.query, tc.envNamespaces, tc.envVariables, tc.moduleCatalog);
 	const hasError = got.length > 0;
 	const outcome =
 		tc.expected === "static-error"
