@@ -21,6 +21,7 @@ import { getCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getDefinition } from "./definition.ts";
 import { getDocumentLinks } from "./document-links.ts";
+import { getInlayHints } from "./inlay-hints.ts";
 import { getReferences, getRenameRangeAtOffset, getRenameLocations, getDocumentHighlights } from "./references.ts";
 import type { FileRecord } from "./references.ts";
 import { buildCodeLenses, resolveCodeLens } from "./code-lens.ts";
@@ -261,6 +262,7 @@ connection.onInitialize((params) => {
 			codeLensProvider: { resolveProvider: true },
 			documentLinkProvider: { resolveProvider: false },
 			callHierarchyProvider: true,
+			inlayHintProvider: true,
 		},
 	};
 });
@@ -425,6 +427,15 @@ connection.onRenameRequest((params) => {
 		(changes[loc.uri] ??= []).push(TextEdit.replace(loc.range, params.newName));
 	}
 	return { changes };
+});
+
+connection.languages.inlayHint.on((params) => {
+	const doc = documents.get(params.textDocument.uri);
+	if (!doc) return [];
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
+	if (!analysis.ast) return []; // mid-edit / regex fallback — no AST to walk
+	return getInlayHints(doc, analysis.ast, analysis, imported, params.range);
 });
 
 connection.onDocumentHighlight((params) => {
