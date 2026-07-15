@@ -28,15 +28,13 @@ import type { CodeLensData } from "./code-lens.ts";
 import { prepareCallHierarchy, getIncomingCalls, getOutgoingCalls } from "./call-hierarchy.ts";
 import type { FileAnalysis, TypeDiagnostic } from "./types.ts";
 import { findConfig, expandGlobs } from "./config.ts";
-import {
-	findImportInsertPosition,
-	findDeclareNsInsertPosition,
-	computeRelativePath,
-} from "./namespace-diagnostics.ts";
+import { findImportInsertPosition, findDeclareNsInsertPosition, computeRelativePath } from "./namespace-diagnostics.ts";
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
 import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
 import { runDiagnostics, runHints } from "./diagnostics.ts";
 import { getRuntimeAnalyses, getRuntimePredeclaredNamespaces, withPredeclaredNs } from "./runtimes.ts";
+import { buildOrganizeImportsEdit, buildExtractVariableEdit, buildExtractFunctionEdit } from "./refactor-actions.ts";
+import type { OffsetEdit } from "./refactor-actions.ts";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -252,7 +250,14 @@ connection.onInitialize((params) => {
 			referencesProvider: true,
 			renameProvider: { prepareProvider: true },
 			documentHighlightProvider: true,
-			codeActionProvider: { codeActionKinds: [CodeActionKind.QuickFix] },
+
+			codeActionProvider: {
+				codeActionKinds: [
+					CodeActionKind.QuickFix,
+					CodeActionKind.SourceOrganizeImports,
+					CodeActionKind.RefactorExtract,
+				],
+			},
 			codeLensProvider: { resolveProvider: true },
 			documentLinkProvider: { resolveProvider: false },
 			callHierarchyProvider: true,
@@ -311,18 +316,14 @@ connection.onCompletion((params) => {
 	for (const [nsUri, analysis] of globAnalyses) {
 		if (!imported.has(nsUri) && !imported.has(analysis.modulePrefix ?? "")) {
 			// Only include if not already reachable via the imported map
-			const alreadyImported = [...imported.values()].some(
-				(a) => a.moduleNamespaceUri === nsUri,
-			);
+			const alreadyImported = [...imported.values()].some((a) => a.moduleNamespaceUri === nsUri);
 			if (!alreadyImported) availableAnalyses.set(nsUri, analysis);
 		}
 	}
 
 	// Build known pure-XML namespaces (from config prefixes + glob file namespace declarations).
 	const configPrefixes = config?.prefixes ?? {};
-	const knownNamespaces = new Map<string, string>(
-		Object.entries(configPrefixes) as [string, string][],
-	);
+	const knownNamespaces = new Map<string, string>(Object.entries(configPrefixes) as [string, string][]);
 	for (const a of globAnalyses.values()) {
 		for (const nd of a.namespaceDecls) {
 			if (!knownNamespaces.has(nd.prefix)) knownNamespaces.set(nd.prefix, nd.namespaceUri);
@@ -410,7 +411,13 @@ connection.onRenameRequest((params) => {
 	}
 	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
 	const { analysis } = resolveContext(doc.uri, rawAnalysis);
-	const locations = getRenameLocations(doc.uri, doc.getText(), doc.offsetAt(params.position), analysis, getGlobFileRecords(doc.uri));
+	const locations = getRenameLocations(
+		doc.uri,
+		doc.getText(),
+		doc.offsetAt(params.position),
+		analysis,
+		getGlobFileRecords(doc.uri),
+	);
 	if (!locations) return null;
 
 	const changes: Record<string, TextEdit[]> = {};
@@ -475,6 +482,15 @@ connection.languages.callHierarchy.onOutgoingCalls((params) => {
 	return getOutgoingCalls(params.item, loaded.text, analysis, imported);
 });
 
+// True when `kind` is (or is a sub-kind of) one of the client-requested `only` kinds; unset means no filter.
+function matchesOnly(kind: string, only: CodeActionKind[] | undefined): boolean {
+	return !only || only.some((k) => kind === k || kind.startsWith(`${k}.`));
+}
+
+function toEditRange(doc: TextDocument, edit: OffsetEdit) {
+	return { range: { start: doc.positionAt(edit.start), end: doc.positionAt(edit.end) }, newText: edit.newText };
+}
+
 connection.onCodeAction((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return [];
@@ -485,6 +501,7 @@ connection.onCodeAction((params) => {
 	const generateLocationHints = config?.generateLocationHints ?? true;
 	const configPrefixes = config?.prefixes ?? {};
 	const actions: CodeAction[] = [];
+	const only = params.context.only as CodeActionKind[] | undefined;
 
 	for (const diag of params.context.diagnostics) {
 		if (diag.code !== "XQST0081") continue;
@@ -568,9 +585,44 @@ connection.onCodeAction((params) => {
 		}
 	}
 
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const ast = rawAnalysis.ast ?? null;
+
+	if (ast && matchesOnly(CodeActionKind.SourceOrganizeImports, only)) {
+		const edit = buildOrganizeImportsEdit(ast, rawAnalysis, text);
+		if (edit) {
+			actions.push({
+				title: "Organize imports",
+				kind: CodeActionKind.SourceOrganizeImports,
+				edit: { changes: { [doc.uri]: [toEditRange(doc, edit)] } },
+			});
+		}
+	}
+
+	const selStart = doc.offsetAt(params.range.start);
+	const selEnd = doc.offsetAt(params.range.end);
+	if (ast && selStart < selEnd && matchesOnly(CodeActionKind.RefactorExtract, only)) {
+		const varResult = buildExtractVariableEdit(ast, rawAnalysis, text, selStart, selEnd);
+		if (varResult) {
+			actions.push({
+				title: `Extract to variable '$${varResult.variableName}'`,
+				kind: CodeActionKind.RefactorExtract,
+				edit: { changes: { [doc.uri]: varResult.edits.map((e) => toEditRange(doc, e)) } },
+			});
+		}
+
+		const fnResult = buildExtractFunctionEdit(ast, rawAnalysis, text, selStart, selEnd);
+		if (fnResult) {
+			actions.push({
+				title: `Extract to function 'local:${fnResult.functionName}'`,
+				kind: CodeActionKind.RefactorExtract,
+				edit: { changes: { [doc.uri]: fnResult.edits.map((e) => toEditRange(doc, e)) } },
+			});
+		}
+	}
+
 	return actions;
 });
-
 
 documents.listen(connection);
 connection.listen();
