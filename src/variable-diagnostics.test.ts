@@ -160,5 +160,37 @@ array:for-each(function ($cfg as map(*)) {
 			);
 			assert.equal(ds.length, 0, `no errors expected, got ${JSON.stringify(ds)}`);
 		});
+
+		test("typeswitch case-clause variable visible in its return expression", () => {
+			const ds = undeclaredVarDiags(
+				`typeswitch(1) case $a as xs:integer return $a default return 0`,
+			);
+			assert.equal(ds.length, 0, `no errors expected, got ${JSON.stringify(ds)}`);
+		});
+
+		test("typeswitch default-clause variable visible in its return expression", () => {
+			const ds = undeclaredVarDiags(`typeswitch(1) case xs:string return 0 default $v return $v`);
+			assert.equal(ds.length, 0, `no errors expected, got ${JSON.stringify(ds)}`);
+		});
+
+		test("typeswitch case-clause variable with union type visible in its return expression", () => {
+			const ds = undeclaredVarDiags(
+				`typeswitch(1) case $i as xs:integer | xs:string return $i default return 0`,
+			);
+			assert.equal(ds.length, 0, `no errors expected, got ${JSON.stringify(ds)}`);
+		});
+
+		test("typeswitch case-clause variable not visible in a different case's return expression", () => {
+			const ds = undeclaredVarDiags(
+				`typeswitch(1) case $a as xs:integer return 0 case $b as xs:string return $a default return 0`,
+			);
+			assert.ok(ds.some((d) => d.message.includes("'$a'")),
+				`expected XPST0008 for $a leaking into the next case, got ${JSON.stringify(ds)}`);
+		});
+
+		test("EQName BracedURILiteral whitespace is insignificant", () => {
+			const ds = undeclaredVarDiags(`for $Q{ urn:foo bar }x in 1 to 5 return $Q{urn:foo   bar}x`);
+			assert.equal(ds.length, 0, `no errors expected, got ${JSON.stringify(ds)}`);
+		});
 	});
 });
