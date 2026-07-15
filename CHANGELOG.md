@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.7.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.6.0...lsp-v1.7.0) (2026-07-15)
+
+
+### Features
+
+* add document highlight support (textDocument/documentHighlight) ([6d90ad7](https://github.com/DrRataplan/xq-lsp/commit/6d90ad7b63e50b10b68705e819320035318a56da))
+* add find-references support via cross-file glob scan ([f0b0085](https://github.com/DrRataplan/xq-lsp/commit/f0b00852265c68ec95b96d86781eef41cb9dd940))
+* add rename support (textDocument/rename, prepareRename) ([d0cb55d](https://github.com/DrRataplan/xq-lsp/commit/d0cb55dbcba1d5b8520f7a2080818cdc420e06e6))
+* add XQST0034 diagnostic for double-declared functions ([6d44620](https://github.com/DrRataplan/xq-lsp/commit/6d44620e5b41e7de2c0a548086abec0b45ae22ff))
+* add XQST0059 diagnostic for module import namespace mismatches ([d8111fc](https://github.com/DrRataplan/xq-lsp/commit/d8111fcbf034d23306a53cfe28bd7c3dd43ce3a7))
+* auto-import and auto-declare-namespace via completion additionalTextEdits ([e1a9a93](https://github.com/DrRataplan/xq-lsp/commit/e1a9a935dea941bf35a3dc580ee77f7e88dd22c1))
+
+
+### Bug Fixes
+
+* don't blanket-skip XQUpdate-tagged QT4 tests ([f2e45f1](https://github.com/DrRataplan/xq-lsp/commit/f2e45f18022873cb3bb5105eb727b484bedfd518))
+* don't count literal fn:error() code calls as expected static errors ([0bead1b](https://github.com/DrRataplan/xq-lsp/commit/0bead1b8044c52daa2d7f2a11a24f8512d6ee2a9))
+* fall back to glob-resolved namespace when import location hint fails ([6ce03db](https://github.com/DrRataplan/xq-lsp/commit/6ce03db6d9c5deb1fa501617c29b6005f2540102))
+* go-to-definition for function params and imported variables ([415cfdd](https://github.com/DrRataplan/xq-lsp/commit/415cfdd4717b71af66041a7727641f18d091175d))
+* go-to-definition for inline function params and dashed variable names ([a4e7279](https://github.com/DrRataplan/xq-lsp/commit/a4e7279d4b27357bb27e7b67f2ed0551650ef66e))
+* handle InlineFunctionExpr scope in variable and unused-variable walkers ([de19b18](https://github.com/DrRataplan/xq-lsp/commit/de19b186fd367dc1450de1554205e8c07d0e40fd))
+* insert auto-import after last existing import, skip multi-line docblocks ([12227a9](https://github.com/DrRataplan/xq-lsp/commit/12227a916dcdafeb2ba5ddef21e82b4e2f6acbca))
+* load external &lt;test file&gt; queries and skip unsupported QT4 features ([4cbdc58](https://github.com/DrRataplan/xq-lsp/commit/4cbdc589b9af65f9043e3c0de6b5ffe950f3c7fe))
+* make computeRelativePath browser-safe and build the demo in CI ([033a057](https://github.com/DrRataplan/xq-lsp/commit/033a057849cbc492f8e243cf8f4e908200673033))
+* model QT4 environment-bound variables to cut XPST0008 false positives ([5dcb404](https://github.com/DrRataplan/xq-lsp/commit/5dcb4040bd79c0b7dc8edac5086b2289b1582b9e))
+* rewrite imported variable prefix to the importing module's prefix in completions ([f7c5ccc](https://github.com/DrRataplan/xq-lsp/commit/f7c5ccc337af75bae0c2d881210ba3373c90bb71))
+* scope inline function params, window vars, and copy bindings for XPST0008 ([7391a94](https://github.com/DrRataplan/xq-lsp/commit/7391a94c2607a028b6636ad6fcdadb29ba1356e5))
+
 ## [1.6.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.5.0...lsp-v1.6.0) (2026-07-09)
 
 
