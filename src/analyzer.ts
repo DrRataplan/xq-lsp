@@ -26,7 +26,7 @@ export const XMLNS_ARRAY = "http://www.w3.org/2005/xpath-functions/array";
 // context, independent of any runtime/library configuration. math/map/array
 // aren't spec-mandated but are universally available in practice (they back
 // the 3.1 map/array/math core function libraries), so they're predeclared here too.
-const BUILTIN_PREFIXES: Record<string, string> = {
+export const BUILTIN_PREFIXES: Record<string, string> = {
 	fn: XMLNS_FN,
 	local: XMLNS_LOCAL,
 	xs: XMLNS_XS,

@@ -46,6 +46,7 @@ import { buildOrganizeImportsEdit, buildExtractVariableEdit, buildExtractFunctio
 import type { OffsetEdit } from "./refactor-actions.ts";
 import { getWorkspaceSymbols } from "./workspace-symbol.ts";
 import { siblingModuleAnalysis } from "./module-siblings.ts";
+import { getSemanticTokensData, SEMANTIC_TOKENS_LEGEND } from "./semantic-tokens.ts";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -311,6 +312,7 @@ connection.onInitialize((params) => {
 			callHierarchyProvider: true,
 			inlayHintProvider: true,
 			diagnosticProvider: { interFileDependencies: true, workspaceDiagnostics: false },
+			semanticTokensProvider: { legend: SEMANTIC_TOKENS_LEGEND, full: true },
 		},
 	};
 });
@@ -564,6 +566,14 @@ function matchesOnly(kind: string, only: CodeActionKind[] | undefined): boolean 
 function toEditRange(doc: TextDocument, edit: OffsetEdit) {
 	return { range: { start: doc.positionAt(edit.start), end: doc.positionAt(edit.end) }, newText: edit.newText };
 }
+
+connection.languages.semanticTokens.on((params) => {
+	const doc = documents.get(params.textDocument.uri);
+	if (!doc) return { data: [] };
+	const { analysis: rawAnalysis, ast } = analyzeDocumentFull(doc);
+	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
+	return { data: getSemanticTokensData(ast, doc.getText(), analysis, imported) };
+});
 
 connection.onCodeAction((params) => {
 	const doc = documents.get(params.textDocument.uri);
