@@ -56,6 +56,66 @@ local:double(5)`;
 		const value = typeof hover.contents === "object" && "value" in hover.contents ? hover.contents.value : "";
 		assert.ok(value.includes("fn:true"), `expected fn:true in hover, got: ${value}`);
 	});
+
+	test("element name matching a builtin function is not treated as a call", () => {
+		const src = `<error/>`;
+		const builtins = getBuiltins();
+		const hover = getHover(
+			makeDoc(src),
+			src.indexOf("error"),
+			analyze(src, "file:///test.xq"),
+			new Map([["builtin:fn", builtins]]),
+		);
+		assert.equal(hover, null, "hovering an element name should not resolve fn:error");
+	});
+
+	test("attribute name matching a builtin function is not treated as a call", () => {
+		const src = `<x error="1"/>`;
+		const builtins = getBuiltins();
+		const hover = getHover(
+			makeDoc(src),
+			src.indexOf("error"),
+			analyze(src, "file:///test.xq"),
+			new Map([["builtin:fn", builtins]]),
+		);
+		assert.equal(hover, null, "hovering an attribute name should not resolve fn:error");
+	});
+
+	test("string literal contents matching a builtin function is not treated as a call", () => {
+		const src = `foo("error")`;
+		const builtins = getBuiltins();
+		const hover = getHover(
+			makeDoc(src),
+			src.indexOf("error"),
+			analyze(src, "file:///test.xq"),
+			new Map([["builtin:fn", builtins]]),
+		);
+		assert.equal(hover, null, "hovering string contents should not resolve fn:error");
+	});
+
+	test("named function ref still resolves", () => {
+		const src = `error#1`;
+		const builtins = getBuiltins();
+		const hover = getHover(
+			makeDoc(src),
+			src.indexOf("error"),
+			analyze(src, "file:///test.xq"),
+			new Map([["builtin:fn", builtins]]),
+		);
+		assert.ok(hover, "expected hover for named function ref");
+	});
+
+	test("arrow call still resolves", () => {
+		const src = `$x => error()`;
+		const builtins = getBuiltins();
+		const hover = getHover(
+			makeDoc(src),
+			src.indexOf("error"),
+			analyze(src, "file:///test.xq"),
+			new Map([["builtin:fn", builtins]]),
+		);
+		assert.ok(hover, "expected hover for arrow-called function");
+	});
 });
 
 // ── signature help ────────────────────────────────────────────────────────────
