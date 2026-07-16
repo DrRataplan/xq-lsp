@@ -186,6 +186,30 @@ const LITERAL_TYPE: Record<string, XQueryType> = {
 const NODE_STEP: XQueryType = { kind: "node", name: "node", occurrence: "*" };
 const RANGE_SEQUENCE: XQueryType = { kind: "atomic", name: "xs:integer", occurrence: "*" };
 
+// Reuses the existing xs:numeric union check and subtype/promotion chain (isAtomicSubtype)
+// rather than a separate hardcoded numeric ordering.
+function numericAtomicName(t: XQueryType): string | null {
+	return t.kind === "atomic" && t.name && isAtomicSubtype(t.name, "xs:numeric") ? t.name : null;
+}
+
+function widenNumeric(a: string, b: string): string {
+	if (isAtomicSubtype(a, b)) return b;
+	if (isAtomicSubtype(b, a)) return a;
+	return "xs:double"; // neither promotes to the other — fall back to the widest common type
+}
+
+// Result type of a `+`/`-`/`*`/`div`/`idiv`/`mod` operator per XPath F&O arithmetic rules.
+function arithmeticResult(op: string, a: XQueryType, b: XQueryType): XQueryType {
+	const aName = numericAtomicName(a);
+	const bName = numericAtomicName(b);
+	if (!aName || !bName) return UNKNOWN;
+	if (op === "idiv") return { kind: "atomic", name: "xs:integer", occurrence: "" };
+	if (op === "div" && aName === "xs:integer" && bName === "xs:integer") {
+		return { kind: "atomic", name: "xs:decimal", occurrence: "" }; // integer div integer is never exact
+	}
+	return { kind: "atomic", name: widenNumeric(aName, bName), occurrence: "" };
+}
+
 function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, FileAnalysis>): FunctionSymbol[] {
 	const fns = [...analysis.functions];
 	for (const a of importedAnalyses.values()) fns.push(...a.functions);
@@ -229,6 +253,26 @@ export function inferExprType(
 			const qname = asVarRef(node, analysis);
 			return qname ? (varTypes.get(qnameKey(qname)) ?? UNKNOWN) : UNKNOWN;
 		}
+		case "AdditiveExpr":
+		case "MultiplicativeExpr": {
+			// Grammar produces a flat, left-associative chain: operand (op operand)*.
+			let result: XQueryType | undefined;
+			let pendingOp: string | undefined;
+			for (const c of nt.children) {
+				if (isTerminal(c)) {
+					pendingOp = c.value;
+					continue;
+				}
+				const t = inferExprType(c, varTypes, analysis, allFns);
+				if (result === undefined) {
+					result = t;
+				} else if (pendingOp) {
+					result = arithmeticResult(pendingOp, result, t);
+					pendingOp = undefined;
+				}
+			}
+			return result ?? UNKNOWN;
+		}
 		case "FunctionCall": {
 			// Partial application — one or more ArgumentPlaceholder nodes ('?') are present.
 			// The result is a function type we don't fully infer yet; return UNKNOWN to avoid
@@ -238,9 +282,18 @@ export function inferExprType(
 			return inferFunctionReturn(node, analysis, allFns);
 		}
 		case "PathExpr":
-		case "RelativePathExpr":
-			if (isPathExpr(node)) return NODE_STEP;
-			break;
+		case "RelativePathExpr": {
+			if (!isPathExpr(node)) break;
+			// Every step's result feeds into (or is) the path's navigation — if any step
+			// provably isn't a node (a literal, an atomic function result, etc.), the whole
+			// path can't be node-producing either, regardless of which step it is.
+			const steps = nt.children.filter((c) => !isTerminal(c));
+			const definitelyNotNodes = steps.some((step) => {
+				const stepType = inferExprType(step, varTypes, analysis, allFns);
+				return stepType.kind !== "unknown" && stepType.kind !== "node" && stepType.kind !== "item";
+			});
+			return definitelyNotNodes ? UNKNOWN : NODE_STEP;
+		}
 		case "AxisStep":
 		case "ForwardStep":
 		case "ReverseStep":
