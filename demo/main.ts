@@ -13,6 +13,7 @@ import builtinsArray from "../builtins/builtins-array.xq?raw";
 import { findUndeclaredPrefixUsages } from "../src/namespace-diagnostics.ts";
 import { runDiagnostics, runHints } from "../src/diagnostics.ts";
 import { type FileAnalysis } from "../src/types.ts";
+import type { Node } from "xq-parser";
 import { resolveFunctionAtOffset, resolveSignatureAtOffset, functionSignature } from "../src/hover-core.ts";
 import { getCompletions } from "../src/completion-core.ts";
 import { getRuntimePredeclaredNamespaces, withPredeclaredNs } from "../src/predeclared-namespaces.ts";
@@ -118,7 +119,8 @@ function getImported(analysis: FileAnalysis, libs: string[]): Map<string, FileAn
 
 	const runtimeByNamespace = new Map<string, FileAnalysis>();
 	for (const runtimeAnalysis of getRuntimeAnalyses(libs)) {
-		if (runtimeAnalysis.moduleNamespaceUri) runtimeByNamespace.set(runtimeAnalysis.moduleNamespaceUri, runtimeAnalysis);
+		if (runtimeAnalysis.moduleNamespaceUri)
+			runtimeByNamespace.set(runtimeAnalysis.moduleNamespaceUri, runtimeAnalysis);
 	}
 
 	for (const imp of analysis.imports) {
@@ -244,6 +246,32 @@ const signatureField = StateField.define({
 		}),
 });
 
+// ── AST panel ─────────────────────────────────────────────────────────────────
+// Dumps the raw xq-parser tree for the current doc, for debugging analyzer/
+// diagnostic logic against a specific parse shape. Runnable outside the
+// browser too — see `node scripts/dump-ast.ts` (documented in CLAUDE.md).
+
+const astPanel = document.getElementById("ast-panel")!;
+const astOutput = document.getElementById("ast-output")!;
+const astToggle = document.getElementById("ast-toggle")!;
+
+function setAstVisible(visible: boolean) {
+	astPanel.classList.toggle("visible", visible);
+	astToggle.classList.toggle("active", visible);
+	astToggle.textContent = visible ? "Hide AST" : "Show AST";
+	const url = new URL(location.href);
+	if (visible) url.searchParams.set("ast", "1");
+	else url.searchParams.delete("ast");
+	history.replaceState(null, "", url);
+}
+
+function renderAst(ast: Node | null, parseError: Error | null) {
+	astOutput.textContent = parseError ? `Parse error: ${parseError.message}` : JSON.stringify(ast, null, 2);
+}
+
+astToggle.addEventListener("click", () => setAstVisible(!astPanel.classList.contains("visible")));
+setAstVisible(new URLSearchParams(location.search).get("ast") === "1");
+
 // ── Config panel ─────────────────────────────────────────────────────────────
 
 const configEl = document.getElementById("config-editor") as HTMLTextAreaElement;
@@ -281,6 +309,8 @@ const xqueryLinter = linter((view): Diagnostic[] => {
 	const libs = getConfigLibs();
 	const { analysis: rawAnalysis, ast, parseError } = analyzeWithAst(code, "playground.xq");
 	const analysis = withPredeclaredNs(rawAnalysis, getRuntimePredeclaredNamespaces(libs));
+	renderAst(ast, parseError);
+
 	const configPrefixes = getConfigPrefixes();
 	const diagnostics: Diagnostic[] = [];
 

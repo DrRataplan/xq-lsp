@@ -33,6 +33,18 @@ Snapshots live in `src/qt4-snaps/` — one JSON file per QT4 test-set, listing e
 
 The pinned commit is the submodule pointer in `.gitmodules`. A weekly CI workflow (`qt4-update.yml`) checks for new upstream commits and opens a PR that advances the submodule and regenerates snapshots.
 
+### Inspecting the parsed AST
+
+To see what `XQuery31Full()` (from `xq-parser`) produces for a given snippet — e.g. before writing analyzer/diagnostic logic against a new construct — use `scripts/dump-ast.ts` instead of writing a one-off script:
+
+```sh
+node scripts/dump-ast.ts path/to/query.xq
+node scripts/dump-ast.ts -e 'for $x in (1, 2, 3) return $x * 2'
+echo 'for $x in (1, 2, 3) return $x * 2' | node scripts/dump-ast.ts
+```
+
+It prints the raw `{ ast, comments }` tree as JSON. The same tree is also viewable live while editing in the browser: run `npm run dev` in `demo/`, open the playground, and click "Show AST" (persisted in the URL as `?ast=1`) to open the panel next to the editor.
+
 ## Architecture
 
 The server is a standard LSP over stdio. `src/server.ts` is the entry point and wires together all features using `vscode-languageserver`.

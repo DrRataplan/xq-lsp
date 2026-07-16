@@ -30,8 +30,24 @@
 				font-size: 15px;
 				font-weight: 600;
 			}
-			#share-btn {
+			#ast-toggle {
 				margin-left: auto;
+				background: transparent;
+				color: #cdd6f4;
+				border: 1px solid #45475a;
+				padding: 4px 12px;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 13px;
+				font-weight: 600;
+			}
+			#ast-toggle:hover {
+				border-color: #89b4fa;
+			}
+			#ast-toggle.active {
+				background: #45475a;
+			}
+			#share-btn {
 				background: #89b4fa;
 				color: #1e1e2e;
 				border: none;
@@ -44,10 +60,47 @@
 			#share-btn:hover {
 				background: #74c7ec;
 			}
+			#main {
+				flex: 1;
+				display: flex;
+				overflow: hidden;
+				min-height: 0;
+			}
 			#editor {
 				flex: 1;
 				overflow: hidden;
 				min-height: 0;
+			}
+			#ast-panel {
+				display: none;
+				width: 420px;
+				flex-shrink: 0;
+				flex-direction: column;
+				background: #181825;
+				border-left: 1px solid #45475a;
+				overflow: hidden;
+			}
+			#ast-panel.visible {
+				display: flex;
+			}
+			#ast-label {
+				padding: 3px 12px;
+				font-size: 11px;
+				color: #585b70;
+				font-family: monospace;
+				border-bottom: 1px solid #313244;
+				letter-spacing: 0.02em;
+				flex-shrink: 0;
+			}
+			#ast-output {
+				flex: 1;
+				margin: 0;
+				padding: 8px 12px;
+				overflow: auto;
+				font-family: monospace;
+				font-size: 11px;
+				color: #cdd6f4;
+				white-space: pre;
 			}
 			.cm-editor {
 				height: 100%;
@@ -135,9 +188,16 @@
 		<header>
 			<img src="./favicon.svg" alt="" width="20" height="20" />
 			<h1>xq-lsp playground</h1>
+			<button id="ast-toggle">Show AST</button>
 			<button id="share-btn">Copy link</button>
 		</header>
-		<div id="editor"></div>
+		<div id="main">
+			<div id="editor"></div>
+			<div id="ast-panel">
+				<div id="ast-label">ast (xq-parser)</div>
+				<pre id="ast-output"></pre>
+			</div>
+		</div>
 		<div id="config-panel">
 			<div id="config-label">lsp-config.xq</div>
 			<textarea
