@@ -215,6 +215,49 @@ describe("inferExprType", () => {
 		const analysis = analyze(src, "file:///test.xq");
 		assert.equal(checkTypes(ast, src, analysis, new Map()).length, 0);
 	});
+
+	// These use a node() param (not an atomic one) because checkTypes intentionally skips
+	// atomic-to-atomic argument checks (see the comment in typeCheckCall) — atomic vs. node
+	// is the only mismatch that reliably surfaces what inferExprType actually produced.
+	test("integer addition inferred as xs:integer", () => {
+		const src = `declare function local:f($x as node()) { $x }; local:f(1 + 2)`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		const errors = checkTypes(ast, src, analysis, new Map());
+		assert.equal(errors.length, 1);
+		assert.ok(errors[0].message.includes("xs:integer"), `message: ${errors[0].message}`);
+	});
+
+	test("integer div integer inferred as xs:decimal (never exact)", () => {
+		const src = `declare function local:f($x as node()) { $x }; local:f(1 div 2)`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		const errors = checkTypes(ast, src, analysis, new Map());
+		assert.equal(errors.length, 1);
+		assert.ok(errors[0].message.includes("xs:decimal"), `message: ${errors[0].message}`);
+	});
+
+	test("integer idiv integer inferred as xs:integer", () => {
+		const src = `declare function local:f($x as node()) { $x }; local:f(1 idiv 2)`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		const errors = checkTypes(ast, src, analysis, new Map());
+		assert.equal(errors.length, 1);
+		assert.ok(errors[0].message.includes("xs:integer"), `message: ${errors[0].message}`);
+	});
+
+	test("decimal + double widens to xs:double", () => {
+		const src = `declare function local:f($x as node()) { $x }; local:f(1.5 + 2.5e0)`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		const errors = checkTypes(ast, src, analysis, new Map());
+		assert.equal(errors.length, 1);
+		assert.ok(errors[0].message.includes("xs:double"), `message: ${errors[0].message}`);
+	});
 });
 
 // ── checkTypes ───────────────────────────────────────────────────────────────

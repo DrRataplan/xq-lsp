@@ -93,6 +93,20 @@ describe("inlay-hints: inferred type hints", () => {
 		const hints = hintsFor(src);
 		assert.equal(hints.filter((h) => h.kind === InlayHintKind.Type).length, 0);
 	});
+
+	test("let binding over an integer division gets an inferred xs:decimal hint", () => {
+		const src = `let $y := 23 div 24 return $y`;
+		const hints = hintsFor(src);
+		const typeHints = hints.filter((h) => h.kind === InlayHintKind.Type);
+		assert.equal(typeHints.length, 1);
+		assert.equal(typeHints[0].label, ": xs:decimal");
+	});
+
+	test("path expression over literals gets no hint (not misinferred as node()*)", () => {
+		const src = `let $y := 23 / 2 return $y`;
+		const hints = hintsFor(src);
+		assert.equal(hints.filter((h) => h.kind === InlayHintKind.Type).length, 0);
+	});
 });
 
 describe("inlay-hints: range restriction", () => {
