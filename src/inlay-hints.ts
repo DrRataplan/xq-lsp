@@ -29,6 +29,13 @@ function inRange(offset: number, range: { start: number; end: number }): boolean
 	return offset >= range.start && offset <= range.end;
 }
 
+// Narrows a sequence's type to its item type (occurrence ""), for `for` bindings
+// where the bound variable holds one item per iteration, not the whole sequence.
+function itemTypeOf(t: XQueryType): XQueryType {
+	if (t.kind === "unknown" || t.kind === "empty") return t;
+	return t.occurrence === "" ? t : { ...t, occurrence: "" };
+}
+
 // ── Parameter name hints ─────────────────────────────────────────────────────
 
 function collectParameterHints(
@@ -108,7 +115,11 @@ function walkForTypeHints(
 			if (typed.typeStr) {
 				scopeTypes.set(qnameKey(typed.qname), parseType(typed.typeStr));
 			} else if (binding.initExpr) {
-				const inferred = inferExprType(binding.initExpr, scopeTypes, analysis, allFns);
+				const inferredSeq = inferExprType(binding.initExpr, scopeTypes, analysis, allFns);
+				// A `for` binding iterates the sequence one item at a time, so $x's type
+				// is the *item* type (occurrence narrowed to singular) — not the type of
+				// the whole iterated sequence, which is what inferExprType returns.
+				const inferred = node.type === "ForBinding" ? itemTypeOf(inferredSeq) : inferredSeq;
 				scopeTypes.set(qnameKey(typed.qname), inferred);
 				const nameEnd = binding.nameNode.end ?? binding.nameNode.start;
 				if (inferred.kind !== "unknown" && inRange(nameEnd, range)) {
