@@ -12,6 +12,7 @@
 		"@codemirror/lint": "^6.8.4",
 		"codemirror": "^6.0.1",
 		"fontoxpath": "^3.34.0",
+		"vscode-languageserver-textdocument": "^1.0.12",
 		"xq-parser": "^0.4.0"
 	},
 	"devDependencies": {
