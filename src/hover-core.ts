@@ -77,6 +77,28 @@ export function callContextFromAst(
 // ── Hover core ────────────────────────────────────────────────────────────────
 
 /**
+ * Direct-child node types whose name identifies an actual function: a call's
+ * name, a named/arrow function reference, or a function's own declaration.
+ * Used to keep hover from firing on lookalike names in unrelated positions
+ * (element/attribute names, string contents, variable names, ...) that the
+ * grammar happens to parse through the same generic QName production.
+ */
+const FUNCTION_NAME_PARENTS: Record<string, string> = {
+	FunctionCall: "FunctionEQName",
+	NamedFunctionRef: "EQName",
+	ArrowFunctionSpecifier: "EQName",
+	FunctionDecl: "EQName",
+};
+
+function isFunctionNameContext(ast: Node, offset: number): boolean {
+	const stack = nodeStackAtOffset(ast, offset);
+	for (let i = 0; i < stack.length - 1; i++) {
+		if (FUNCTION_NAME_PARENTS[stack[i].type] === stack[i + 1].type) return true;
+	}
+	return false;
+}
+
+/**
  * Resolve the function being hovered at `offset` in `text`.
  * Returns the matched symbol and its word span, or null.
  * Browser-safe — no LSP or Node.js imports.
@@ -89,6 +111,7 @@ export function resolveFunctionAtOffset(
 ): { fn: FunctionSymbol; start: number; end: number } | null {
 	const { word, start, end } = wordAt(text, offset);
 	if (!word || (start > 0 && text[start - 1] === "$")) return null;
+	if (current.ast && !isFunctionNameContext(current.ast, offset)) return null;
 	const ctx = current.ast ? callContextFromAst(current.ast, offset) : null;
 	const fn = resolveFunction(word, current, allFunctions(current, imported), ctx?.arity);
 	return fn ? { fn, start, end } : null;
