@@ -4,7 +4,8 @@ import { formatQName } from "./types.ts";
 import { findAll, isTerminal, directChildrenOf, firstTerminalValue, parseEQName, resolvePrefix } from "./analyzer.ts";
 import { asFunctionCall, asNamedFunctionRef } from "./ast-nodes.ts";
 
-function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, FileAnalysis>): FunctionSymbol[] {
+// Exported for reuse by semantic-tokens.ts, which needs the same flattened symbol table.
+export function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, FileAnalysis>): FunctionSymbol[] {
 	const fns = [...analysis.functions];
 	for (const a of importedAnalyses.values()) fns.push(...a.functions);
 	return fns;

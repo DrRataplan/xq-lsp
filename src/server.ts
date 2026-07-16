@@ -37,6 +37,7 @@ import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
 import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
 import { runDiagnostics, runHints } from "./diagnostics.ts";
 import { getRuntimeAnalyses, getRuntimePredeclaredNamespaces, withPredeclaredNs } from "./runtimes.ts";
+import { getSemanticTokensData, SEMANTIC_TOKENS_LEGEND } from "./semantic-tokens.ts";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -256,6 +257,7 @@ connection.onInitialize((params) => {
 			codeLensProvider: { resolveProvider: true },
 			documentLinkProvider: { resolveProvider: false },
 			callHierarchyProvider: true,
+			semanticTokensProvider: { legend: SEMANTIC_TOKENS_LEGEND, full: true },
 		},
 	};
 });
@@ -473,6 +475,14 @@ connection.languages.callHierarchy.onOutgoingCalls((params) => {
 	if (!loaded) return null;
 	const { analysis, imported } = resolveContext(params.item.uri, loaded.analysis);
 	return getOutgoingCalls(params.item, loaded.text, analysis, imported);
+});
+
+connection.languages.semanticTokens.on((params) => {
+	const doc = documents.get(params.textDocument.uri);
+	if (!doc) return { data: [] };
+	const { analysis: rawAnalysis, ast } = analyzeDocumentFull(doc);
+	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
+	return { data: getSemanticTokensData(ast, doc.getText(), analysis, imported) };
 });
 
 connection.onCodeAction((params) => {
