@@ -184,6 +184,7 @@ const LITERAL_TYPE: Record<string, XQueryType> = {
 };
 
 const NODE_STEP: XQueryType = { kind: "node", name: "node", occurrence: "*" };
+const RANGE_SEQUENCE: XQueryType = { kind: "atomic", name: "xs:integer", occurrence: "*" };
 
 function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, FileAnalysis>): FunctionSymbol[] {
 	const fns = [...analysis.functions];
@@ -257,6 +258,14 @@ export function inferExprType(
 			return { kind: "node", name: "text", occurrence: "" };
 		case "CompCommentConstructor":
 			return { kind: "node", name: "comment", occurrence: "" };
+		case "RangeExpr": {
+			// `e1 to e2` — only a genuine range (two operands) produces xs:integer*;
+			// with no "to" present the grammar still wraps a single child, which
+			// falls through to the generic single-child unwrap below.
+			const kids = nt.children.filter((c) => !isTerminal(c));
+			if (kids.length === 2) return RANGE_SEQUENCE;
+			break;
+		}
 	}
 
 	const ntChildren = nt.children.filter((c) => !isTerminal(c));

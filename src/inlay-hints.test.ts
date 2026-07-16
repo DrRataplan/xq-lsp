@@ -58,6 +58,30 @@ describe("inlay-hints: inferred type hints", () => {
 		assert.equal(typeHints[0].label, ": xs:string");
 	});
 
+	test("for binding over a range expression gets an inferred-type hint", () => {
+		const src = `for $x in 1 to 3 return $x`;
+		const hints = hintsFor(src);
+		const typeHints = hints.filter((h) => h.kind === InlayHintKind.Type);
+		assert.equal(typeHints.length, 1);
+		assert.equal(typeHints[0].label, ": xs:integer");
+	});
+
+	test("let binding over a range expression keeps the sequence occurrence", () => {
+		const src = `let $r := 1 to 5 return $r`;
+		const hints = hintsFor(src);
+		const typeHints = hints.filter((h) => h.kind === InlayHintKind.Type);
+		assert.equal(typeHints.length, 1);
+		assert.equal(typeHints[0].label, ": xs:integer*");
+	});
+
+	test("for binding over a known multi-item sequence narrows to the item type", () => {
+		const src = `declare function local:seq() as xs:integer* { (1, 2, 3) };\nfor $x in local:seq() return $x`;
+		const hints = hintsFor(src);
+		const typeHints = hints.filter((h) => h.kind === InlayHintKind.Type);
+		assert.equal(typeHints.length, 1);
+		assert.equal(typeHints[0].label, ": xs:integer");
+	});
+
 	test("let binding with an explicit 'as' type gets no redundant hint", () => {
 		const src = `let $x as xs:integer := 1 return $x`;
 		const hints = hintsFor(src);
