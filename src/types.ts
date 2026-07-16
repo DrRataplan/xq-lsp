@@ -68,6 +68,7 @@ export interface FileAnalysis {
 	modulePrefix?: string; // from 'module namespace prefix="uri"'
 	usedAstPath: boolean; // true when the AST parser succeeded, false when regex fallback was used
 	ast?: import("xq-parser").Node; // present only on the AST path
+	comments?: import("xq-parser").Node[]; // raw Comment terminals, present only on the AST path
 }
 
 export interface XQueryType {

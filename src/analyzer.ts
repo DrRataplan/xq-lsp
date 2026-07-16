@@ -367,6 +367,7 @@ function analyzeAst(ast: Node, comments: Terminal[], text: string, sourceUri: st
 		modulePrefix: moduleNs?.prefix,
 		usedAstPath: true,
 		ast,
+		comments,
 	};
 }
 
