@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "while-do-011",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "while-do-014",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  }
-]
+[]

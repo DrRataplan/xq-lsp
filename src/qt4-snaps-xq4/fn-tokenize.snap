@@ -10,45 +10,5 @@
     "outcome": "false-negative",
     "expectedCode": "XPST0017",
     "got": []
-  },
-  {
-    "testCase": "K2-TokenizeFunc-1",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "K2-TokenizeFunc-2",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "K2-TokenizeFunc-3",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "K2-TokenizeFunc-4",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "K2-TokenizeFunc-6",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
   }
 ]

@@ -1,26 +1,18 @@
 [
   {
-    "testCase": "trans-closure-003a",
+    "testCase": "trans-closure-008",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0003"
+      "XPDY0002"
     ]
   },
   {
-    "testCase": "trans-closure-004a",
+    "testCase": "trans-closure-009",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "trans-closure-025",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
+      "XPDY0002"
     ]
   }
 ]

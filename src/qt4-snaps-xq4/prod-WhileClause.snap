@@ -18,25 +18,9 @@
     "got": []
   },
   {
-    "testCase": "WhileExpr027",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
     "testCase": "K2-WhileExpr-1",
     "outcome": "false-negative",
     "expectedCode": "XPST0003",
     "got": []
-  },
-  {
-    "testCase": "cbcl-while-left-outer-join-004",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
   }
 ]

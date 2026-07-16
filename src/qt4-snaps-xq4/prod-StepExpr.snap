@@ -1,16 +1,104 @@
 [
   {
-    "testCase": "K2-Steps-4",
+    "testCase": "K2-Steps-46",
     "outcome": "false-positive",
-    "expectedCode": "XPDY0002",
+    "expectedCode": null,
     "got": [
       "XPST0003"
     ]
   },
   {
-    "testCase": "K2-Steps-45",
+    "testCase": "Steps-lookup-1",
     "outcome": "false-positive",
     "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "Steps-lookup-2",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "Steps-lookup-3",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "Steps-lookup-4",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "Steps-lookup-5",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "Steps-lookup-6",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "Steps-lookup-7",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "Steps-lookup-8",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "Steps-lookup-9",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "Steps-lookup-10",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "Steps-lookup-11",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "Steps-lookup-12",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
     "got": [
       "XPST0003"
     ]

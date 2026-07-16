@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "complex-deletes-q4",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  }
-]
+[]

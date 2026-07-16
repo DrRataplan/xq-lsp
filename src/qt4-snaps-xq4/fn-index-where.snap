@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "index-where-50",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  }
-]
+[]

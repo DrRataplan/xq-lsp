@@ -1,133 +1,5 @@
 [
   {
-    "testCase": "fo-test-fn-parse-integer-011",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-compare-026",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-001",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-002",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-003",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-004",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-005",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-006",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-007",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-008",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-009",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-010",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-011",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-012",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-013",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-replace-014",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
     "testCase": "fo-test-fn-regex-003",
     "outcome": "false-positive",
     "expectedCode": null,
@@ -136,123 +8,27 @@
     ]
   },
   {
-    "testCase": "fo-test-fn-path-013",
+    "testCase": "fo-test-fn-innermost-001",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0003"
+      "XPDY0002"
     ]
   },
   {
-    "testCase": "fo-test-fn-path-014",
+    "testCase": "fo-test-fn-outermost-001",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0003"
+      "XPDY0002"
     ]
   },
   {
-    "testCase": "fo-test-fn-path-015",
+    "testCase": "fo-test-fn-filter-002",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-path-016",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-path-017",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-distinct-ordered-nodes-002",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-innermost-002",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-outermost-002",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-ends-with-subsequence-008",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-deep-equal-001",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-deep-equal-002",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-deep-equal-003",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-deep-equal-004",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-deep-equal-005",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-last-001",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
+      "XPDY0002"
     ]
   },
   {
@@ -260,7 +36,7 @@
     "outcome": "false-positive",
     "expectedCode": "XPDY0002",
     "got": [
-      "XPST0003"
+      "XPDY0002"
     ]
   },
   {
@@ -268,7 +44,7 @@
     "outcome": "false-positive",
     "expectedCode": "XPDY0002",
     "got": [
-      "XPST0003"
+      "XPDY0002"
     ]
   },
   {
@@ -276,43 +52,43 @@
     "outcome": "false-positive",
     "expectedCode": "XPDY0002",
     "got": [
-      "XPST0003"
+      "XPDY0002"
     ]
   },
   {
-    "testCase": "fo-test-fn-atomic-equal-015",
+    "testCase": "fo-test-fn-transitive-closure-002",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0003"
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-map-build-009",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-map-build-010",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-map-build-011",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
     ]
   },
   {
     "testCase": "fo-test-map-build-013",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-element-to-map-004",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-element-to-map-005",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-element-to-map-006",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
@@ -334,35 +110,27 @@
     "got": []
   },
   {
-    "testCase": "fo-test-fn-jtree-003",
+    "testCase": "fo-test-fn-highest-007",
     "outcome": "false-positive",
-    "expectedCode": null,
+    "expectedCode": "XPDY0002",
     "got": [
-      "XPST0003"
+      "XPDY0002"
     ]
   },
   {
-    "testCase": "fo-test-fn-jkey-001",
+    "testCase": "fo-test-fn-take-while-005",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
-      "XPST0003"
+      "XPDY0002"
     ]
   },
   {
-    "testCase": "fo-test-fn-jvalue-001",
+    "testCase": "fo-test-fn-lowest-007",
     "outcome": "false-positive",
-    "expectedCode": null,
+    "expectedCode": "XPDY0002",
     "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fo-test-fn-jvalue-003",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
+      "XPDY0002"
     ]
   }
 ]

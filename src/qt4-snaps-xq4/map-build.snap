@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "testCase": "map-build-118",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPDY0002"
+    ]
+  }
+]

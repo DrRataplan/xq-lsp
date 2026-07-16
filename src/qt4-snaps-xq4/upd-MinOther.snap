@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "update10keywords",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  }
-]
+[]

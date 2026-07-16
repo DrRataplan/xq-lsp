@@ -18,26 +18,10 @@
     "got": []
   },
   {
-    "testCase": "K2-ExternalVariablesWithout-9",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
     "testCase": "K2-ExternalVariablesWithout-18",
     "outcome": "false-negative",
     "expectedCode": "XPST0003",
     "got": []
-  },
-  {
-    "testCase": "extvardeclwithtype-23",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
   },
   {
     "testCase": "K2-ExternalVariablesWith-1",

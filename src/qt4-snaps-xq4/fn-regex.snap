@@ -1,6 +1,6 @@
 [
   {
-    "testCase": "generate-id-014",
+    "testCase": "fn-regex-030",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
@@ -8,7 +8,7 @@
     ]
   },
   {
-    "testCase": "generate-id-015",
+    "testCase": "fn-regex-031",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
@@ -16,7 +16,7 @@
     ]
   },
   {
-    "testCase": "generate-id-016",
+    "testCase": "fn-regex-032",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [
@@ -24,7 +24,15 @@
     ]
   },
   {
-    "testCase": "generate-id-017",
+    "testCase": "fn-regex-033",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "fn-regex-034",
     "outcome": "false-positive",
     "expectedCode": null,
     "got": [

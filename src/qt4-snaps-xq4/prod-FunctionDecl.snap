@@ -306,14 +306,6 @@
     ]
   },
   {
-    "testCase": "function-decl-40-037",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
     "testCase": "function-decl-40-901",
     "outcome": "false-negative",
     "expectedCode": "XQST0034",

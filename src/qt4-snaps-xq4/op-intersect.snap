@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "K2-SeqIntersect-39",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "K2-SeqIntersect-40",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  }
-]
+[]

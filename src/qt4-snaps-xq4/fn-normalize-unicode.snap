@@ -6,30 +6,6 @@
     "got": []
   },
   {
-    "testCase": "fn-normalize-unicode-11",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fn-normalize-unicode-11-6-0",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "fn-normalize-unicode-11-6-2",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
     "testCase": "K-NormalizeUnicodeFunc-1",
     "outcome": "false-negative",
     "expectedCode": "XPST0017",

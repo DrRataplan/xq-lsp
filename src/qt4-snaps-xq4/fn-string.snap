@@ -1,13 +1,5 @@
 [
   {
-    "testCase": "fn-string-27",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
     "testCase": "K-StringFunc-1",
     "outcome": "false-negative",
     "expectedCode": "XPST0017",

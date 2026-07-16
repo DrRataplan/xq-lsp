@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "element-to-map-plan-700",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  }
-]
+[]

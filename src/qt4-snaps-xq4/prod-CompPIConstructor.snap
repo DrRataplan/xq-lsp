@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "K2-ComputeConPI-12",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "K2-ComputeConPI-18",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  }
-]
+[]

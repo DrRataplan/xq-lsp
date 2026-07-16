@@ -10,11 +10,5 @@
     "outcome": "false-negative",
     "expectedCode": "XQST0113",
     "got": []
-  },
-  {
-    "testCase": "contextDecl-052",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0113",
-    "got": []
   }
 ]

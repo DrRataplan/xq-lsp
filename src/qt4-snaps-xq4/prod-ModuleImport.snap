@@ -1,11 +1,5 @@
 [
   {
-    "testCase": "modules-bad-ns",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0059",
-    "got": []
-  },
-  {
     "testCase": "module-URIs-4",
     "outcome": "false-negative",
     "expectedCode": "XQST0059",
@@ -54,12 +48,6 @@
     "got": []
   },
   {
-    "testCase": "modules-15",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0088",
-    "got": []
-  },
-  {
     "testCase": "modules-16",
     "outcome": "false-negative",
     "expectedCode": "XQST0070",
@@ -75,12 +63,6 @@
     "testCase": "modules-28",
     "outcome": "false-negative",
     "expectedCode": "XQST0093",
-    "got": []
-  },
-  {
-    "testCase": "modules-29",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
     "got": []
   },
   {

@@ -12,22 +12,6 @@
     "got": []
   },
   {
-    "testCase": "WindowingUseCase14",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "WindowingUseCase14S",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
     "testCase": "TumblingWindowExpr504",
     "outcome": "false-negative",
     "expectedCode": "XQST0103",
@@ -104,46 +88,6 @@
     "outcome": "false-negative",
     "expectedCode": "XQST0103",
     "got": []
-  },
-  {
-    "testCase": "TumblingWindowExpr531",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "TumblingWindowExpr531a",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "TumblingWindowExpr532",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "TumblingWindowExpr533",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "TumblingWindowExpr536",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
   },
   {
     "testCase": "TumblingWindowExpr541",

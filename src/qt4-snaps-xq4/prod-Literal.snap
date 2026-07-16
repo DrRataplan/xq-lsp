@@ -50,22 +50,6 @@
     "got": []
   },
   {
-    "testCase": "K2-Literals-28",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "K2-Literals-39",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
     "testCase": "cbcl-literals-004",
     "outcome": "false-negative",
     "expectedCode": "XQST0090",
