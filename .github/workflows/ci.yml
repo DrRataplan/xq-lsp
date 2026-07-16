@@ -39,11 +39,9 @@ jobs:
             - run: npm run build
             - name: npm pack (creates tarball referenced by editors/vscode/package.json)
               run: npm pack
-            - name: Install extension deps, override xq-lsp with packed tarball
+            - name: Install extension deps with the freshly packed xq-lsp tarball
               working-directory: editors/vscode
-              run: |
-                  npm install
-                  npm install ../../xq-lsp-*.tgz
+              run: npm install ../../xq-lsp-*.tgz
             - run: npm run test:coverage
               env:
                   QT4_TESTS_DIR: ${{ github.workspace }}/qt4tests
@@ -77,11 +75,9 @@ jobs:
             - run: npm run build
             - name: npm pack (creates tarball referenced by editors/vscode/package.json)
               run: npm pack
-            - name: Install extension deps, override xq-lsp with packed tarball
+            - name: Install extension deps with the freshly packed xq-lsp tarball
               working-directory: editors/vscode
-              run: |
-                  npm install
-                  npm install ../../xq-lsp-*.tgz
+              run: npm install ../../xq-lsp-*.tgz
             - name: Build extension bundle
               run: node build.mjs
               working-directory: editors/vscode
@@ -109,11 +105,9 @@ jobs:
             - run: npm run build
             - name: npm pack (validates package, creates tarball for vsce step)
               run: npm pack
-            - name: Install extension deps, override xq-lsp with packed tarball
+            - name: Install extension deps with the freshly packed xq-lsp tarball
               working-directory: editors/vscode
-              run: |
-                  npm install
-                  npm install ../../xq-lsp-*.tgz
+              run: npm install ../../xq-lsp-*.tgz
             - name: vsce package dry-run
               run: npm run package
               working-directory: editors/vscode
