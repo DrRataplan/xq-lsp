@@ -1,11 +1,13 @@
 import { EditorView, basicSetup } from "codemirror";
-import { hoverTooltip, showTooltip } from "@codemirror/view";
-import { StateField } from "@codemirror/state";
+import { hoverTooltip, showTooltip, Decoration, WidgetType, type DecorationSet } from "@codemirror/view";
+import { StateField, StateEffect } from "@codemirror/state";
 import { StreamLanguage } from "@codemirror/language";
 import { xQuery } from "@codemirror/legacy-modes/mode/xquery";
 import { linter, lintGutter, forceLinting, type Diagnostic } from "@codemirror/lint";
 import { autocompletion, type CompletionContext as CMCompletionContext } from "@codemirror/autocomplete";
 import { analyzeWithAst, analyze, XMLNS_FN } from "../src/analyzer.ts";
+import { getInlayHints } from "../src/inlay-hints.ts";
+import { TextDocument } from "vscode-languageserver-textdocument";
 import builtinsFn from "../builtins/builtins-fn.xq?raw";
 import builtinsMath from "../builtins/builtins-math.xq?raw";
 import builtinsMap from "../builtins/builtins-map.xq?raw";
@@ -246,6 +248,52 @@ const signatureField = StateField.define({
 		}),
 });
 
+// ── Inlay hints ───────────────────────────────────────────────────────────────
+
+class InlayHintWidget extends WidgetType {
+	constructor(private label: string) {
+		super();
+	}
+	eq(other: InlayHintWidget) {
+		return other.label === this.label;
+	}
+	toDOM() {
+		const span = document.createElement("span");
+		span.className = "xq-inlay-hint";
+		span.textContent = this.label;
+		return span;
+	}
+}
+
+const refreshInlayHints = StateEffect.define<null>();
+
+function computeInlayDecorations(text: string): DecorationSet {
+	const { analysis: rawAnalysis, ast } = analyzeWithAst(text, "playground.xq");
+	if (!ast) return Decoration.none;
+	const libs = getConfigLibs();
+	const analysis = withPredeclaredNs(rawAnalysis, getRuntimePredeclaredNamespaces(libs));
+	const doc = TextDocument.create("playground.xq", "xquery", 0, text);
+	const range = { start: doc.positionAt(0), end: doc.positionAt(text.length) };
+	const hints = getInlayHints(doc, ast, analysis, getImported(analysis, libs), range);
+
+	const widgets = hints.map((h) =>
+		Decoration.widget({ widget: new InlayHintWidget(h.label as string), side: 1 }).range(doc.offsetAt(h.position)),
+	);
+	widgets.sort((a, b) => a.from - b.from);
+	return Decoration.set(widgets);
+}
+
+const inlayHintsField = StateField.define<DecorationSet>({
+	create(state) {
+		return computeInlayDecorations(state.doc.toString());
+	},
+	update(decos, tr) {
+		if (!tr.docChanged && !tr.effects.some((e) => e.is(refreshInlayHints))) return decos.map(tr.changes);
+		return computeInlayDecorations(tr.state.doc.toString());
+	},
+	provide: (f) => EditorView.decorations.from(f),
+});
+
 // ── AST panel ─────────────────────────────────────────────────────────────────
 // Dumps the raw xq-parser tree for the current doc, for debugging analyzer/
 // diagnostic logic against a specific parse shape. Runnable outside the
@@ -361,6 +409,7 @@ const view = new EditorView({
 		xqueryHover,
 		autocompletion({ override: [xqueryCompletions] }),
 		signatureField,
+		inlayHintsField,
 		EditorView.updateListener.of((update) => {
 			if (!update.docChanged) return;
 			const url = new URL(location.href);
@@ -392,6 +441,7 @@ function applyConfig() {
 	}
 	history.replaceState(null, "", url);
 	forceLinting(view);
+	view.dispatch({ effects: refreshInlayHints.of(null) });
 }
 
 applyConfig();
