@@ -59,6 +59,7 @@ function extractParamsFromParamList(
 export interface FunctionCallShape {
 	qname: QName;
 	args: Node[];
+	eqnameNode: Node;
 }
 
 export function asFunctionCall(node: Node, analysis: FileAnalysis): FunctionCallShape | null {
@@ -71,7 +72,7 @@ export function asFunctionCall(node: Node, analysis: FileAnalysis): FunctionCall
 	const namespaceUri = uri ?? resolvePrefix(prefix, analysis);
 	const argList = directChildOf(node, "ArgumentList");
 	const args = argList ? directChildrenOf(argList, "Argument") : [];
-	return { qname: { prefix, localName, namespaceUri }, args };
+	return { qname: { prefix, localName, namespaceUri }, args, eqnameNode: fnEqname };
 }
 
 // ── NamedFunctionRef ──────────────────────────────────────────────────────────
