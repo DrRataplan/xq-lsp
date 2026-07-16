@@ -52,9 +52,11 @@ The server is a standard LSP over stdio. `src/server.ts` is the entry point and 
 **Predeclared namespaces** — namespace prefixes that are in scope without any declaration in the source.
 
 - `src/analyzer.ts` `BUILTIN_PREFIXES` — always-known prefixes: `fn`, `local`, `xs`, `xml`, `math`, `map`, `array`. These are the XQuery 3.1 spec-mandated and universally predeclared namespaces.
-- `src/runtimes.ts` `EXISTDB_PREDECLARED_NAMESPACES` — eXist-db-specific prefixes (`util`, `xmldb`, `sm`, …), inlined as a TS constant (not a JSON file, so it survives `tsc`'s build without a copy step). Active when `lib: ["existdb"]` is configured. Loaded by `getRuntimePredeclaredNamespaces(runtimes)` in `runtimes.ts`.
+- `src/predeclared-namespaces.ts` `EXISTDB_PREDECLARED_NAMESPACES` — eXist-db-specific prefixes (`util`, `xmldb`, `sm`, …), inlined as a TS constant (not a JSON file, so it survives `tsc`'s build without a copy step). Active when `lib: ["existdb"]` is configured. Loaded by `getRuntimePredeclaredNamespaces(runtimes)`.
 
 `withPredeclaredNs(analysis, ns)` merges runtime-specific namespace declarations into `analysis.namespaceDecls` so `resolvePrefix` picks them up and `findUndeclaredPrefixUsages` doesn't flag them.
+
+`src/predeclared-namespaces.ts` holds this pure, dependency-free logic (no `fs`/`path`/`url`) so it can be imported by both the Node LSP server and the browser demo (`demo/main.ts`) — see `src/runtimes.ts`, which re-exports it alongside the `fs`-based runtime `.xq` file loading that only works under Node.
 
 **`resolveContext`** in `server.ts` — called at the start of every LSP handler. It:
 1. Calls `getRuntimePredeclaredNamespaces` for the active runtimes and injects them into the analysis via `withPredeclaredNs` (suppresses false `XQST0081` diagnostics for pre-declared prefixes)

@@ -15,7 +15,41 @@ import { runDiagnostics, runHints } from "../src/diagnostics.ts";
 import { type FileAnalysis } from "../src/types.ts";
 import { resolveFunctionAtOffset, resolveSignatureAtOffset, functionSignature } from "../src/hover-core.ts";
 import { getCompletions } from "../src/completion-core.ts";
+import { getRuntimePredeclaredNamespaces, withPredeclaredNs } from "../src/predeclared-namespaces.ts";
 import fontoxpath from "fontoxpath";
+
+// Raw XQuery source for every runtime module file (src/runtimes/<lib>/*.xq), grouped
+// by lib name below. Loaded eagerly via ?raw so this stays a plain string bundled
+// into the browser build — src/runtimes.ts itself uses Node's fs and can't be
+// imported here (see the computeRelativePath fix for the same class of issue).
+const runtimeSources = import.meta.glob("../src/runtimes/*/*.xq", {
+	query: "?raw",
+	import: "default",
+	eager: true,
+}) as Record<string, string>;
+
+const runtimeFilesByLib = new Map<string, string[]>();
+for (const [filePath, source] of Object.entries(runtimeSources)) {
+	const match = filePath.match(/\/runtimes\/([^/]+)\//);
+	if (!match) continue;
+	const list = runtimeFilesByLib.get(match[1]) ?? [];
+	list.push(source);
+	runtimeFilesByLib.set(match[1], list);
+}
+
+const runtimeAnalysisCache = new Map<string, FileAnalysis[]>();
+function getRuntimeAnalyses(libs: string[]): FileAnalysis[] {
+	const results: FileAnalysis[] = [];
+	for (const lib of libs) {
+		let cached = runtimeAnalysisCache.get(lib);
+		if (!cached) {
+			cached = (runtimeFilesByLib.get(lib) ?? []).map((src, i) => analyze(src, `builtin:${lib}:${i}`));
+			runtimeAnalysisCache.set(lib, cached);
+		}
+		results.push(...cached);
+	}
+	return results;
+}
 
 const DEFAULT_CODE = `(: xq-lsp playground — errors are annotated inline :)
 for $x in (1, 2, 3)
@@ -79,16 +113,39 @@ function getBuiltins() {
 	return _builtins;
 }
 
-function getImported(analysis: FileAnalysis): Map<string, FileAnalysis> {
-	return new Map([["builtin:fn", getBuiltins()]]);
+function getImported(analysis: FileAnalysis, libs: string[]): Map<string, FileAnalysis> {
+	const imported = new Map<string, FileAnalysis>([["builtin:fn", getBuiltins()]]);
+
+	const runtimeByNamespace = new Map<string, FileAnalysis>();
+	for (const runtimeAnalysis of getRuntimeAnalyses(libs)) {
+		if (runtimeAnalysis.moduleNamespaceUri) runtimeByNamespace.set(runtimeAnalysis.moduleNamespaceUri, runtimeAnalysis);
+	}
+
+	for (const imp of analysis.imports) {
+		const runtimeAnalysis = runtimeByNamespace.get(imp.namespaceUri);
+		if (runtimeAnalysis) imported.set(imp.namespaceUri, runtimeAnalysis);
+	}
+
+	// Runtime modules that are pre-declared (e.g. existdb's util/xmldb) are available
+	// without an explicit import.
+	for (const nd of getRuntimePredeclaredNamespaces(libs)) {
+		if (!imported.has(nd.namespaceUri)) {
+			const runtimeAnalysis = runtimeByNamespace.get(nd.namespaceUri);
+			if (runtimeAnalysis) imported.set(nd.namespaceUri, runtimeAnalysis);
+		}
+	}
+
+	return imported;
 }
 
 // ── Hover ────────────────────────────────────────────────────────────────────
 
 const xqueryHover = hoverTooltip((view, pos) => {
 	const text = view.state.doc.toString();
-	const { analysis } = analyzeWithAst(text, "playground.xq");
-	const result = resolveFunctionAtOffset(text, pos, analysis, getImported(analysis));
+	const libs = getConfigLibs();
+	const { analysis: rawAnalysis } = analyzeWithAst(text, "playground.xq");
+	const analysis = withPredeclaredNs(rawAnalysis, getRuntimePredeclaredNamespaces(libs));
+	const result = resolveFunctionAtOffset(text, pos, analysis, getImported(analysis, libs));
 	if (!result) return null;
 
 	return {
@@ -118,11 +175,13 @@ function xqueryCompletions(ctx: CMCompletionContext) {
 	if (!word && !ctx.explicit) return null;
 
 	const text = ctx.state.doc.toString();
-	const { analysis } = analyzeWithAst(text, "playground.xq");
+	const libs = getConfigLibs();
+	const { analysis: rawAnalysis } = analyzeWithAst(text, "playground.xq");
+	const analysis = withPredeclaredNs(rawAnalysis, getRuntimePredeclaredNamespaces(libs));
 	const entries = getCompletions(
 		{ textBeforeCursor: text.slice(0, ctx.pos), cursorOffset: ctx.pos },
 		analysis,
-		getImported(analysis),
+		getImported(analysis, libs),
 	);
 	if (!entries.length) return null;
 
@@ -151,8 +210,10 @@ const signatureField = StateField.define({
 		showTooltip.computeN([f], (state) => {
 			const text = state.doc.toString();
 			const pos = state.selection.main.head;
-			const { analysis } = analyzeWithAst(text, "playground.xq");
-			const sig = resolveSignatureAtOffset(text, pos, analysis, new Map([["builtin:fn", getBuiltins()]]));
+			const libs = getConfigLibs();
+			const { analysis: rawAnalysis } = analyzeWithAst(text, "playground.xq");
+			const analysis = withPredeclaredNs(rawAnalysis, getRuntimePredeclaredNamespaces(libs));
+			const sig = resolveSignatureAtOffset(text, pos, analysis, getImported(analysis, libs));
 			if (!sig) return [];
 			const name = sig.fn.qname.prefix
 				? `${sig.fn.qname.prefix}:${sig.fn.qname.localName}`
@@ -205,9 +266,21 @@ function getConfigPrefixes(): Record<string, string> {
 	}
 }
 
+function getConfigLibs(): string[] {
+	const text = configEl.value.trim();
+	if (!text) return [];
+	try {
+		return fontoxpath.evaluateXPathToStrings(`(${text})?lib`, null, null, {});
+	} catch {
+		return [];
+	}
+}
+
 const xqueryLinter = linter((view): Diagnostic[] => {
 	const code = view.state.doc.toString();
-	const { analysis, ast, parseError } = analyzeWithAst(code, "playground.xq");
+	const libs = getConfigLibs();
+	const { analysis: rawAnalysis, ast, parseError } = analyzeWithAst(code, "playground.xq");
+	const analysis = withPredeclaredNs(rawAnalysis, getRuntimePredeclaredNamespaces(libs));
 	const configPrefixes = getConfigPrefixes();
 	const diagnostics: Diagnostic[] = [];
 
@@ -234,7 +307,7 @@ const xqueryLinter = linter((view): Diagnostic[] => {
 	}
 
 	if (ast) {
-		const imported = getImported(analysis);
+		const imported = getImported(analysis, libs);
 		for (const d of runDiagnostics(ast, code, analysis, imported)) {
 			diagnostics.push({ from: d.offset, to: d.offset + d.length, severity: "error", message: d.message });
 		}
