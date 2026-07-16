@@ -147,8 +147,7 @@ export function getOutgoingCalls(
 
 	for (const callNode of findAll(shape.body, "FunctionCall")) {
 		const call = asFunctionCall(callNode, analysis);
-		const fnEqname = directChildOf(callNode, "FunctionEQName");
-		if (!call || !fnEqname) continue;
+		if (!call) continue;
 
 		const overloads = allFns.filter((f) => f.qname.namespaceUri === call.qname.namespaceUri && f.qname.localName === call.qname.localName);
 		const target = overloads.find((f) => (f.variadic ? call.args.length >= f.arity : f.arity === call.args.length)) ?? overloads[0];
@@ -165,7 +164,7 @@ export function getOutgoingCalls(
 			group = { to, ranges: [] };
 			groups.set(key, group);
 		}
-		group.ranges.push({ start: toPosition(text, fnEqname.start), end: toPosition(text, fnEqname.end ?? fnEqname.start) });
+		group.ranges.push({ start: toPosition(text, call.eqnameNode.start), end: toPosition(text, call.eqnameNode.end ?? call.eqnameNode.start) });
 	}
 
 	return [...groups.values()].map((g) => ({ to: g.to, fromRanges: g.ranges }));
