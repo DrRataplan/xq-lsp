@@ -26,6 +26,7 @@ import type { FileRecord } from "./references.ts";
 import { buildCodeLenses, resolveCodeLens } from "./code-lens.ts";
 import type { CodeLensData } from "./code-lens.ts";
 import { prepareCallHierarchy, getIncomingCalls, getOutgoingCalls } from "./call-hierarchy.ts";
+import { getSelectionRange } from "./selection-range.ts";
 import type { FileAnalysis, TypeDiagnostic } from "./types.ts";
 import { findConfig, expandGlobs } from "./config.ts";
 import {
@@ -252,6 +253,7 @@ connection.onInitialize((params) => {
 			referencesProvider: true,
 			renameProvider: { prepareProvider: true },
 			documentHighlightProvider: true,
+			selectionRangeProvider: true,
 			codeActionProvider: { codeActionKinds: [CodeActionKind.QuickFix] },
 			codeLensProvider: { resolveProvider: true },
 			documentLinkProvider: { resolveProvider: false },
@@ -473,6 +475,17 @@ connection.languages.callHierarchy.onOutgoingCalls((params) => {
 	if (!loaded) return null;
 	const { analysis, imported } = resolveContext(params.item.uri, loaded.analysis);
 	return getOutgoingCalls(params.item, loaded.text, analysis, imported);
+});
+
+connection.onSelectionRanges((params) => {
+	const doc = documents.get(params.textDocument.uri);
+	if (!doc) return null;
+	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const { analysis } = resolveContext(doc.uri, rawAnalysis);
+	if (!analysis.ast) return null;
+	return params.positions.map(
+		(pos) => getSelectionRange(doc, doc.offsetAt(pos), analysis) ?? { range: { start: pos, end: pos } },
+	);
 });
 
 connection.onCodeAction((params) => {
