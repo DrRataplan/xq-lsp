@@ -23,7 +23,7 @@ export interface FileRecord {
 	analysis: FileAnalysis;
 }
 
-function offsetToPosition(text: string, offset: number) {
+export function offsetToPosition(text: string, offset: number) {
 	const before = text.slice(0, offset);
 	const lines = before.split("\n");
 	return { line: lines.length - 1, character: lines[lines.length - 1].length };

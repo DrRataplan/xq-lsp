@@ -35,6 +35,7 @@ import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
 import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
 import { runDiagnostics, runHints } from "./diagnostics.ts";
 import { getRuntimeAnalyses, getRuntimePredeclaredNamespaces, withPredeclaredNs } from "./runtimes.ts";
+import { getWorkspaceSymbols } from "./workspace-symbol.ts";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -233,6 +234,7 @@ connection.onInitialize((params) => {
 				triggerCharacters: ["(", ","],
 			},
 			documentSymbolProvider: true,
+			workspaceSymbolProvider: true,
 			definitionProvider: true,
 			referencesProvider: true,
 			renameProvider: { prepareProvider: true },
@@ -348,6 +350,15 @@ connection.onDocumentSymbol((params) => {
 	if (!doc) return [];
 	const analysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
 	return getDocumentSymbols(doc, analysis);
+});
+
+connection.onWorkspaceSymbol((params) => {
+	// No single document anchors a workspace-wide request, so gather config dirs from every open document.
+	const filesByUri = new Map<string, FileRecord>();
+	for (const doc of documents.all()) {
+		for (const file of getGlobFileRecords(doc.uri)()) filesByUri.set(file.uri, file);
+	}
+	return getWorkspaceSymbols([...filesByUri.values()], params.query);
 });
 
 connection.onDefinition((params) => {
