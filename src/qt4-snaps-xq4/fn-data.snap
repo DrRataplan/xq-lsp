@@ -1,0 +1,20 @@
+[
+  {
+    "testCase": "K-DataFunc-1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-DataFunc-2",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K2-DataFunc-2",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

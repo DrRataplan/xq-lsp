@@ -1,0 +1,8 @@
+[
+  {
+    "testCase": "precedes-415",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  }
+]

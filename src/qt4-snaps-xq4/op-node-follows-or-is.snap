@@ -1,0 +1,8 @@
+[
+  {
+    "testCase": "follows-or-is-30",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

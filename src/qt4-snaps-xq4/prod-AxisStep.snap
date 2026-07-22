@@ -1,0 +1,26 @@
+[
+  {
+    "testCase": "Axes112",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0134",
+    "got": []
+  },
+  {
+    "testCase": "Axes127",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K2-Axes-84",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K2-Axes-99",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  }
+]

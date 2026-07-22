@@ -1,7 +1,7 @@
 import type { Node, NonTerminal } from "xq-parser";
 import type { XQueryType, TypeDiagnostic, FileAnalysis, FunctionSymbol } from "./types.ts";
 import { formatQName, qnameKey } from "./types.ts";
-import { findAll, isTerminal, directChildOf } from "./analyzer.ts";
+import { findAll, isTerminal, directChildOf, directChildrenOf, firstTerminalValue, parseEQName, resolvePrefix, sequenceTypeText } from "./analyzer.ts";
 import { asFunctionCall, asVarRef, asTypedBinding, literalKind, isPathExpr, argExpr } from "./ast-nodes.ts";
 
 // ── Type constants ───────────────────────────────────────────────────────────
@@ -219,12 +219,11 @@ function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, 
 function inferFunctionReturn(node: Node, analysis: FileAnalysis, allFns: FunctionSymbol[]): XQueryType {
 	const call = asFunctionCall(node, analysis);
 	if (!call) return UNKNOWN;
-	const fn = allFns.find(
-		(f) =>
-			f.qname.namespaceUri === call.qname.namespaceUri &&
-			f.qname.localName === call.qname.localName &&
-			f.arity === call.args.length,
-	);
+	const fn = allFns.find((f) => {
+		if (f.qname.namespaceUri !== call.qname.namespaceUri || f.qname.localName !== call.qname.localName) return false;
+		const min = f.minArity ?? f.arity;
+		return f.variadic ? call.args.length >= f.arity : call.args.length >= min && call.args.length <= f.arity;
+	});
 	return fn?.returnType ? parseType(fn.returnType) : UNKNOWN;
 }
 
@@ -349,12 +348,32 @@ function buildModuleVarTypes(ast: Node, text: string, analysis: FileAnalysis): M
 	return types;
 }
 
-// Collect typed param bindings from a ParamList into `scope`.
+// Collect typed param bindings from a ParamList (or ParamListWithDefaults) into `scope`.
 function collectParams(paramList: Node | undefined, text: string, analysis: FileAnalysis, scope: Map<string, XQueryType>): void {
 	if (!paramList) return;
+	// XQ31: Param nodes
 	for (const param of findAll(paramList, "Param")) {
 		const binding = asTypedBinding(param, text, analysis);
 		if (binding?.typeStr) scope.set(qnameKey(binding.qname), parseType(binding.typeStr));
+	}
+	// XQ4 declared function: ParamWithDefault nodes
+	for (const param of findAll(paramList, "ParamWithDefault")) {
+		const binding = asTypedBinding(param, text, analysis);
+		if (binding?.typeStr) scope.set(qnameKey(binding.qname), parseType(binding.typeStr));
+	}
+	// XQ4 inline function: VarNameAndType directly inside ParamList (inside FunctionSignature)
+	for (const vnt of directChildrenOf(paramList, "VarNameAndType")) {
+		const eqname = directChildOf(vnt, "EQName");
+		const rawName = eqname ? firstTerminalValue(eqname) : null;
+		if (!rawName) continue;
+		const { prefix, localName, uri } = parseEQName(rawName);
+		const namespaceUri = uri ?? (prefix ? resolvePrefix(prefix, analysis) : "");
+		const typeDecl = directChildOf(vnt, "TypeDeclaration");
+		const seqType = typeDecl ? directChildOf(typeDecl, "SequenceType") : null;
+		if (seqType) {
+			const typeStr = sequenceTypeText(text, seqType);
+			if (typeStr) scope.set(qnameKey({ prefix, localName, namespaceUri }), parseType(typeStr));
+		}
 	}
 }
 
@@ -368,12 +387,11 @@ function typeCheckCall(
 ): void {
 	const call = asFunctionCall(callNode, analysis);
 	if (!call) return;
-	const fn = allFns.find(
-		(f) =>
-			f.qname.namespaceUri === call.qname.namespaceUri &&
-			f.qname.localName === call.qname.localName &&
-			f.arity === call.args.length,
-	);
+	const fn = allFns.find((f) => {
+		if (f.qname.namespaceUri !== call.qname.namespaceUri || f.qname.localName !== call.qname.localName) return false;
+		const min = f.minArity ?? f.arity;
+		return f.variadic ? call.args.length >= f.arity : call.args.length >= min && call.args.length <= f.arity;
+	});
 	if (!fn) return;
 	for (let i = 0; i < call.args.length; i++) {
 		const param = fn.params[i];
@@ -424,8 +442,11 @@ function walkScope(
 
 	if (node.type === "InlineFunctionExpr") {
 		// New isolated scope: module vars + this inline function's own params.
+		// XQ31: ParamList is a direct child. XQ4: params are inside FunctionSignature → ParamList.
 		const innerScope = new Map(moduleTypes);
-		collectParams(directChildOf(node, "ParamList"), text, analysis, innerScope);
+		const sig = directChildOf(node, "FunctionSignature");
+		const paramListNode = sig ? directChildOf(sig, "ParamList") : directChildOf(node, "ParamList");
+		collectParams(paramListNode, text, analysis, innerScope);
 		const body = directChildOf(node, "FunctionBody");
 		if (body) walkScope(body, innerScope, moduleTypes, text, analysis, allFns, errors);
 		return;
@@ -465,7 +486,9 @@ export function checkTypes(
 		if (!body) continue; // external function — nothing to check
 
 		const scopeTypes = new Map(moduleTypes);
-		collectParams(directChildOf(decl, "ParamList"), text, analysis, scopeTypes);
+		// XQ31: ParamList; XQ4: ParamListWithDefaults
+		const paramListNode = directChildOf(decl, "ParamList") ?? directChildOf(decl, "ParamListWithDefaults");
+		collectParams(paramListNode, text, analysis, scopeTypes);
 		walkScope(body, scopeTypes, moduleTypes, text, analysis, allFns, errors);
 	}
 

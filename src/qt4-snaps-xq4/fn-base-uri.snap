@@ -1,0 +1,8 @@
+[
+  {
+    "testCase": "K-BaseURIFunc-1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

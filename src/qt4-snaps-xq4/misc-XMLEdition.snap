@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "XML10-4ed-Excluded-char-1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "XML11-1ed-Included-char-1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  }
+]

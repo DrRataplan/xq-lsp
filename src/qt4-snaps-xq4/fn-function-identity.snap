@@ -1,0 +1,8 @@
+[
+  {
+    "testCase": "fn-function-identity-001",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

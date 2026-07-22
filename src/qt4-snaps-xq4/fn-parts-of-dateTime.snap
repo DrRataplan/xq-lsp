@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "fn-parts-of-dateTime-zero-args",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "fn-parts-of-dateTime-multiple-args",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

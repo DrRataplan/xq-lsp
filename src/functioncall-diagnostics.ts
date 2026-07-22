@@ -11,8 +11,20 @@ function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, 
 }
 
 function arityDescription(overloads: FunctionSymbol[]): string {
-	const arities = [...new Set(overloads.map((f) => f.arity))].sort((a, b) => a - b);
-	return overloads.some((f) => f.variadic) ? `${arities[0]} or more` : arities.length === 1 ? `${arities[0]}` : arities.join(" or ");
+	if (overloads.some((f) => f.variadic)) {
+		const min = Math.min(...overloads.map((f) => f.minArity ?? f.arity));
+		return `${min} or more`;
+	}
+	const parts = [
+		...new Set(
+			overloads.map((f) => {
+				const min = f.minArity ?? f.arity;
+				if (min < f.arity) return `${min}–${f.arity}`;
+				return `${f.arity}`;
+			}),
+		),
+	].sort();
+	return parts.join(" or ");
 }
 
 function checkArity(
@@ -33,7 +45,10 @@ function checkArity(
 		return;
 	}
 
-	const arityMatch = overloads.some((f) => (f.variadic ? arity >= f.arity : f.arity === arity));
+	const arityMatch = overloads.some((f) => {
+		const min = f.minArity ?? f.arity;
+		return f.variadic ? arity >= f.arity : arity >= min && arity <= f.arity;
+	});
 	if (arityMatch) return;
 
 	errors.push({

@@ -1,0 +1,8 @@
+[
+  {
+    "testCase": "MapType-008",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  }
+]

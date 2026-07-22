@@ -1,0 +1,8 @@
+[
+  {
+    "testCase": "Constr-compelem-name-3",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  }
+]

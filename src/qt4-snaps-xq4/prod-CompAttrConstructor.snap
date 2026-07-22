@@ -1,0 +1,32 @@
+[
+  {
+    "testCase": "Constr-compattr-name-3",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-ComputeConAttr-37",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-ComputeConAttr-39",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K2-ComputeConAttr-42",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "K2-ComputeConAttr-43",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  }
+]

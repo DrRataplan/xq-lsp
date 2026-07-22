@@ -1,0 +1,20 @@
+[
+  {
+    "testCase": "orderbylocal-60",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0076",
+    "got": []
+  },
+  {
+    "testCase": "K2-OrderbyExprWithout-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0076",
+    "got": []
+  },
+  {
+    "testCase": "K2-OrderbyExprWithout-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0076",
+    "got": []
+  }
+]

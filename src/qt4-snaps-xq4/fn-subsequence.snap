@@ -1,0 +1,20 @@
+[
+  {
+    "testCase": "K-SeqSubsequenceFunc-1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqSubsequenceFunc-2",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqSubsequenceFunc-3",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

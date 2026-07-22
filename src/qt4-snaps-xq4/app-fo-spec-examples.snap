@@ -1,0 +1,136 @@
+[
+  {
+    "testCase": "fo-test-fn-regex-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "fo-test-fn-innermost-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-fn-outermost-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-fn-filter-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-fn-sort-004",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-fn-sort-by-005",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-fn-sort-by-006",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-fn-transitive-closure-002",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-map-build-009",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-map-build-010",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-map-build-011",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-map-build-013",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "fo-test-fn-parse-json-008",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "fo-test-fn-random-number-generator-002",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "fo-test-fn-highest-007",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-fn-take-while-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPDY0002"
+    ]
+  },
+  {
+    "testCase": "fo-test-fn-lowest-007",
+    "outcome": "false-positive",
+    "expectedCode": "XPDY0002",
+    "got": [
+      "XPDY0002"
+    ]
+  }
+]

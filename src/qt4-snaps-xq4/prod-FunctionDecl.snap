@@ -1,0 +1,368 @@
+[
+  {
+    "testCase": "function-declaration-022",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0034",
+    "got": []
+  },
+  {
+    "testCase": "function-declaration-023",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "function-declaration-024",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0039",
+    "got": []
+  },
+  {
+    "testCase": "function-declaration-025",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0060",
+    "got": []
+  },
+  {
+    "testCase": "function-declaration-027",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-3",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-4",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-5",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-8",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-12a",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-24",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-26",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0034",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-27",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0034",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-28",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0034",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-29",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0034",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-31",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-32",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0045",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-34",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-35",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-36",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-37",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-38",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-51",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-57",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-60",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-61",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-63",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-FunctionProlog-64",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K2-FunctionProlog-38",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-001",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-003",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-005",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-007",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-010",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-011",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-013",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-015",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-017",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-019",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-021",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-023",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-025",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-027",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-029",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-reserved-function-names-031",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "function-decl-40-901",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0034",
+    "got": []
+  },
+  {
+    "testCase": "function-decl-40-902",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0034",
+    "got": []
+  },
+  {
+    "testCase": "function-decl-40-903",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0034",
+    "got": []
+  },
+  {
+    "testCase": "function-decl-40-907",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "function-decl-40-908",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "function-decl-40-909",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "function-decl-40-910",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "function-decl-40-911",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "function-decl-40-912",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "function-decl-40-913",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0148",
+    "got": []
+  }
+]

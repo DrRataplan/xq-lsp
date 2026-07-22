@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "expanded-QName-004-XP",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

@@ -1,0 +1,44 @@
+[
+  {
+    "testCase": "instanceof111",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  },
+  {
+    "testCase": "instanceof408",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0039",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprInstanceOf-49",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprInstanceOf-50",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprInstanceOf-51",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprInstanceOf-52",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  },
+  {
+    "testCase": "K-SeqExprInstanceOf-53",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0051",
+    "got": []
+  }
+]

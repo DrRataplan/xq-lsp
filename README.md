@@ -141,13 +141,23 @@ map {
 }
 ```
 
+## Configuration: XQuery 4.0
+
+Set `xqueryVersion` to `"4.0"` in your `lsp-config.xq` to enable the XQuery 4.0 parser and the
+XQ4 built-in function library (`fn:foot`, `fn:trunk`, `fn:sort-by`, `array:members`, etc.):
+
+```xquery
+map { "xqueryVersion": "4.0" }
+```
+
+Default is `"3.1"`.
+
 ## Roadmap
 
 - **Completion of keywords** — like `function`, `declare` and `ancestor-or-self`, which saves you
   some keystrokes
 - **Context-depending completion** — which prevent syntactical errors
 - **Treesitter parser** — should improve performance and scalability for huge files
-- **XQuery 4** — the parser already supports this. Just make it work
 - **Arity checks** — report when one calls `fn:document('too', 'many', 'arguments')`
 - **Register or discover known prefix/namespace combinations** — if you have the `tei` namespace
   declared in another file, you might mean that when you type `tei:TEI` in another file
@@ -158,6 +168,39 @@ map {
   make sense
 - More of the (static) errors in the spec at [The spec at section F Error
   Conditions](https://www.w3.org/TR/xquery-31/#id-errors), whichever are easy to implement
+
+### XQuery 4.0 roadmap
+
+The XQ4 parser is supported (enable with `xqueryVersion: "4.0"` in config). The following XQ4
+features are parsed but not yet checked:
+
+- **Choice item types** ([XQ4 §2.5.6](https://qt4cg.org/specifications/xquery-40/xquery-40.html#dt-choice-item-type))
+  — union types written as `(T1 | T2)` in a `SequenceType`. The parser accepts them; the type
+  checker treats the result as unknown rather than checking assignability against each branch.
+- **Enumeration types** ([XQ4 §2.5.7](https://qt4cg.org/specifications/xquery-40/xquery-40.html#dt-enumeration-type))
+  — `enum("a", "b", "c")` constraining a `xs:string`. Parsed but not reflected in type inference.
+- **Record types** ([XQ4 §2.5.8](https://qt4cg.org/specifications/xquery-40/xquery-40.html#dt-record-type))
+  — `record(field as type, ...)` and `record(field as type, *, ...)` (extensible). Parsed; field
+  access is not type-checked.
+- **Coercion rules for typed variable declarations** ([XQ4 §2.3.1](https://qt4cg.org/specifications/xquery-40/xquery-40.html#id-variables))
+  — XQ4 allows `let $x as T := expr` and `for $x as T in expr`; the declared type is parsed but
+  coercion/narrowing is not applied to the inferred type of `$x`.
+- **Default parameter values** ([XQ4 §4.15](https://qt4cg.org/specifications/xquery-40/xquery-40.html#id-function-decl))
+  — `declare function f($x as T := expr)`. Arity checking already accounts for optional parameters
+  via `minArity`; however, the type of the default expression is not checked against the declared
+  parameter type.
+- **`while` clause in FLWOR expressions** ([XQ4 §3.12.3](https://qt4cg.org/specifications/xquery-40/xquery-40.html#id-while-clause))
+  — the `while` clause is parsed; the condition is not type-checked for `xs:boolean` conformance.
+- **`otherwise` operator** ([XQ4 §3.9](https://qt4cg.org/specifications/xquery-40/xquery-40.html#id-otherwise))
+  — `expr otherwise expr` is parsed; the result type is not inferred.
+- **Thin arrow `->` (OtherApplyExpr)** ([XQ4 §3.7.3](https://qt4cg.org/specifications/xquery-40/xquery-40.html#id-arrow-operator))
+  — `$map->key` shorthand for map/array lookup. Parsed; arity and return-type checking not yet
+  implemented.
+- **Named (keyword) parameters** ([XQ4 §3.1.6](https://qt4cg.org/specifications/xquery-40/xquery-40.html#id-named-function-arguments))
+  — `f(param: value)` syntax. Parsed; no check that the parameter name exists or that the arity
+  matches after resolving named arguments.
+- **JSON / jnode item types** ([XQ4 §2.5.9](https://qt4cg.org/specifications/xquery-40/xquery-40.html#dt-jnode-test))
+  — `map(*)`, `array(*)`, and richer jnode tests. Parsed; not reflected in type inference.
 
 ## Emacs
 

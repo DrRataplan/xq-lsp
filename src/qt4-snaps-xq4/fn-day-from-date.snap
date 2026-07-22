@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "K-DayFromDateFunc-1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "K-DayFromDateFunc-2",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  }
+]

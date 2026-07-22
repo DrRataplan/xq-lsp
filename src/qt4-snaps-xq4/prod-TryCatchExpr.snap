@@ -1,0 +1,38 @@
+[
+  {
+    "testCase": "no-try-catch-2",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "try-catch-static-error-1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "try-catch-static-error-2",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "try-catch-static-error-3",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "try-catch-static-error-4",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "try-catch-err-other-variable-1",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  }
+]

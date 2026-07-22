@@ -1,0 +1,18 @@
+[
+  {
+    "testCase": "type-of-007",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "type-of-205",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPDY0002"
+    ]
+  }
+]

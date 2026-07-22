@@ -1,0 +1,34 @@
+[
+  {
+    "testCase": "MapConstructor-010",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "MapConstructor-011",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "MapConstructor-016",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "MapConstructor-018",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  },
+  {
+    "testCase": "MapConstructor-025",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

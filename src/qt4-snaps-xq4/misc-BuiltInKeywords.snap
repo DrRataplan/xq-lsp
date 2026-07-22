@@ -1,0 +1,18 @@
+[
+  {
+    "testCase": "Keywords-fn-xsd-validator-1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "Keywords-fn-element-to-map-1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

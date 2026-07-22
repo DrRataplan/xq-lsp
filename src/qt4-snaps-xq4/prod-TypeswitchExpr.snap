@@ -1,0 +1,50 @@
+[
+  {
+    "testCase": "K2-sequenceExprTypeswitch-4",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K2-sequenceExprTypeswitch-5",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K2-sequenceExprTypeswitch-6",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K2-sequenceExprTypeswitch-7",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K2-sequenceExprTypeswitch-9",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K2-sequenceExprTypeswitch-10",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "K2-sequenceExprTypeswitch-11",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "typeswitch-union-in-xquery-10",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0003",
+    "got": []
+  }
+]

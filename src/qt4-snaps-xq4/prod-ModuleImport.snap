@@ -1,0 +1,212 @@
+[
+  {
+    "testCase": "module-URIs-4",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0059",
+    "got": []
+  },
+  {
+    "testCase": "modules-two-import",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0047",
+    "got": []
+  },
+  {
+    "testCase": "modules-collide-var-001",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0049",
+    "got": []
+  },
+  {
+    "testCase": "modules-collide-var-002",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0049",
+    "got": []
+  },
+  {
+    "testCase": "modules-collide-fn-001",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0034",
+    "got": []
+  },
+  {
+    "testCase": "modules-collide-fn-002",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0034",
+    "got": []
+  },
+  {
+    "testCase": "modules-emptyns",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0088",
+    "got": []
+  },
+  {
+    "testCase": "modules-3",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
+    "testCase": "modules-16",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0070",
+    "got": []
+  },
+  {
+    "testCase": "modules-17",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0048",
+    "got": []
+  },
+  {
+    "testCase": "modules-28",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0093",
+    "got": []
+  },
+  {
+    "testCase": "modules-34",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "modules-35",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "modules-44",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0048",
+    "got": []
+  },
+  {
+    "testCase": "K-ModuleImport-1",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0088",
+    "got": []
+  },
+  {
+    "testCase": "K-ModuleImport-2",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0088",
+    "got": []
+  },
+  {
+    "testCase": "errata8-001",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0093",
+    "got": []
+  },
+  {
+    "testCase": "errata8-002",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0093",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-2",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-4",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-14",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-16",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-22",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-24",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-28",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-29",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0106",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-30",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0106",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-31",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0106",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-32",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0106",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-33",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0116",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-34",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0116",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-35",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0116",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-36",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0116",
+    "got": []
+  },
+  {
+    "testCase": "modules-pub-priv-37",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0017",
+    "got": []
+  },
+  {
+    "testCase": "cbcl-module-003",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0008",
+    "got": []
+  }
+]
