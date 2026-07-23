@@ -1,68 +1,8 @@
 [
   {
-    "testCase": "vardeclerr",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
     "testCase": "vardeclerr-3",
     "outcome": "false-negative",
     "expectedCode": "XPST0008",
-    "got": []
-  },
-  {
-    "testCase": "K2-InternalVariablesWithout-1",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
-    "testCase": "K2-InternalVariablesWithout-2",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
-    "testCase": "K2-InternalVariablesWithout-3",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
-    "testCase": "K2-InternalVariablesWithout-4",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
-    "testCase": "K2-InternalVariablesWithout-5",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
-    "testCase": "K2-InternalVariablesWithout-6",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
-    "testCase": "K2-InternalVariablesWithout-7",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
-    "testCase": "K2-InternalVariablesWithout-8",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
-    "testCase": "K2-InternalVariablesWithout-9",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
     "got": []
   },
   {
@@ -86,69 +26,15 @@
     "got": []
   },
   {
-    "testCase": "vardeclwithtype-15a",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
-  },
-  {
     "testCase": "vardeclwithtype-18",
     "outcome": "false-negative",
     "expectedCode": "XQST0049",
     "got": []
   },
   {
-    "testCase": "K-InternalVariablesWith-6a",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
-  },
-  {
-    "testCase": "K-InternalVariablesWith-9a",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
-  },
-  {
-    "testCase": "K-InternalVariablesWith-15a",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
-    "got": []
-  },
-  {
     "testCase": "K-InternalVariablesWith-15b",
     "outcome": "false-negative",
     "expectedCode": "XPST0008",
-    "got": []
-  },
-  {
-    "testCase": "K-InternalVariablesWith-16",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
-    "testCase": "K-InternalVariablesWith-17",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
-    "testCase": "K-InternalVariablesWith-18",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
-    "testCase": "K-InternalVariablesWith-19",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
-    "got": []
-  },
-  {
-    "testCase": "K-InternalVariablesWith-20",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0054",
     "got": []
   }
 ]

@@ -18,12 +18,6 @@
     "got": []
   },
   {
-    "testCase": "K2-ExternalVariablesWithout-18",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0003",
-    "got": []
-  },
-  {
     "testCase": "K2-ExternalVariablesWithout-19",
     "outcome": "false-positive",
     "expectedCode": "XPDY0002",

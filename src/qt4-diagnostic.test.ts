@@ -26,20 +26,14 @@ import type { TestInput, TestOutput } from "./qt4-worker.ts";
 const NS = "http://www.w3.org/2010/09/qt-fots-catalog";
 
 // Spec tokens that are compatible with XQuery 3.1 (the version our LSP targets).
-const XQ31_COMPAT = new Set([
-	"XP20",
-	"XP20+",
-	"XP30",
-	"XP30+",
-	"XP31",
-	"XP31+",
-	"XQ10",
-	"XQ10+",
-	"XQ30",
-	"XQ30+",
-	"XQ31",
-	"XQ31+",
-]);
+// Per qt4tests/catalog-schema.xsd's <dependency> documentation, a bare version
+// token (no "+") means the test applies to THAT VERSION ONLY — e.g. value="XQ10"
+// "should be run with an XQuery 1.0 processor only (typically, an XQuery 3.0
+// processor will produce a different result, described in a separate test
+// case)". So only the exact "XQ31"/"XP31" and any "+"-suffixed (inclusive)
+// token are compatible with our 3.1 analyzer; older bare tokens like "XQ10" or
+// "XP30" deliberately exclude 3.1 and must NOT be treated as compatible.
+const XQ31_COMPAT = new Set(["XP20+", "XP30+", "XP31", "XP31+", "XQ10+", "XQ30+", "XQ31", "XQ31+"]);
 
 // Feature dependencies that require infrastructure we don't have.
 const SKIP_FEATURES = new Set([

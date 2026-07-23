@@ -26,12 +26,6 @@
     ]
   },
   {
-    "testCase": "function-declaration-027",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0003",
-    "got": []
-  },
-  {
     "testCase": "K-FunctionProlog-2",
     "outcome": "false-negative",
     "expectedCode": "XQST0045",
@@ -53,12 +47,6 @@
     "testCase": "K-FunctionProlog-5",
     "outcome": "false-negative",
     "expectedCode": "XQST0045",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionProlog-12a",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0008",
     "got": []
   },
   {

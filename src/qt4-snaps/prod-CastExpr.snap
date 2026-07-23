@@ -6,21 +6,9 @@
     "got": []
   },
   {
-    "testCase": "K-SeqExprCast-4",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0051",
-    "got": []
-  },
-  {
     "testCase": "K-SeqExprCast-4a",
     "outcome": "false-negative",
     "expectedCode": "XPST0080",
-    "got": []
-  },
-  {
-    "testCase": "K-SeqExprCast-5",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0051",
     "got": []
   },
   {
@@ -36,12 +24,6 @@
     "got": []
   },
   {
-    "testCase": "K-SeqExprCast-7",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0051",
-    "got": []
-  },
-  {
     "testCase": "K-SeqExprCast-7a",
     "outcome": "false-negative",
     "expectedCode": "XQST0052",
@@ -51,12 +33,6 @@
     "testCase": "K-SeqExprCast-8",
     "outcome": "false-negative",
     "expectedCode": "XPST0081",
-    "got": []
-  },
-  {
-    "testCase": "K-SeqExprCast-9",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0051",
     "got": []
   },
   {
