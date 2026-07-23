@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "fn-filter-026",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0003"
-    ]
-  }
-]
+[]
