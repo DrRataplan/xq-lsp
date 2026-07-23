@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.8.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.7.0...lsp-v1.8.0) (2026-07-23)
+
+
+### Features
+
+* add AST debug panel to demo and standalone dump-ast script ([dd42db4](https://github.com/DrRataplan/xq-lsp/commit/dd42db4866af25cd25732c3464089447e6a537ce))
+* add call hierarchy support ([27cbe5d](https://github.com/DrRataplan/xq-lsp/commit/27cbe5d8c01e376f6e6dba3bc8903913ef4e0181))
+* add code lens for reference counts ([b69300a](https://github.com/DrRataplan/xq-lsp/commit/b69300a3c036198d05eb24dacd7ecf000eed1d6e))
+* add document links for module imports ([154bb04](https://github.com/DrRataplan/xq-lsp/commit/154bb0448758d49b26839ecff882381a4adaeb20)), closes [#118](https://github.com/DrRataplan/xq-lsp/issues/118)
+* add inlay hints for parameter names and inferred types ([ee90295](https://github.com/DrRataplan/xq-lsp/commit/ee9029594df7a4faef6af7e34291aa77ae1a50a7))
+* add refactor code actions ([34a9315](https://github.com/DrRataplan/xq-lsp/commit/34a93155f953f11d40579b38454b7614cba8e92c)), closes [#121](https://github.com/DrRataplan/xq-lsp/issues/121)
+* predeclare eXist-db install-script variables and surface variable doc comments ([67a8075](https://github.com/DrRataplan/xq-lsp/commit/67a807500cb723c0e8d6e8b229b06ccaf3e0fa04))
+* show inlay hints in the demo playground ([169814d](https://github.com/DrRataplan/xq-lsp/commit/169814da37a47d141062946c255fd1ecb46a008f))
+
+
+### Bug Fixes
+
+* add hint diagnostic for whitespace inside Q{uri} literals ([5f8d5d6](https://github.com/DrRataplan/xq-lsp/commit/5f8d5d6b4a517cf997b73a8c39d6d22621cfcf82))
+* **ci:** pack xq-lsp before installing vscode extension deps ([527d824](https://github.com/DrRataplan/xq-lsp/commit/527d82486a26ea7742ad74d58c0ab18330a61405))
+* **ci:** stop validating packed xq-lsp tarball against stale lockfile ([2369252](https://github.com/DrRataplan/xq-lsp/commit/23692529a2cf9d759665dee80c6e9c7aa1ac0968))
+* correct qt4tests exclusion typo in .npmignore ([20080f1](https://github.com/DrRataplan/xq-lsp/commit/20080f1c242640bc9184a30949fe949b016398a4))
+* declare vscode-languageserver-textdocument as a demo dependency ([013b04f](https://github.com/DrRataplan/xq-lsp/commit/013b04f9fd4da712bf56cb4afe731eed0f4b26f4))
+* don't hover function signatures on lookalike element/attribute names ([1d87635](https://github.com/DrRataplan/xq-lsp/commit/1d87635e6c98b1bb1eb3af5e49b0ec6ae175e128))
+* exclude version-exclusive spec dependencies from QT4 3.1 filter ([ad9bbe5](https://github.com/DrRataplan/xq-lsp/commit/ad9bbe5290ccb16f055da9df454d471f9ed5bec2))
+* exclude XP-only spec dependencies from QT4 3.1 filter ([e5514b1](https://github.com/DrRataplan/xq-lsp/commit/e5514b1f6019ee694b7bb0fa6603a853e46cb55c))
+* honor lib config for runtime function diagnostics in the playground demo ([cc29fd2](https://github.com/DrRataplan/xq-lsp/commit/cc29fd2f6edaccc655f9332e41db3ba9e3ab018a))
+* infer arithmetic types and stop misinferring literal path exprs as nodes ([825a9ab](https://github.com/DrRataplan/xq-lsp/commit/825a9ab1b004c262c4d7cb0f585df67bc441b6f6))
+* infer inlay hint types for for-bindings over range/typed sequences ([1a6d202](https://github.com/DrRataplan/xq-lsp/commit/1a6d202349e7d79372d79d5dd199e636de8926dc))
+* predeclare xsi namespace prefix unconditionally ([ac6f47d](https://github.com/DrRataplan/xq-lsp/commit/ac6f47d59176cde7c2e0649cb4854d02c71811a4))
+* resolve vscode-languageserver from src/inlay-hints.ts in the demo build ([db43ee1](https://github.com/DrRataplan/xq-lsp/commit/db43ee184a7005fb76e93a87dfcf6dd716acef33))
+* resolve XPST0008 false positives from typeswitch scoping and EQName whitespace ([df0f89c](https://github.com/DrRataplan/xq-lsp/commit/df0f89c45fbe6ee2330e9311dc639f59bd4370a9))
+
 ## [1.7.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.6.0...lsp-v1.7.0) (2026-07-15)
 
 
