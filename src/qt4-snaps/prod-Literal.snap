@@ -1,13 +1,5 @@
 [
   {
-    "testCase": "K-Literals-31a",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
     "testCase": "K2-Literals-1",
     "outcome": "false-negative",
     "expectedCode": "XQST0090",

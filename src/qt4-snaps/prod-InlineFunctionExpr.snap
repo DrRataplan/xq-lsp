@@ -6,11 +6,5 @@
     "got": [
       "XPDY0002"
     ]
-  },
-  {
-    "testCase": "inline-fn-016",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0003",
-    "got": []
   }
 ]
