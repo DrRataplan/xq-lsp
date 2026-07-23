@@ -12,18 +12,6 @@
     "got": []
   },
   {
-    "testCase": "K-ForExprWithout-57",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0003",
-    "got": []
-  },
-  {
-    "testCase": "K-ForExprWithout-58",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0003",
-    "got": []
-  },
-  {
     "testCase": "ForExprType011",
     "outcome": "false-negative",
     "expectedCode": "XPST0051",

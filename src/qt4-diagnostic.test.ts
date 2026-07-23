@@ -30,10 +30,21 @@ const NS = "http://www.w3.org/2010/09/qt-fots-catalog";
 // token (no "+") means the test applies to THAT VERSION ONLY — e.g. value="XQ10"
 // "should be run with an XQuery 1.0 processor only (typically, an XQuery 3.0
 // processor will produce a different result, described in a separate test
-// case)". So only the exact "XQ31"/"XP31" and any "+"-suffixed (inclusive)
-// token are compatible with our 3.1 analyzer; older bare tokens like "XQ10" or
-// "XP30" deliberately exclude 3.1 and must NOT be treated as compatible.
-const XQ31_COMPAT = new Set(["XP20+", "XP30+", "XP31", "XP31+", "XQ10+", "XQ30+", "XQ31", "XQ31+"]);
+// case)". So only the exact "XQ31" and any "+"-suffixed (inclusive) XQ token
+// are compatible; older bare tokens like "XQ10" deliberately exclude 3.1.
+//
+// "XP" tokens are deliberately excluded entirely, even "+"-suffixed ones:
+// they mark a test as valid for a *bare XPath* evaluator (no Prolog, no
+// module), which is a different host language/context than what this tool
+// implements (a full XQuery processor). Tests satisfied only by an XP token
+// consistently turn out to assert something that's specifically an XPath
+// restriction and doesn't apply to XQuery at all — e.g. "Typeswitch
+// disallowed in XPath" (typeswitch-in-xpath) or "XPath (prior to 4.0) does
+// not allow for and let to be mixed" (LetExpr023) — both use constructs
+// that are perfectly valid XQuery, so treating "XP-compatible" as "safe to
+// run through our XQuery analyzer" produces false positives/negatives for
+// tests that were never about XQuery in the first place.
+const XQ31_COMPAT = new Set(["XQ10+", "XQ30+", "XQ31", "XQ31+"]);
 
 // Feature dependencies that require infrastructure we don't have.
 const SKIP_FEATURES = new Set([

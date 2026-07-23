@@ -1,11 +1,5 @@
 [
   {
-    "testCase": "FunctionCall-027",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0051",
-    "got": []
-  },
-  {
     "testCase": "K-FunctionCallExpr-4",
     "outcome": "false-negative",
     "expectedCode": "XPST0017",
