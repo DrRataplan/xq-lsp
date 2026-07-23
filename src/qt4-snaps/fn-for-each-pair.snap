@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "fn-for-each-pair-038",
-    "outcome": "false-positive",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPST0003"
-    ]
-  }
-]
+[]

@@ -40,13 +40,5 @@
     "got": [
       "XPDY0002"
     ]
-  },
-  {
-    "testCase": "let-arr-015a",
-    "outcome": "false-positive",
-    "expectedCode": "FOAY0001",
-    "got": [
-      "XPST0003"
-    ]
   }
 ]

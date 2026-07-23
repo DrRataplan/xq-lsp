@@ -6,45 +6,5 @@
     "got": [
       "XPST0003"
     ]
-  },
-  {
-    "testCase": "serialize-xml-143",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0009",
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-144",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0009",
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-145",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0009",
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-146",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0009",
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "serialize-xml-147",
-    "outcome": "false-positive",
-    "expectedCode": "SEPM0009",
-    "got": [
-      "XPST0003"
-    ]
   }
 ]
