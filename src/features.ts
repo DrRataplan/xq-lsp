@@ -48,8 +48,10 @@ export function getHover(
 		];
 		const v = allVars.find((v) => v.qname.namespaceUri === varNsUri && v.qname.localName === varLocalName);
 		if (v) {
+			const parts = [`\`$${formatQName(v.qname)}\``];
+			if (v.doc) parts.push(v.doc);
 			return {
-				contents: { kind: MarkupKind.Markdown, value: `\`$${formatQName(v.qname)}\`` },
+				contents: { kind: MarkupKind.Markdown, value: parts.join("\n\n") },
 				range: rangeFromOffset(doc, start - 1, end),
 			};
 		}

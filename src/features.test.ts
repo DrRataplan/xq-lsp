@@ -118,6 +118,36 @@ local:double(5)`;
 	});
 });
 
+describe("hover: variable doc comments", () => {
+	const SRC = `(:~
+ : The maximum number of retries allowed.
+ :)
+declare variable $local:max-retries := 3;
+$local:max-retries`;
+	const analysis = analyze(SRC, "file:///test.xq");
+
+	function hoverValue(offset: number) {
+		const hover = getHover(makeDoc(SRC), offset, analysis, new Map());
+		if (!hover) return null;
+		return typeof hover.contents === "object" && "value" in hover.contents ? hover.contents.value : "";
+	}
+
+	test("hovering a documented variable includes its doc comment", () => {
+		const value = hoverValue(SRC.lastIndexOf("$local:max-retries") + 1);
+		assert.ok(value?.includes("local:max-retries"), `signature missing, got: ${value}`);
+		assert.ok(value?.includes("maximum number of retries"), `doc missing, got: ${value}`);
+	});
+
+	test("hovering an undocumented variable shows only the name", () => {
+		const src = `declare variable $local:x := 1; $local:x`;
+		const value = (() => {
+			const hover = getHover(makeDoc(src), src.lastIndexOf("$local:x") + 1, analyze(src, "file:///test.xq"), new Map());
+			return typeof hover?.contents === "object" && "value" in hover.contents ? hover.contents.value : "";
+		})();
+		assert.equal(value, "`$local:x`");
+	});
+});
+
 // ── signature help ────────────────────────────────────────────────────────────
 
 describe("signatureHelp", () => {

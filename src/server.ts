@@ -33,7 +33,13 @@ import { findImportInsertPosition, findDeclareNsInsertPosition, computeRelativeP
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
 import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
 import { runDiagnostics, runHints } from "./diagnostics.ts";
-import { getRuntimeAnalyses, getRuntimePredeclaredNamespaces, withPredeclaredNs } from "./runtimes.ts";
+import {
+	getRuntimeAnalyses,
+	getRuntimePredeclaredNamespaces,
+	withPredeclaredNs,
+	getRuntimePredeclaredVariables,
+	withPredeclaredVariables,
+} from "./runtimes.ts";
 import { buildOrganizeImportsEdit, buildExtractVariableEdit, buildExtractFunctionEdit } from "./refactor-actions.ts";
 import type { OffsetEdit } from "./refactor-actions.ts";
 
@@ -191,7 +197,8 @@ function resolveContext(
 	result.set("builtin:fn", getBuiltins());
 	const { byNamespace: globAnalyses, lib } = getGlobAnalyses(currentUri);
 	const predeclaredNs = getRuntimePredeclaredNamespaces(lib);
-	const analysis = withPredeclaredNs(rawAnalysis, predeclaredNs);
+	const predeclaredVars = getRuntimePredeclaredVariables(lib, currentUri);
+	const analysis = withPredeclaredVariables(withPredeclaredNs(rawAnalysis, predeclaredNs), predeclaredVars);
 
 	const runtimeByNamespace = new Map<string, FileAnalysis>();
 	for (const runtimeAnalysis of getRuntimeAnalyses(lib)) {

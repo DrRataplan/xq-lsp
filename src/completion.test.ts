@@ -31,6 +31,19 @@ describe("completion: variables", () => {
 		assert.ok(labels.includes("$local:total"), `expected $local:total, got ${labels}`);
 	});
 
+	test("module variable with a doc comment surfaces it as completion documentation", () => {
+		const analysis = analyze(
+			`(:~\n : The running total.\n :)\ndeclare variable $local:total := 0;\n$`,
+			"file:///a.xq",
+		);
+		const entry = getCompletions({ textBeforeCursor: "$", cursorOffset: 60 }, analysis, new Map()).find(
+			(i) => i.label === "$local:total",
+		);
+		const doc = entry?.documentation;
+		const value = doc && typeof doc === "object" && "value" in doc ? doc.value : undefined;
+		assert.ok(value?.includes("running total"), `got: ${JSON.stringify(doc)}`);
+	});
+
 	test("let binding visible after its definition offset", () => {
 		const labels = getCompletions({ textBeforeCursor: "$", cursorOffset: 200 }, ANALYSIS_WITH_VARS, new Map()).map(
 			(i) => i.label,

@@ -9,6 +9,7 @@ import type { CodeLensData } from "./code-lens.ts";
 import { expandGlobs } from "./config.ts";
 import type { FileRecord } from "./references.ts";
 import { makeDoc, withTmpDir } from "./test-utils.ts";
+import { withPredeclaredVariables, getRuntimePredeclaredVariables } from "./runtimes.ts";
 
 function buildRecords(dir: string): FileRecord[] {
 	return expandGlobs(["**/*.xq"], dir).map((filePath) => {
@@ -37,6 +38,16 @@ declare variable $v := 1;
 			assert.equal(data.uri, doc.uri);
 			assert.ok(data.kind === "function" || data.kind === "variable");
 		}
+	});
+
+	test("runtime-injected predeclared variables get no lens", () => {
+		const uri = "file:///app/post-install.xql";
+		const doc = makeDoc(`$target`, uri);
+		const { analysis: rawAnalysis } = analyzeWithAst(`$target`, uri);
+		const predeclared = getRuntimePredeclaredVariables(["existdb"], uri);
+		const analysis = withPredeclaredVariables(rawAnalysis, predeclared);
+		assert.ok(predeclared.length > 0, "expected $home/$dir/$target to be predeclared");
+		assert.equal(buildCodeLenses(doc, analysis).length, 0);
 	});
 });
 

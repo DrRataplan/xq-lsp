@@ -107,6 +107,25 @@ describe("analyzer: doc comments", () => {
 		const fn = analyze(WITH_DOC, "file:///test.xq").functions.find((f) => formatQName(f.qname) === "local:add");
 		assert.equal(fn?.doc?.returns, "The sum");
 	});
+
+	const WITH_VAR_DOC = `(:~
+ : The maximum number of retries allowed.
+ :)
+declare variable $local:max-retries := 3;`;
+
+	test("extracts doc comment on a module variable", () => {
+		const v = analyze(WITH_VAR_DOC, "file:///test.xq").moduleVariables.find(
+			(v) => v.qname.localName === "max-retries",
+		);
+		assert.ok(v?.doc?.includes("maximum number of retries"), `got: ${v?.doc}`);
+	});
+
+	test("module variable without a preceding comment has no doc", () => {
+		const v = analyze(`declare variable $local:x := 1;`, "file:///test.xq").moduleVariables.find(
+			(v) => v.qname.localName === "x",
+		);
+		assert.equal(v?.doc, undefined);
+	});
 });
 
 // ── regex fallback ─────────────────────────────────────────────────────────────
@@ -134,6 +153,13 @@ describe("analyzer: regex fallback", () => {
 		const result = analyze(TRUNCATED_XQ, "file:///incomplete.xq");
 		const names = result.moduleVariables.map((v) => v.qname.localName);
 		assert.ok(names.includes("count"), `expected count, got ${names}`);
+	});
+
+	test("extracts doc comment on a module variable via regex fallback", () => {
+		const src = `(:~\n : Running total.\n :)\ndeclare variable $count := 10;\n\nlet $result := local:double(\n`;
+		const result = analyze(src, "file:///incomplete.xq");
+		const v = result.moduleVariables.find((v) => v.qname.localName === "count");
+		assert.ok(v?.doc?.includes("Running total"), `got: ${v?.doc}`);
 	});
 
 	test("extracts import with at path", () => {

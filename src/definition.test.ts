@@ -2,9 +2,10 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { analyze } from "./analyzer.ts";
+import { analyze, analyzeWithAst } from "./analyzer.ts";
 import { getDefinition } from "./definition.ts";
 import { makeDoc, withTmpDir } from "./test-utils.ts";
+import { withPredeclaredVariables, getRuntimePredeclaredVariables } from "./runtimes.ts";
 
 function def(
 	src: string,
@@ -35,6 +36,16 @@ describe("go-to-definition", () => {
 			const src = `declare variable $local:x := 42; $local:x`;
 			const loc = def(src, "$local:x", new Map(), "file:///test.xq");
 			assert.ok(loc, "expected a location");
+		});
+
+		test("runtime-injected predeclared variable has no location to navigate to", () => {
+			const uri = "file:///app/post-install.xql";
+			const src = `$target`;
+			const doc = makeDoc(src, uri);
+			const { analysis: rawAnalysis } = analyzeWithAst(src, uri);
+			const analysis = withPredeclaredVariables(rawAnalysis, getRuntimePredeclaredVariables(["existdb"], uri));
+			const loc = getDefinition(doc, 1, analysis, new Map());
+			assert.equal(loc, null, "expected no crash and no location for an offset:-1 variable");
 		});
 	});
 
