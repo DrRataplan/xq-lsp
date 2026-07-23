@@ -52,11 +52,5 @@
     "outcome": "false-negative",
     "expectedCode": "XQST0070",
     "got": []
-  },
-  {
-    "testCase": "K2-DirectConElem-53",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0003",
-    "got": []
   }
 ]

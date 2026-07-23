@@ -1,8 +1,1 @@
-[
-  {
-    "testCase": "typeswitch-union-in-xquery-10",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0003",
-    "got": []
-  }
-]
+[]

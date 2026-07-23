@@ -6,97 +6,9 @@
     "got": []
   },
   {
-    "testCase": "FunctionCall-044",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0003",
-    "got": []
-  },
-  {
     "testCase": "K-FunctionCallExpr-4",
     "outcome": "false-negative",
     "expectedCode": "XPST0017",
     "got": []
-  },
-  {
-    "testCase": "K-FunctionCallExpr-12",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionCallExpr-13",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionCallExpr-15",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionCallExpr-16",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionCallExpr-17",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "K-FunctionCallExpr-25",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "K2-FunctionCallExpr-7",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "function-call-reserved-function-names-014",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "function-call-reserved-function-names-015",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "function-call-reserved-function-names-016",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "function-call-reserved-function-names-039",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
-  },
-  {
-    "testCase": "function-call-reserved-function-names-043",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPST0003"
-    ]
   }
 ]
