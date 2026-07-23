@@ -72,6 +72,12 @@
     "got": []
   },
   {
+    "testCase": "K2-NamespaceProlog-12",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0081",
+    "got": []
+  },
+  {
     "testCase": "K2-NamespaceProlog-15",
     "outcome": "false-negative",
     "expectedCode": "XQST0070",

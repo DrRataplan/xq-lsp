@@ -76,6 +76,13 @@ describe("namespace-diagnostics: other", () => {
 		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
 	});
 
+	test("xsi: is predeclared per the XQuery 3.1 static context, without a lib config", () => {
+		// insert node attribute xsi:nil {"true"} ... is common XQuery Update Facility
+		// code that shouldn't need an explicit `declare namespace xsi=...`.
+		const ds = diags(`insert node attribute xsi:nil {"true"} into <e/>`);
+		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
+	});
+
 	test("prefix inside a comment is not reported", () => {
 		assert.ok(!diags(`(: undeclared:prefix in a comment :) 1`).some((d) => d.prefix === "undeclared"));
 	});
