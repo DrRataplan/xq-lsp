@@ -62,7 +62,7 @@ export function getDefinition(
 		// Local bindings and module-level variables in current file
 		const allVars = [...current.moduleVariables, ...current.localBindings];
 		const v = allVars.find((v) => v.qname.namespaceUri === varNsUri && v.qname.localName === varLocalName);
-		if (v) {
+		if (v && v.offset >= 0) {
 			const pos = doc.positionAt(v.offset);
 			return Location.create(doc.uri, { start: pos, end: pos });
 		}

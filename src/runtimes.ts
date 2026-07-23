@@ -4,7 +4,12 @@ import { fileURLToPath } from "url";
 import { analyze } from "./analyzer.ts";
 import type { FileAnalysis } from "./types.ts";
 
-export { getRuntimePredeclaredNamespaces, withPredeclaredNs } from "./predeclared-namespaces.ts";
+export {
+	getRuntimePredeclaredNamespaces,
+	withPredeclaredNs,
+	getRuntimePredeclaredVariables,
+	withPredeclaredVariables,
+} from "./predeclared-namespaces.ts";
 
 const runtimesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "runtimes");
 

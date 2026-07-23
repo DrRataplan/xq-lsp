@@ -6,8 +6,15 @@ import { fileURLToPath } from "node:url";
 import { analyze, analyzeWithAst } from "./analyzer.ts";
 import { getCompletions } from "./completion.ts";
 import { formatQName } from "./types.ts";
-import { getRuntimeAnalyses, getRuntimePredeclaredNamespaces, withPredeclaredNs } from "./runtimes.ts";
+import {
+	getRuntimeAnalyses,
+	getRuntimePredeclaredNamespaces,
+	withPredeclaredNs,
+	getRuntimePredeclaredVariables,
+	withPredeclaredVariables,
+} from "./runtimes.ts";
 import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
+import { checkUndeclaredVariables } from "./variable-diagnostics.ts";
 
 const runtimesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "runtimes");
 
@@ -215,5 +222,98 @@ describe("runtime defs: predeclared namespaces", () => {
 		);
 		assert.ok(labels.includes("uuid"), `expected util:uuid in completions, got ${labels.slice(0, 10)}`);
 		assert.ok(labels.includes("log"), `expected util:log in completions`);
+	});
+});
+
+describe("runtime defs: existdb controller variables", () => {
+	test("$exist:path, $exist:resource etc. are declared by the exist runtime module", () => {
+		const exist = getRuntimeAnalyses(["existdb"]).find((a) => a.moduleNamespaceUri?.endsWith("/NS/exist"));
+		const names = exist?.moduleVariables.map((v) => formatQName(v.qname)) ?? [];
+		for (const name of ["exist:controller", "exist:path", "exist:resource", "exist:root", "exist:prefix"]) {
+			assert.ok(names.includes(name), `expected ${name}, got ${names}`);
+		}
+	});
+
+	test("$exist:path has a doc comment linking to the eXist-db docs", () => {
+		const exist = getRuntimeAnalyses(["existdb"]).find((a) => a.moduleNamespaceUri?.endsWith("/NS/exist"));
+		const v = exist?.moduleVariables.find((v) => v.qname.localName === "path");
+		assert.ok(v?.doc?.includes("exist-db.org/exist/apps/doc/urlrewrite"), `got: ${v?.doc}`);
+	});
+});
+
+describe("runtime defs: predeclared install-script variables ($home/$dir/$target)", () => {
+	function undeclaredVarNames(src: string, runtimes: string[], sourceUri: string) {
+		const { analysis: rawAnalysis, ast } = analyzeWithAst(src, sourceUri);
+		const analysis = withPredeclaredVariables(rawAnalysis, getRuntimePredeclaredVariables(runtimes, sourceUri));
+		return checkUndeclaredVariables(ast!, analysis, new Map()).map((d) => d.message);
+	}
+
+	test("no runtimes configured: nothing is predeclared", () => {
+		assert.deepEqual(getRuntimePredeclaredVariables([], "file:///app/post-install.xql"), []);
+	});
+
+	test("existdb active but filename doesn't match: nothing is predeclared", () => {
+		assert.deepEqual(getRuntimePredeclaredVariables(["existdb"], "file:///app/modules/lib.xqm"), []);
+	});
+
+	for (const fileName of ["pre-install.xql", "pre-install.xq", "preinstall.xql", "preinstall.xq"]) {
+		test(`existdb active, ${fileName}: $home/$dir/$target are predeclared`, () => {
+			const names = getRuntimePredeclaredVariables(["existdb"], `file:///app/${fileName}`).map(
+				(v) => v.qname.localName,
+			);
+			assert.deepEqual(names.sort(), ["dir", "home", "target"]);
+		});
+	}
+
+	for (const fileName of ["post-install.xql", "post-install.xq", "postinstall.xql", "postinstall.xq"]) {
+		test(`existdb active, ${fileName}: $home/$dir/$target are predeclared`, () => {
+			const names = getRuntimePredeclaredVariables(["existdb"], `file:///app/${fileName}`).map(
+				(v) => v.qname.localName,
+			);
+			assert.deepEqual(names.sort(), ["dir", "home", "target"]);
+		});
+	}
+
+	test("matching is case-insensitive on the filename", () => {
+		const names = getRuntimePredeclaredVariables(["existdb"], "file:///app/Post-Install.XQL").map(
+			(v) => v.qname.localName,
+		);
+		assert.deepEqual(names.sort(), ["dir", "home", "target"]);
+	});
+
+	test("predeclared variables carry a doc pointing at the eXist-db repo docs", () => {
+		const target = getRuntimePredeclaredVariables(["existdb"], "file:///app/post-install.xql").find(
+			(v) => v.qname.localName === "target",
+		);
+		assert.ok(target?.doc?.includes("exist-db.org/exist/apps/doc/repo"), `got: ${target?.doc}`);
+	});
+
+	test("$target is not flagged as undeclared in post-install.xql", () => {
+		const msgs = undeclaredVarNames(`$target || "/data"`, ["existdb"], "file:///app/post-install.xql");
+		assert.deepEqual(msgs, []);
+	});
+
+	test("$home and $dir are not flagged as undeclared in pre-install.xql", () => {
+		const msgs = undeclaredVarNames(`($home, $dir)`, ["existdb"], "file:///app/pre-install.xql");
+		assert.deepEqual(msgs, []);
+	});
+
+	test("$target IS still flagged as undeclared in an unrelated module, even with existdb active", () => {
+		const msgs = undeclaredVarNames(`$target`, ["existdb"], "file:///app/lib.xqm");
+		assert.ok(msgs.some((m) => m.includes("target")), `expected $target to be flagged, got ${msgs}`);
+	});
+
+	test("$target IS still flagged in post-install.xql without existdb active", () => {
+		const msgs = undeclaredVarNames(`$target`, [], "file:///app/post-install.xql");
+		assert.ok(msgs.some((m) => m.includes("target")), `expected $target to be flagged, got ${msgs}`);
+	});
+
+	test("withPredeclaredVariables does not duplicate an explicitly declared variable", () => {
+		const src = `declare variable $target external; $target`;
+		const { analysis: rawAnalysis } = analyzeWithAst(src, "file:///app/post-install.xql");
+		const predeclared = getRuntimePredeclaredVariables(["existdb"], "file:///app/post-install.xql");
+		const analysis = withPredeclaredVariables(rawAnalysis, predeclared);
+		const targets = analysis.moduleVariables.filter((v) => v.qname.localName === "target");
+		assert.equal(targets.length, 1, `expected exactly one $target, got ${targets.length}`);
 	});
 });

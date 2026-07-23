@@ -284,17 +284,29 @@ function extractFunctions(
 	return results;
 }
 
-function extractModuleVariables(ast: Node, sourceUri: string, prefixMap: Map<string, string>): VariableSymbol[] {
+function extractModuleVariables(
+	ast: Node,
+	sourceUri: string,
+	prefixMap: Map<string, string>,
+	comments: Terminal[],
+	text: string,
+): VariableSymbol[] {
 	const results: VariableSymbol[] = [];
-	for (const varDecl of findAll(ast, "VarDecl")) {
+	// Use AnnotatedDecl (starts at 'declare') so the comment lookup clears the 'declare' keyword,
+	// matching how extractFunctions locates its doc comment.
+	for (const annotated of findAll(ast, "AnnotatedDecl")) {
+		const varDecl = directChildOf(annotated, "VarDecl");
+		if (!varDecl) continue;
 		const varName = directChildOf(varDecl, "VarName");
 		const name = varName ? firstTerminalValue(varName) : null;
 		if (!name) continue;
+		const doc = findPrecedingDoc(comments, text, annotated.start);
 		results.push({
 			qname: makeVarQName(name, prefixMap),
 			offset: varDecl.start,
 			isModuleLevel: true,
 			sourceUri,
+			doc: doc?.description || undefined,
 		});
 	}
 	return results;
@@ -358,7 +370,7 @@ function analyzeAst(ast: Node, comments: Terminal[], text: string, sourceUri: st
 	const prefixMap = buildPrefixMap(moduleNs, imports, namespaceDecls);
 	return {
 		functions: extractFunctions(ast, sourceUri, comments, text, prefixMap, defaultFunctionNamespace),
-		moduleVariables: extractModuleVariables(ast, sourceUri, prefixMap),
+		moduleVariables: extractModuleVariables(ast, sourceUri, prefixMap, comments, text),
 		localBindings: extractLocalBindings(ast, sourceUri, prefixMap),
 		imports,
 		namespaceDecls,
@@ -436,11 +448,13 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 
 	RE_VAR_DECL.lastIndex = 0;
 	while ((m = RE_VAR_DECL.exec(text)) !== null) {
+		const doc = findPrecedingDocInText(text, m.index);
 		moduleVariables.push({
 			qname: makeVarQName(m[1], prefixMap),
 			offset: m.index,
 			isModuleLevel: true,
 			sourceUri,
+			doc: doc?.description || undefined,
 		});
 	}
 

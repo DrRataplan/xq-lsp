@@ -68,7 +68,7 @@ function insertText(fn: FunctionSymbol, snippets: boolean, fullName: string): st
 function buildVariableEntry(v: VariableSymbol, filter: string): CompletionEntry | null {
 	const label = `$${formatQName(v.qname)}`;
 	if (filter && !formatQName(v.qname).toLowerCase().startsWith(filter.toLowerCase())) return null;
-	return { label, kind: "variable", insertText: label, isSnippet: false };
+	return { label, kind: "variable", documentation: v.doc, insertText: label, isSnippet: false };
 }
 
 function buildParamEntry(p: ParamInfo, filter: string): CompletionEntry | null {

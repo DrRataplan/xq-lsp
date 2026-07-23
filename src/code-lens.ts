@@ -33,6 +33,7 @@ export function buildCodeLenses(doc: TextDocument, analysis: FileAnalysis): Code
 	}
 
 	for (const v of analysis.moduleVariables) {
+		if (v.offset < 0) continue; // runtime-injected predeclared variable, not written in source
 		const pos = doc.positionAt(v.offset);
 		lenses.push({
 			range: { start: pos, end: pos },

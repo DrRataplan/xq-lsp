@@ -42,6 +42,7 @@ export interface VariableSymbol {
 	offset: number; // char offset in source where it's defined
 	isModuleLevel: boolean;
 	sourceUri: string;
+	doc?: string; // markdown description from a preceding xqDoc comment, if any
 }
 
 export interface ImportInfo {
