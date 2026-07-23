@@ -16,14 +16,21 @@ import type {
 export const XMLNS_FN = "http://www.w3.org/2005/xpath-functions";
 export const XMLNS_LOCAL = "http://www.w3.org/2005/xquery-local-functions";
 export const XMLNS_XS = "http://www.w3.org/2001/XMLSchema";
+export const XMLNS_XSI = "http://www.w3.org/2001/XMLSchema-instance";
 export const XMLNS_MATH = "http://www.w3.org/2005/xpath-functions/math";
 export const XMLNS_MAP = "http://www.w3.org/2005/xpath-functions/map";
 export const XMLNS_ARRAY = "http://www.w3.org/2005/xpath-functions/array";
 
+// fn, local, xs, xsi, and xml are the five namespaces the XQuery 3.1 spec
+// (§2.1.1 Static Context) mandates as pre-declared in every processor's static
+// context, independent of any runtime/library configuration. math/map/array
+// aren't spec-mandated but are universally available in practice (they back
+// the 3.1 map/array/math core function libraries), so they're predeclared here too.
 const BUILTIN_PREFIXES: Record<string, string> = {
 	fn: XMLNS_FN,
 	local: XMLNS_LOCAL,
 	xs: XMLNS_XS,
+	xsi: XMLNS_XSI,
 	math: XMLNS_MATH,
 	map: XMLNS_MAP,
 	array: XMLNS_ARRAY,

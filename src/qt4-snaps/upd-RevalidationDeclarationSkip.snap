@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "removeType-valskip-ins-007",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XQST0081"
-    ]
-  }
-]
+[]

@@ -38,7 +38,6 @@ const EXISTDB_PREDECLARED_NAMESPACES: Record<string, string> = {
 	contentextraction: "http://exist-db.org/xquery/contentextraction",
 	counter: "http://exist-db.org/xquery/counter",
 	exist: "http://exist.sourceforge.net/NS/exist",
-	xsi: "http://www.w3.org/2001/XMLSchema-instance",
 	xdt: "http://www.w3.org/2003/05/xpath-datatypes",
 	err: "http://www.w3.org/2005/xqt-errors",
 	exerr: "http://www.exist-db.org/xqt-errors/",
