@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "testCase": "fn-filter-027",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "fn-filter-028",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0003"
+    ]
+  }
+]
