@@ -76,4 +76,23 @@ describe("getWorkspaceSymbols", () => {
 			assert.ok(symbols[0].location.uri.endsWith("lib.xq"));
 		});
 	});
+
+	test("returns symbols from every file when multiple modules share the same namespace", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "a.xq"),
+				`module namespace lib = "http://example.com/lib";\ndeclare function lib:greetA($name) { concat("hi ", $name) };\n`,
+			);
+			fs.writeFileSync(
+				path.join(dir, "b.xq"),
+				`module namespace lib = "http://example.com/lib";\ndeclare function lib:greetB($name) { concat("hey ", $name) };\n`,
+			);
+
+			const symbols = getWorkspaceSymbols(buildRecords(dir), "greet");
+			const byFile = new Map(symbols.map((s) => [s.name, s.location.uri]));
+			assert.equal(symbols.length, 2);
+			assert.ok(byFile.get("lib:greetA")?.endsWith("a.xq"));
+			assert.ok(byFile.get("lib:greetB")?.endsWith("b.xq"));
+		});
+	});
 });
