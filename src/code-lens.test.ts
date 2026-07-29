@@ -7,9 +7,12 @@ import { analyzeWithAst } from "./analyzer.ts";
 import { buildCodeLenses, resolveCodeLens } from "./code-lens.ts";
 import type { CodeLensData } from "./code-lens.ts";
 import { expandGlobs } from "./config.ts";
-import type { FileRecord } from "./references.ts";
+import type { FileRecord, LoadAst } from "./references.ts";
 import { makeDoc, withTmpDir } from "./test-utils.ts";
 import { withPredeclaredVariables, getRuntimePredeclaredVariables } from "./runtimes.ts";
+
+/** Reparses fresh each time — fine for tests, which don't exercise the LSP's own caching. */
+const loadAstForTest: LoadAst = (uri, text) => analyzeWithAst(text, uri).analysis;
 
 function buildRecords(dir: string): FileRecord[] {
 	return expandGlobs(["**/*.xq"], dir).map((filePath) => {
@@ -61,7 +64,7 @@ local:f(1), local:f(2)
 		const { analysis } = analyzeWithAst(src, doc.uri);
 		const [lens] = buildCodeLenses(doc, analysis);
 
-		const resolved = resolveCodeLens(lens, src, analysis, () => []);
+		const resolved = resolveCodeLens(lens, src, analysis, () => [], loadAstForTest);
 		assert.equal(resolved.command?.title, "2 references");
 	});
 
@@ -74,7 +77,7 @@ declare function local:unused($x) { $x };
 		const { analysis } = analyzeWithAst(src, doc.uri);
 		const [lens] = buildCodeLenses(doc, analysis);
 
-		const resolved = resolveCodeLens(lens, src, analysis, () => []);
+		const resolved = resolveCodeLens(lens, src, analysis, () => [], loadAstForTest);
 		assert.equal(resolved.command?.title, "0 references");
 	});
 
@@ -97,7 +100,7 @@ declare function local:unused($x) { $x };
 			const doc = makeDoc(libText, libUri);
 			const [lens] = buildCodeLenses(doc, analysis);
 
-			const resolved = resolveCodeLens(lens, libText, analysis, () => buildRecords(dir));
+			const resolved = resolveCodeLens(lens, libText, analysis, () => buildRecords(dir), loadAstForTest);
 			assert.equal(resolved.command?.title, "2 references");
 		});
 	});
@@ -114,7 +117,7 @@ $v, $v
 		const [lens] = buildCodeLenses(doc, analysis);
 
 		assert.equal((lens.data as CodeLensData).kind, "variable");
-		const resolved = resolveCodeLens(lens, src, analysis, () => []);
+		const resolved = resolveCodeLens(lens, src, analysis, () => [], loadAstForTest);
 		assert.equal(resolved.command?.title, "2 references");
 	});
 
@@ -137,7 +140,7 @@ $v, $v
 			const doc = makeDoc(libText, libUri);
 			const [lens] = buildCodeLenses(doc, analysis);
 
-			const resolved = resolveCodeLens(lens, libText, analysis, () => buildRecords(dir));
+			const resolved = resolveCodeLens(lens, libText, analysis, () => buildRecords(dir), loadAstForTest);
 			assert.equal(resolved.command?.title, "1 references");
 		});
 	});

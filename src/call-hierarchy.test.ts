@@ -8,7 +8,10 @@ import { prepareCallHierarchy, getIncomingCalls, getOutgoingCalls } from "./call
 import { expandGlobs } from "./config.ts";
 import { withTmpDir } from "./test-utils.ts";
 import type { FileAnalysis } from "./types.ts";
-import type { FileRecord } from "./references.ts";
+import type { FileRecord, LoadAst } from "./references.ts";
+
+/** Reparses fresh each time — fine for tests, which don't exercise the LSP's own caching. */
+const loadAstForTest: LoadAst = (uri, text) => analyzeWithAst(text, uri).analysis;
 
 function prepare(uri: string, src: string, cursorWord: string, imported: Map<string, FileAnalysis> = new Map()) {
 	const { analysis } = analyzeWithAst(src, uri);
@@ -52,7 +55,7 @@ declare function local:g() { local:f(1) };
 
 	test("incomingCalls: f is called once, by g", () => {
 		const items = prepare(uri, src, "local:f($x)");
-		const incoming = getIncomingCalls(items[0], src, analysis, () => []);
+		const incoming = getIncomingCalls(items[0], src, analysis, () => [], loadAstForTest);
 		assert.equal(incoming.length, 1);
 		assert.equal(incoming[0].from.name, "local:g");
 		assert.equal(incoming[0].fromRanges.length, 1);
@@ -130,7 +133,7 @@ describe("call hierarchy: cross file", () => {
 			const items = prepare(libUri, libText, "lib:greet");
 			assert.equal(items.length, 1);
 
-			const incoming = getIncomingCalls(items[0], libText, libAnalysis, () => buildRecords(dir));
+			const incoming = getIncomingCalls(items[0], libText, libAnalysis, () => buildRecords(dir), loadAstForTest);
 			assert.equal(incoming.length, 1);
 			assert.equal(incoming[0].from.name, "local:caller");
 			assert.equal(incoming[0].from.uri, pathToFileURL(mainPath).toString());

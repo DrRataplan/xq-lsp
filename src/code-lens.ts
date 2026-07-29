@@ -5,7 +5,7 @@ import type { FileAnalysis } from "./types.ts";
 import { findAll } from "./analyzer.ts";
 import { asFunctionDeclaration, asVarDecl } from "./ast-nodes.ts";
 import { getReferences } from "./references.ts";
-import type { FileRecord } from "./references.ts";
+import type { FileRecord, LoadAst } from "./references.ts";
 
 /** Carried on each unresolved lens so `resolveCodeLens` can find the declaration again later. */
 export interface CodeLensData {
@@ -74,11 +74,17 @@ function findNameOffset(ast: Node, analysis: FileAnalysis, data: CodeLensData): 
  * reference search `textDocument/references` uses. Declarations aren't counted as
  * references. 0 references is reported as-is — it's a useful signal, not hidden.
  */
-export function resolveCodeLens(lens: CodeLens, text: string, analysis: FileAnalysis, getOtherFiles: () => FileRecord[]): CodeLens {
+export function resolveCodeLens(
+	lens: CodeLens,
+	text: string,
+	analysis: FileAnalysis,
+	getOtherFiles: () => FileRecord[],
+	loadAst: LoadAst,
+): CodeLens {
 	const data = lens.data as CodeLensData | undefined;
 	const ast = analysis.ast;
 	const offset = data && ast ? findNameOffset(ast, analysis, data) : null;
-	const count = data && offset !== null ? getReferences(data.uri, text, offset, analysis, false, getOtherFiles).length : 0;
+	const count = data && offset !== null ? getReferences(data.uri, text, offset, analysis, false, getOtherFiles, loadAst).length : 0;
 
 	return { ...lens, command: { title: `${count} references`, command: "" } };
 }

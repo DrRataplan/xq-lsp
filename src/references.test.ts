@@ -6,13 +6,16 @@ import { pathToFileURL } from "node:url";
 import { DocumentHighlightKind } from "vscode-languageserver/node.js";
 import { analyzeWithAst } from "./analyzer.ts";
 import { getReferences, getRenameLocations, getRenameRangeAtOffset, getDocumentHighlights } from "./references.ts";
-import type { FileRecord } from "./references.ts";
+import type { FileRecord, LoadAst } from "./references.ts";
 import { expandGlobs } from "./config.ts";
 import { withTmpDir } from "./test-utils.ts";
 
+/** Reparses fresh each time — fine for tests, which don't exercise the LSP's own caching. */
+const loadAstForTest: LoadAst = (uri, text) => analyzeWithAst(text, uri).analysis;
+
 function refs(src: string, offset: number, includeDeclaration = true, getOtherFiles: () => FileRecord[] = () => []) {
 	const { analysis } = analyzeWithAst(src, "file:///main.xq");
-	return getReferences("file:///main.xq", src, offset, analysis, includeDeclaration, getOtherFiles);
+	return getReferences("file:///main.xq", src, offset, analysis, includeDeclaration, getOtherFiles, loadAstForTest);
 }
 
 /** Offset of the `occurrence`-th occurrence (0-indexed) of `needle` in `src`. */
@@ -75,7 +78,7 @@ local:f(1), local:f(2)
 			const { analysis } = analyzeWithAst(mainText, mainUri);
 			const offset = offsetOf(mainText, "lib:greet(\"a\")") + "lib:".length;
 
-			const locs = getReferences(mainUri, mainText, offset, analysis, true, () => buildRecords(dir));
+			const locs = getReferences(mainUri, mainText, offset, analysis, true, () => buildRecords(dir), loadAstForTest);
 			assert.equal(locs.length, 3); // declaration (lib.xq) + two calls (main.xq)
 			assert.equal(locs.filter((l) => l.uri.endsWith("lib.xq")).length, 1);
 			assert.equal(locs.filter((l) => l.uri.endsWith("main.xq")).length, 2);
@@ -139,12 +142,12 @@ return ($x, let $x := 2 return $x)
 			const { analysis } = analyzeWithAst(libText, libUri);
 			const declOffset = offsetOf(libText, "lib:x") + "lib:".length;
 
-			const locs = getReferences(libUri, libText, declOffset, analysis, true, () => buildRecords(dir));
+			const locs = getReferences(libUri, libText, declOffset, analysis, true, () => buildRecords(dir), loadAstForTest);
 			assert.equal(locs.length, 2); // declaration (lib.xq) + usage (main.xq)
 			assert.equal(locs.filter((l) => l.uri.endsWith("lib.xq")).length, 1);
 			assert.equal(locs.filter((l) => l.uri.endsWith("main.xq")).length, 1);
 
-			const withoutDecl = getReferences(libUri, libText, declOffset, analysis, false, () => buildRecords(dir));
+			const withoutDecl = getReferences(libUri, libText, declOffset, analysis, false, () => buildRecords(dir), loadAstForTest);
 			assert.equal(withoutDecl.length, 1);
 			assert.ok(withoutDecl[0].uri.endsWith("main.xq"));
 		});
@@ -207,7 +210,7 @@ ex:foo()
 
 function rename(src: string, offset: number, getOtherFiles: () => FileRecord[] = () => []) {
 	const { analysis } = analyzeWithAst(src, "file:///main.xq");
-	return getRenameLocations("file:///main.xq", src, offset, analysis, getOtherFiles);
+	return getRenameLocations("file:///main.xq", src, offset, analysis, getOtherFiles, loadAstForTest);
 }
 
 function prepareRename(src: string, offset: number) {
@@ -240,7 +243,7 @@ return ($x, $x)
 			const { analysis } = analyzeWithAst(mainText, mainUri);
 			const offset = offsetOf(mainText, "lib:x") + "lib:".length;
 
-			const locs = getRenameLocations(mainUri, mainText, offset, analysis, () => buildRecords(dir));
+			const locs = getRenameLocations(mainUri, mainText, offset, analysis, () => buildRecords(dir), loadAstForTest);
 			assert.equal(locs?.length, 2);
 			const usage = locs!.find((l) => l.uri.endsWith("main.xq"))!;
 			const lines = mainText.split("\n");
@@ -273,7 +276,7 @@ describe("getRenameLocations: functions", () => {
 			const { analysis } = analyzeWithAst(mainText, mainUri);
 			const offset = offsetOf(mainText, `lib:greet("a")`) + "lib:".length;
 
-			const locs = getRenameLocations(mainUri, mainText, offset, analysis, () => buildRecords(dir));
+			const locs = getRenameLocations(mainUri, mainText, offset, analysis, () => buildRecords(dir), loadAstForTest);
 			assert.equal(locs?.length, 3);
 			const lines = mainText.split("\n");
 			const usageTexts = locs!

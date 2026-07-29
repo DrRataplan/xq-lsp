@@ -320,6 +320,15 @@ function getPrefixReferences(
 
 // ── Cross-file orchestration ──────────────────────────────────────────────────
 
+/**
+ * Parses one glob-matched file's full AST on demand for a cross-file occurrence walk.
+ * Reuses `analysisCache` (open documents, explicit imports) when the file is already
+ * resident; otherwise parses fresh and returns without caching the result, so a
+ * cross-file search never retains more than the file currently being walked. See
+ * `getGlobFileAccess` in server.ts.
+ */
+export type LoadAst = (uri: string, text: string) => FileAnalysis | null;
+
 function getVariableReferences(
 	currentUri: string,
 	currentText: string,
@@ -328,6 +337,7 @@ function getVariableReferences(
 	offset: number,
 	includeDeclaration: boolean,
 	getOtherFiles: () => FileRecord[],
+	loadAst: LoadAst,
 	trimToLocalName = false,
 ): Location[] {
 	const occurrences: VarOccurrence[] = [];
@@ -359,9 +369,14 @@ function getVariableReferences(
 	}));
 
 	for (const file of getOtherFiles()) {
-		if (file.uri === currentUri || !file.analysis.ast) continue;
+		// Cheap pre-filter: localName always appears verbatim in source regardless of EQName
+		// syntax (prefixed, URIQualified, or unprefixed), so its absence rules out a match
+		// without needing to parse the file at all.
+		if (file.uri === currentUri || !file.text.includes(localName)) continue;
+		const fileAnalysis = loadAst(file.uri, file.text);
+		if (!fileAnalysis?.ast) continue;
 		const fileOccs: VarOccurrence[] = [];
-		walkVariables(file.analysis.ast, file.analysis, new ScopeStack(), fileOccs);
+		walkVariables(fileAnalysis.ast, fileAnalysis, new ScopeStack(), fileOccs);
 		for (const o of matches(fileOccs)) all.push({ uri: file.uri, text: file.text, o });
 	}
 
@@ -379,6 +394,7 @@ function getFunctionReferences(
 	offset: number,
 	includeDeclaration: boolean,
 	getOtherFiles: () => FileRecord[],
+	loadAst: LoadAst,
 	trimToLocalName = false,
 ): Location[] {
 	const occurrences: FnOccurrence[] = [];
@@ -399,9 +415,11 @@ function getFunctionReferences(
 	}));
 
 	for (const file of getOtherFiles()) {
-		if (file.uri === currentUri || !file.analysis.ast) continue;
+		if (file.uri === currentUri || !file.text.includes(localName)) continue;
+		const fileAnalysis = loadAst(file.uri, file.text);
+		if (!fileAnalysis?.ast) continue;
 		const fileOccs: FnOccurrence[] = [];
-		walkFunctions(file.analysis.ast, file.analysis, fileOccs);
+		walkFunctions(fileAnalysis.ast, fileAnalysis, fileOccs);
 		for (const o of matches(fileOccs)) all.push({ uri: file.uri, text: file.text, o });
 	}
 
@@ -466,7 +484,9 @@ function prefixHasDeclaration(analysis: FileAnalysis, prefix: string): boolean {
  * Requires a valid AST (returns `[]` on the regex-fallback path, since parse
  * failures don't produce reliable node positions).
  * `getOtherFiles` is only invoked for symbol kinds that need a cross-file
- * search, so callers can make it lazy.
+ * search, so callers can make it lazy. `getOtherFiles` returns lightweight,
+ * ast-free records for cheap candidate filtering; `loadAst` parses a specific
+ * candidate's full AST on demand once it survives that filter (see `LoadAst`).
  */
 export function getReferences(
 	currentUri: string,
@@ -475,6 +495,7 @@ export function getReferences(
 	analysis: FileAnalysis,
 	includeDeclaration: boolean,
 	getOtherFiles: () => FileRecord[],
+	loadAst: LoadAst,
 ): Location[] {
 	const ast = analysis.ast;
 	if (!ast) return [];
@@ -483,8 +504,9 @@ export function getReferences(
 	if (!target) return [];
 
 	if (target.kind === "prefix") return getPrefixReferences(currentUri, currentText, ast, analysis, target.prefix, includeDeclaration);
-	if (target.kind === "variable") return getVariableReferences(currentUri, currentText, ast, analysis, offset, includeDeclaration, getOtherFiles);
-	return getFunctionReferences(currentUri, currentText, ast, analysis, offset, includeDeclaration, getOtherFiles);
+	if (target.kind === "variable")
+		return getVariableReferences(currentUri, currentText, ast, analysis, offset, includeDeclaration, getOtherFiles, loadAst);
+	return getFunctionReferences(currentUri, currentText, ast, analysis, offset, includeDeclaration, getOtherFiles, loadAst);
 }
 
 /**
@@ -523,6 +545,7 @@ export function getRenameLocations(
 	offset: number,
 	analysis: FileAnalysis,
 	getOtherFiles: () => FileRecord[],
+	loadAst: LoadAst,
 ): Location[] | null {
 	const ast = analysis.ast;
 	if (!ast) return null;
@@ -537,8 +560,8 @@ export function getRenameLocations(
 
 	const locs =
 		target.kind === "variable"
-			? getVariableReferences(currentUri, currentText, ast, analysis, offset, true, getOtherFiles, true)
-			: getFunctionReferences(currentUri, currentText, ast, analysis, offset, true, getOtherFiles, true);
+			? getVariableReferences(currentUri, currentText, ast, analysis, offset, true, getOtherFiles, loadAst, true)
+			: getFunctionReferences(currentUri, currentText, ast, analysis, offset, true, getOtherFiles, loadAst, true);
 
 	return locs.length > 0 ? locs : null;
 }
