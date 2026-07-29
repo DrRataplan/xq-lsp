@@ -23,12 +23,13 @@ import { getDefinition } from "./definition.ts";
 import { getDocumentLinks } from "./document-links.ts";
 import { getInlayHints } from "./inlay-hints.ts";
 import { getReferences, getRenameRangeAtOffset, getRenameLocations, getDocumentHighlights } from "./references.ts";
-import type { FileRecord } from "./references.ts";
+import type { FileRecord, LoadAst } from "./references.ts";
 import { buildCodeLenses, resolveCodeLens } from "./code-lens.ts";
 import type { CodeLensData } from "./code-lens.ts";
 import { prepareCallHierarchy, getIncomingCalls, getOutgoingCalls } from "./call-hierarchy.ts";
 import type { FileAnalysis, TypeDiagnostic } from "./types.ts";
 import { findConfig, expandGlobs } from "./config.ts";
+import type { LspConfig } from "./config.ts";
 import { findImportInsertPosition, findDeclareNsInsertPosition, computeRelativePath } from "./namespace-diagnostics.ts";
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
 import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
@@ -138,6 +139,40 @@ function mergeAnalyses(a: FileAnalysis, b: FileAnalysis): FileAnalysis {
 	};
 }
 
+// Lightweight (ast-free) per-file records for every glob-matched file: source text plus the
+// *extracted* FileAnalysis (functions, module variables, imports, namespace decls, ...), with
+// the AST itself dropped once those fields are pulled out. xq-parser's AST runs roughly two
+// orders of magnitude larger than the source text — XQuery's operator-precedence grammar wraps
+// even a bare `$x` variable reference in ~30 levels of single-child wrapper nodes, none of them
+// collapsed — so retaining a full AST for every glob-matched file (often hundreds, only a
+// handful of which anyone is actually looking at) is the dominant memory cost of any glob-backed
+// feature. None of the FileAnalysis fields other than `.ast` hold node references (they're all
+// plain offsets/strings — see types.ts), so dropping `.ast` after extraction is safe: nothing
+// downstream keeps the tree reachable. Populated lazily per config dir; never invalidated.
+const globFileSummariesByConfigDir = new Map<string, Map<string, FileRecord>>();
+
+function buildGlobFileSummaries(config: LspConfig, configDir: string): Map<string, FileRecord> {
+	const records = new Map<string, FileRecord>();
+	for (const filePath of expandGlobs(config.globs, configDir)) {
+		const fileUri = pathToFileURL(filePath).toString();
+		try {
+			const text = fs.readFileSync(filePath, "utf-8");
+			const { analysis } = analyzeWithAst(text, fileUri);
+			records.set(fileUri, { uri: fileUri, text, analysis: { ...analysis, ast: undefined } });
+		} catch {
+			/* unreadable file, skip */
+		}
+	}
+	return records;
+}
+
+function getGlobFileSummaries(configDir: string, config: LspConfig): Map<string, FileRecord> {
+	if (!globFileSummariesByConfigDir.has(configDir)) {
+		globFileSummariesByConfigDir.set(configDir, buildGlobFileSummaries(config, configDir));
+	}
+	return globFileSummariesByConfigDir.get(configDir)!;
+}
+
 function getGlobAnalyses(currentUri: string): { byNamespace: Map<string, FileAnalysis>; lib: string[] } {
 	const found = findConfig(currentUri);
 	if (!found) return { byNamespace: new Map(), lib: [] };
@@ -150,43 +185,38 @@ function getGlobAnalyses(currentUri: string): { byNamespace: Map<string, FileAna
 	}
 
 	const byNamespace = new Map<string, FileAnalysis>();
-	for (const filePath of expandGlobs(config.globs, configDir)) {
-		const fileUri = pathToFileURL(filePath).toString();
-		const imported = getImportedAnalysis(fileUri);
-		if (!imported?.moduleNamespaceUri) continue;
-		const existing = byNamespace.get(imported.moduleNamespaceUri);
-		byNamespace.set(imported.moduleNamespaceUri, existing ? mergeAnalyses(existing, imported) : imported);
+	for (const { analysis } of getGlobFileSummaries(configDir, config).values()) {
+		if (!analysis.moduleNamespaceUri) continue;
+		const existing = byNamespace.get(analysis.moduleNamespaceUri);
+		byNamespace.set(analysis.moduleNamespaceUri, existing ? mergeAnalyses(existing, analysis) : analysis);
 	}
 	globAnalysesByConfigDir.set(configDir, byNamespace);
 	return { byNamespace, lib };
 }
 
-// Per-file (not merged-by-namespace) glob analyses, for cross-file reference search.
-// Keyed by config directory; populated lazily and never invalidated, mirroring globAnalysesByConfigDir.
-const globFileRecordsByConfigDir = new Map<string, Map<string, FileRecord>>();
-
-function getGlobFileRecords(currentUri: string): () => FileRecord[] {
+/**
+ * Cross-file access for find-references / rename / call-hierarchy: `getOtherFiles` returns the
+ * cached, ast-free summaries above for cheap candidate filtering (see references.ts's text
+ * pre-filter); `loadAst` parses one specific candidate's full AST on demand, once it survives
+ * that filter, reusing `analysisCache` when the file is already resident (open document, or
+ * explicitly imported elsewhere) instead of re-parsing. The parsed result is intentionally NOT
+ * cached here — a cross-file search should never retain more than the handful of files it's
+ * actually walking.
+ */
+function getGlobFileAccess(currentUri: string): { getOtherFiles: () => FileRecord[]; loadAst: LoadAst } {
 	const found = findConfig(currentUri);
-	if (!found) return () => [];
+	if (!found) return { getOtherFiles: () => [], loadAst: () => null };
 	const { config, configDir } = found;
+	const predeclaredNs = getRuntimePredeclaredNamespaces(config.lib);
 
-	return () => {
-		if (!globFileRecordsByConfigDir.has(configDir)) {
-			const predeclaredNs = getRuntimePredeclaredNamespaces(config.lib);
-			const records = new Map<string, FileRecord>();
-			for (const filePath of expandGlobs(config.globs, configDir)) {
-				const fileUri = pathToFileURL(filePath).toString();
-				try {
-					const text = fs.readFileSync(filePath, "utf-8");
-					const { analysis } = analyzeWithAst(text, fileUri);
-					records.set(fileUri, { uri: fileUri, text, analysis: withPredeclaredNs(analysis, predeclaredNs) });
-				} catch {
-					/* unreadable file, skip */
-				}
-			}
-			globFileRecordsByConfigDir.set(configDir, records);
-		}
-		return [...globFileRecordsByConfigDir.get(configDir)!.values()];
+	return {
+		getOtherFiles: () => [...getGlobFileSummaries(configDir, config).values()].map((r) => ({ ...r, analysis: withPredeclaredNs(r.analysis, predeclaredNs) })),
+		loadAst: (uri: string, text: string) => {
+			const cached = analysisCache.get(uri);
+			if (cached?.ast) return withPredeclaredNs(cached, predeclaredNs);
+			const { analysis } = analyzeWithAst(text, uri);
+			return withPredeclaredNs(analysis, predeclaredNs);
+		},
 	};
 }
 
@@ -383,7 +413,7 @@ connection.onWorkspaceSymbol((params) => {
 	// No single document anchors a workspace-wide request, so gather config dirs from every open document.
 	const filesByUri = new Map<string, FileRecord>();
 	for (const doc of documents.all()) {
-		for (const file of getGlobFileRecords(doc.uri)()) filesByUri.set(file.uri, file);
+		for (const file of getGlobFileAccess(doc.uri).getOtherFiles()) filesByUri.set(file.uri, file);
 	}
 	return getWorkspaceSymbols([...filesByUri.values()], params.query);
 });
@@ -401,14 +431,8 @@ connection.onReferences((params) => {
 	if (!doc) return [];
 	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
 	const { analysis } = resolveContext(doc.uri, rawAnalysis);
-	return getReferences(
-		doc.uri,
-		doc.getText(),
-		doc.offsetAt(params.position),
-		analysis,
-		params.context.includeDeclaration,
-		getGlobFileRecords(doc.uri),
-	);
+	const { getOtherFiles, loadAst } = getGlobFileAccess(doc.uri);
+	return getReferences(doc.uri, doc.getText(), doc.offsetAt(params.position), analysis, params.context.includeDeclaration, getOtherFiles, loadAst);
 });
 
 const NCNAME_RE = /^[A-Za-z_][\w.-]*$/;
@@ -431,13 +455,8 @@ connection.onRenameRequest((params) => {
 	}
 	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
 	const { analysis } = resolveContext(doc.uri, rawAnalysis);
-	const locations = getRenameLocations(
-		doc.uri,
-		doc.getText(),
-		doc.offsetAt(params.position),
-		analysis,
-		getGlobFileRecords(doc.uri),
-	);
+	const { getOtherFiles, loadAst } = getGlobFileAccess(doc.uri);
+	const locations = getRenameLocations(doc.uri, doc.getText(), doc.offsetAt(params.position), analysis, getOtherFiles, loadAst);
 	if (!locations) return null;
 
 	const changes: Record<string, TextEdit[]> = {};
@@ -478,7 +497,8 @@ connection.onCodeLensResolve((lens) => {
 	if (!doc) return { ...lens, command: { title: "0 references", command: "" } };
 	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
 	const { analysis } = resolveContext(doc.uri, rawAnalysis);
-	return resolveCodeLens(lens, doc.getText(), analysis, getGlobFileRecords(doc.uri));
+	const { getOtherFiles, loadAst } = getGlobFileAccess(doc.uri);
+	return resolveCodeLens(lens, doc.getText(), analysis, getOtherFiles, loadAst);
 });
 
 connection.onDocumentLinks((params) => {
@@ -501,7 +521,8 @@ connection.languages.callHierarchy.onIncomingCalls((params) => {
 	const loaded = loadAnalysisForUri(params.item.uri);
 	if (!loaded) return null;
 	const { analysis } = resolveContext(params.item.uri, loaded.analysis);
-	return getIncomingCalls(params.item, loaded.text, analysis, getGlobFileRecords(params.item.uri));
+	const { getOtherFiles, loadAst } = getGlobFileAccess(params.item.uri);
+	return getIncomingCalls(params.item, loaded.text, analysis, getOtherFiles, loadAst);
 });
 
 connection.languages.callHierarchy.onOutgoingCalls((params) => {

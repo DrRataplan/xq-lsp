@@ -10,7 +10,7 @@ import { findAll, directChildOf, nodeStackAtOffset } from "./analyzer.ts";
 import { asFunctionDecl, asFunctionCall } from "./ast-nodes.ts";
 import { resolveFunctionAtOffset, allFunctions } from "./hover-core.ts";
 import { getReferences } from "./references.ts";
-import type { FileRecord } from "./references.ts";
+import type { FileRecord, LoadAst } from "./references.ts";
 
 /** Identifies the function a CallHierarchyItem refers to, round-tripped via `item.data`. */
 interface CallHierarchyFunctionData {
@@ -180,34 +180,47 @@ export function getIncomingCalls(
 	itemText: string,
 	itemAnalysis: FileAnalysis,
 	getOtherFiles: () => FileRecord[],
+	loadAst: LoadAst,
 ): CallHierarchyIncomingCall[] {
 	const offset = toOffset(itemText, item.selectionRange.start);
 	// includeDeclaration:false — we only want actual call sites, not the declaration itself.
-	const callSites = getReferences(item.uri, itemText, offset, itemAnalysis, false, getOtherFiles);
+	const callSites = getReferences(item.uri, itemText, offset, itemAnalysis, false, getOtherFiles, loadAst);
 	if (callSites.length === 0) return [];
 
-	const fileByUri = new Map<string, FileRecord>(getOtherFiles().map((f) => [f.uri, f]));
-	if (!fileByUri.has(item.uri)) fileByUri.set(item.uri, { uri: item.uri, text: itemText, analysis: itemAnalysis });
+	// getOtherFiles() returns cached, ast-free records — cheap to re-iterate for a uri->text
+	// lookup. The full (ast-bearing) analysis for each call site's file is fetched below, once
+	// per distinct uri, via loadAst.
+	const textByUri = new Map<string, string>([[item.uri, itemText]]);
+	for (const file of getOtherFiles()) if (!textByUri.has(file.uri)) textByUri.set(file.uri, file.text);
 
+	const analysisByUri = new Map<string, FileAnalysis>([[item.uri, itemAnalysis]]);
 	const groups = new Map<string, { from: CallHierarchyItem; ranges: Range[] }>();
 
 	for (const loc of callSites) {
-		const record = fileByUri.get(loc.uri);
-		if (!record?.analysis.ast) continue;
+		const text = textByUri.get(loc.uri);
+		if (text === undefined) continue;
+		let fileAnalysis = analysisByUri.get(loc.uri);
+		if (!fileAnalysis) {
+			const loaded = loadAst(loc.uri, text);
+			if (!loaded) continue;
+			fileAnalysis = loaded;
+			analysisByUri.set(loc.uri, fileAnalysis);
+		}
+		if (!fileAnalysis.ast) continue;
 
-		const callOffset = toOffset(record.text, loc.range.start);
-		const stack = nodeStackAtOffset(record.analysis.ast, callOffset);
+		const callOffset = toOffset(text, loc.range.start);
+		const stack = nodeStackAtOffset(fileAnalysis.ast, callOffset);
 		// Function declarations can't nest in XQuery, so at most one AnnotatedDecl/FunctionDecl
 		// pair appears in the stack; a call at module level (no enclosing function) has none.
 		const enclosingDecl = stack.find((n) => n.type === "AnnotatedDecl" && directChildOf(n, "FunctionDecl"));
 		if (!enclosingDecl) continue;
-		const enclosingFn = record.analysis.functions.find((f) => f.sourceOffset === enclosingDecl.start);
+		const enclosingFn = fileAnalysis.functions.find((f) => f.sourceOffset === enclosingDecl.start);
 		if (!enclosingFn) continue;
 
 		const key = `${qnameKey(enclosingFn.qname)}#${enclosingFn.arity}@${loc.uri}`;
 		let group = groups.get(key);
 		if (!group) {
-			const from = buildItemForFunction(enclosingFn, record.analysis, loc.uri, record.text);
+			const from = buildItemForFunction(enclosingFn, fileAnalysis, loc.uri, text);
 			if (!from) continue;
 			group = { from, ranges: [] };
 			groups.set(key, group);
