@@ -68,9 +68,7 @@ jobs:
             - run: npm pack
             - name: Install vscode extension deps with updated xq-lsp
               working-directory: editors/vscode
-              run: |
-                  npm install
-                  npm install ../../xq-lsp-*.tgz
+              run: npm install ../../xq-lsp-*.tgz
             - name: Bump patch version
               id: version
               working-directory: editors/vscode
@@ -119,10 +117,7 @@ jobs:
             - run: npm ci
             - run: npm run build
             - run: npm pack
-            - name: Install VSCode extension dependencies
-              working-directory: editors/vscode
-              run: npm install
-            - name: Override xq-lsp with local build
+            - name: Install VSCode extension dependencies with current xq-lsp build
               working-directory: editors/vscode
               run: npm install ../../xq-lsp-*.tgz
             - name: Package extension
