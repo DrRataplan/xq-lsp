@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.1](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.8.0...lsp-v1.8.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* stop retaining full ASTs for every glob-matched file to prevent OOM ([b44460f](https://github.com/DrRataplan/xq-lsp/commit/b44460f1de449b48903ebddff4f56b7524b99234))
+
 ## [1.8.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.7.0...lsp-v1.8.0) (2026-07-28)
 
 
