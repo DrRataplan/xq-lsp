@@ -3,6 +3,7 @@ import type { FileAnalysis } from "./types.ts";
 import { getCompletions as getCoreCompletions } from "./completion-core.ts";
 import type { CompletionContext } from "./completion-core.ts";
 import { findImportInsertPosition, findDeclareNsInsertPosition, computeRelativePath } from "./namespace-diagnostics.ts";
+import { offsetToPosition } from "./references.ts";
 
 export type { CompletionContext } from "./completion-core.ts";
 
@@ -53,6 +54,20 @@ export function getCompletions(
 				newText = `declare namespace ${e.additionalEdit.prefix} = "${e.additionalEdit.namespaceUri}";\n`;
 			}
 			item.additionalTextEdits = [{ range: { start: insertPos, end: insertPos }, newText }];
+
+			// The "declare namespace" entry's own insertText is just an echo of what's already
+			// typed after the prefix (often ""). Some clients (e.g. eglot) fall back to inserting
+			// the item's label verbatim at the cursor when insertText is empty, which would dump
+			// the whole `declare namespace tei = "...";` statement inline. An explicit textEdit
+			// with a concrete range forces every spec-compliant client onto the deterministic
+			// replace path instead of guessing, so only the additionalTextEdit above lands the text.
+			if (e.additionalEdit.kind === "declare-namespace") {
+				const start = ctx.cursorOffset - e.insertText.length;
+				item.textEdit = {
+					range: { start: offsetToPosition(docText, start), end: offsetToPosition(docText, ctx.cursorOffset) },
+					newText: e.insertText,
+				};
+			}
 		}
 
 		return item;
