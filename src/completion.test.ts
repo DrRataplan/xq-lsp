@@ -515,6 +515,32 @@ describe("completion: auto-declare-namespace for pure XML namespaces (knownNames
 		);
 	});
 
+	test("declare-namespace item carries an explicit textEdit instead of a bare (possibly empty) insertText", () => {
+		// Regression test: some LSP clients (e.g. eglot) fall back to inserting a completion
+		// item's `label` verbatim at the cursor when `insertText` is empty, which would dump the
+		// whole `declare namespace tei = "...";` statement inline instead of only in the prolog
+		// (via additionalTextEdits). An explicit `textEdit` with a concrete range sidesteps that.
+		const docText = `xquery version "3.1";\n\n1, tei:\n`;
+		const cursorOffset = docText.indexOf("tei:") + 4;
+		const analysis = analyze(docText, "file:///main.xq");
+		const items = getCompletions(
+			{ textBeforeCursor: docText.slice(0, cursorOffset), cursorOffset },
+			analysis, new Map(), false, undefined, new Map(), knownNs,
+			{ docText, docUri: "file:///main.xq", generateLocationHints: false },
+		);
+		const nsItem = items.find((i) => i.label.includes("tei") && i.label.includes("http://www.tei-c.org/ns/1.0"));
+		assert.ok(nsItem?.textEdit, "expected an explicit textEdit on the declare-namespace item");
+		assert.equal(nsItem!.textEdit!.newText, "", "textEdit should be a no-op at the cursor");
+		assert.deepEqual(
+			nsItem!.textEdit!.range,
+			{ start: { line: 2, character: 7 }, end: { line: 2, character: 7 } },
+			"textEdit range should sit at the cursor (after 'tei:'), not span or move elsewhere",
+		);
+		// The real declare-namespace statement must land in the prolog (line 2, col 0 — right
+		// after the header), on the same line but a different column than the cursor's textEdit.
+		assert.deepEqual(nsItem!.additionalTextEdits![0].range.start, { line: 2, character: 0 });
+	});
+
 	test("declare-namespace item does not appear when prefix is already declared", () => {
 		const declared = analyze(
 			`declare namespace tei="http://www.tei-c.org/ns/1.0"; 1`,
