@@ -6,13 +6,5 @@
     "got": [
       "XPDY0002"
     ]
-  },
-  {
-    "testCase": "raytracer",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPDY0002"
-    ]
   }
 ]
