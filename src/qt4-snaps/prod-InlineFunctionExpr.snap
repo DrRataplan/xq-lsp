@@ -6,5 +6,21 @@
     "got": [
       "XPDY0002"
     ]
+  },
+  {
+    "testCase": "inline-fn-038",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "inline-fn-039",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
   }
 ]
