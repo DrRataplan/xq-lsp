@@ -465,17 +465,39 @@ function parseOneParam(fragment: string): ParamDef | null {
 	return null;
 }
 
-function parseParamList(arrayContent: string): ParamDef[] {
+function parseParamList(arrayContent: string, paramVarMap: Map<string, ParamDef>): ParamDef[] {
 	const params: ParamDef[] = [];
-	const re = /new\s+(?:FunctionParameter)?SequenceType\s*\(/g;
-	let m: RegExpExecArray | null;
-	while ((m = re.exec(arrayContent)) !== null) {
-		const inner = extractBalanced(arrayContent, m.index + m[0].length);
-		// m[0] ends with "(", inner is the content inside, reconstruct the full expr
-		const p = parseOneParam(m[0] + inner + ")");
-		if (p) params.push(p);
+	for (const raw of splitArgs(arrayContent)) {
+		const el = raw.trim();
+		if (!el) continue;
+		const inlineM = /new\s+(?:FunctionParameter)?SequenceType\s*\(/.exec(el);
+		if (inlineM) {
+			const inner = extractBalanced(el, inlineM.index + inlineM[0].length);
+			const p = parseOneParam(el.slice(inlineM.index, inlineM.index + inlineM[0].length) + inner + ")");
+			if (p) { params.push(p); continue; }
+		}
+		// Bare reference to a `Type NAME = new FunctionParameterSequenceType(...)` field
+		const varParam = paramVarMap.get(el) ?? paramVarMap.get(el.split(/[\s.[\]()]/).filter(Boolean).pop() ?? "");
+		if (varParam) params.push(varParam);
 	}
 	return params;
+}
+
+/** Build a map of FunctionParameterSequenceType field name → ParamDef, for classic
+ * `(modifiers) FunctionParameterSequenceType NAME = new FunctionParameterSequenceType(...)` fields
+ * referenced by name inside a FunctionSignature's param array (as opposed to inlined there). */
+function buildFieldParamVarMap(java: string): Map<string, ParamDef> {
+	const map = new Map<string, ParamDef>();
+	const re = /\bFunctionParameterSequenceType\s+(\w+)\s*=\s*new\s+FunctionParameterSequenceType\s*\(/g;
+	let m: RegExpExecArray | null;
+	while ((m = re.exec(java)) !== null) {
+		const varName = m[1];
+		if (map.has(varName)) continue;
+		const inner = extractBalanced(java, m.index + m[0].length);
+		const p = parseOneParam(`new FunctionParameterSequenceType(${inner})`);
+		if (p) map.set(varName, p);
+	}
+	return map;
 }
 
 function parseReturnType(returnArg: string): { xqType: string; description: string } {
@@ -666,6 +688,8 @@ function buildQNameVarMap(java: string): Map<string, string> {
 function extractSignatures(java: string): SignatureDef[] {
 	const results: SignatureDef[] = [];
 	const qnameVars = buildQNameVarMap(java);
+	const stringVars = buildStringVarMap(java);
+	const fieldParamVars = buildFieldParamVarMap(java);
 
 	const markerRe = /new\s+FunctionSignature\s*\(/g;
 	let m: RegExpExecArray | null;
@@ -674,20 +698,25 @@ function extractSignatures(java: string): SignatureDef[] {
 		const args = splitArgs(content);
 		if (args.length < 2) continue;
 
-		// arg[0]: new QName("local", ...) or a variable name
+		// arg[0]: new QName("local", ...), new QName(NAME_CONST, ...), or a variable name
 		let localName: string | undefined;
-		const inline = /new\s+QName\s*\(\s*"([^"]+)"/.exec(args[0]);
-		if (inline) {
-			localName = inline[1];
+		const inlineLit = /new\s+QName\s*\(\s*"([^"]+)"/.exec(args[0]);
+		if (inlineLit) {
+			localName = inlineLit[1];
 		} else {
-			// Variable reference — try the trimmed token
-			const tok = args[0].trim();
-			localName = qnameVars.get(tok);
+			// Inline QName built from a String constant, e.g. new QName(FN_SERIALIZE_LN, ...)
+			const inlineVar = /new\s+QName\s*\(\s*(\w+)\s*,/.exec(args[0]);
+			if (inlineVar) localName = stringVars.get(inlineVar[1]);
 			if (!localName) {
-				// Sometimes it's wrapped, e.g. `new QName(qnCreateAccount, ...)` unlikely
-				// Try extracting last word before any dot or whitespace
-				const last = tok.split(/[\s.()]/).filter(Boolean).pop();
-				if (last) localName = qnameVars.get(last);
+				// Variable reference — try the trimmed token
+				const tok = args[0].trim();
+				localName = qnameVars.get(tok);
+				if (!localName) {
+					// Sometimes it's wrapped, e.g. `new QName(qnCreateAccount, ...)` unlikely
+					// Try extracting last word before any dot or whitespace
+					const last = tok.split(/[\s.()]/).filter(Boolean).pop();
+					if (last) localName = qnameVars.get(last) ?? stringVars.get(last);
+				}
 			}
 		}
 		if (!localName) continue;
@@ -698,7 +727,7 @@ function extractSignatures(java: string): SignatureDef[] {
 		const paramArg = args[2]?.trim() ?? "";
 		if (paramArg !== "null" && paramArg !== "") {
 			const arrayMatch = /\{([\s\S]*)\}/s.exec(paramArg);
-			if (arrayMatch) params = parseParamList(arrayMatch[1]);
+			if (arrayMatch) params = parseParamList(arrayMatch[1], fieldParamVars);
 		}
 
 		const ret = parseReturnType(args[3] ?? "");

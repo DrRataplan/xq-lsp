@@ -285,8 +285,19 @@ declare function xmldb:match-collection($regexp as xs:string) as xs:string* exte
 (:~
  : Moves the collection $source-collection-uri into the collection
  : $target-collection-uri.
+ : @param $source-collection-uri The source collection URI
+ : @param $target-collection-uri The target collection URI
  :)
-declare function xmldb:move() as empty-sequence() external;
+declare function xmldb:move($source-collection-uri as xs:string, $target-collection-uri as xs:string) as empty-sequence() external;
+
+(:~
+ : Moves the resource $resource from the collection $source-collection-uri into
+ : collection $target-collection-uri.
+ : @param $source-collection-uri The source collection URI
+ : @param $target-collection-uri The target collection URI
+ : @param $resource The resource
+ :)
+declare function xmldb:move($source-collection-uri as xs:string, $target-collection-uri as xs:string, $resource as xs:string) as empty-sequence() external;
 
 (:~
  : Registers an XMLDB driver class with the XMLDB Database Manager. This is

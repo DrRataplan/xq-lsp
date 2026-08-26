@@ -117,6 +117,59 @@ declare function file:read-unicode($path as item()) as xs:string? external;
 declare function file:read-unicode($path as item(), $encoding as xs:string) as xs:string? external;
 
 (:~
+ : Writes the node set into a file on the file system. $parameters contains a
+ : sequence of zero or more serialization parameters specified as key=value
+ : pairs. The serialization options are the same as those recognized by
+ : "declare option exist:serialize". The function does NOT automatically
+ : inherit the serialization options of the XQuery it is called from. This
+ : method is only available to the DBA role.
+ : @param $node-set The contents to write to the file system.
+ : @param $path The full path or URI to the file
+ : @param $parameters The serialization parameters: either a sequence of key=value pairs or an output:serialization-parameters element as defined by the standard fn:serialize function.
+ : @return true on success - false if the specified file can not be created or is not writable. The empty sequence is returned if the argument sequence is empty.
+ :)
+declare function file:serialize($node-set as node()*, $path as item(), $parameters as item()*) as xs:boolean? external;
+
+(:~
+ : Writes the node set into a file on the file system, optionally appending to
+ : it. $parameters contains a sequence of zero or more serialization parameters
+ : specified as key=value pairs. The serialization options are the same as
+ : those recognized by "declare option exist:serialize". The function does NOT
+ : automatically inherit the serialization options of the XQuery it is called
+ : from. This method is only available to the DBA role.
+ : @param $node-set The contents to write to the file system.
+ : @param $path The full path or URI to the file
+ : @param $parameters The serialization parameters: either a sequence of key=value pairs or an output:serialization-parameters element as defined by the standard fn:serialize function.
+ : @param $append Should content be appended?
+ : @return true on success - false if the specified file can not be created or is not writable. The empty sequence is returned if the argument sequence is empty.
+ :)
+declare function file:serialize(
+	$node-set as node()*,
+	$path as item(),
+	$parameters as item()*,
+	$append as xs:boolean
+) as xs:boolean? external;
+
+(:~
+ : Writes binary data into a file on the file system. This method is only
+ : available to the DBA role.
+ : @param $binarydata The contents to write to the file system.
+ : @param $path The full path or URI to the file
+ : @return true on success - false if the specified file can not be created or is not writable
+ :)
+declare function file:serialize-binary($binarydata as xs:base64Binary, $path as item()) as xs:boolean external;
+
+(:~
+ : Writes binary data into a file on the file system, optionally appending the
+ : content. This method is only available to the DBA role.
+ : @param $binarydata The contents to write to the file system.
+ : @param $path The full path or URI to the file
+ : @param $append Should content be appended?
+ : @return true on success - false if the specified file can not be created or is not writable
+ :)
+declare function file:serialize-binary($binarydata as xs:base64Binary, $path as item(), $append as xs:boolean) as xs:boolean external;
+
+(:~
  : Synchronize a collection with a directory hierarchy. This method is only
  : available to the DBA role.
  : @param $collection Absolute path to the collection to synchronize to disk.

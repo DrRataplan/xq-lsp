@@ -57,15 +57,21 @@ declare function system:enable-tracing($enable as xs:boolean) as empty-sequence(
 declare function system:enable-tracing($enable as xs:boolean, $tracelog as xs:boolean) as empty-sequence() external;
 
 (:~
+ : @param $dir This is an absolute path to where the backup will be written. Must be writeable by the eXist process.
+ : @param $incremental Flag to do incremental export.
+ : @param $zip Flag to do export to zip file.
  : @return the export results
  :)
-declare function system:export() as node() external;
+declare function system:export($dir as xs:string, $incremental as xs:boolean?, $zip as xs:boolean?) as node() external;
 
 (:~
  : Messagers from exporter reroute to logs.
+ : @param $dir This is an absolute path to where the backup will be written. Must be writeable by the eXist process.
+ : @param $incremental Flag to do incremental export.
+ : @param $zip Flag to do export to zip file.
  : @return the export results
  :)
-declare function system:export-silently() as xs:boolean external;
+declare function system:export-silently($dir as xs:string, $incremental as xs:boolean?, $zip as xs:boolean?) as xs:boolean external;
 
 (:~
  : A pseudo-function to execute a function as a different user. The first
@@ -187,17 +193,29 @@ declare function system:get-uptime() as xs:dayTimeDuration external;
  :)
 declare function system:get-version() as xs:string external;
 
-declare function system:import() as item()* external;
+(:~
+ : @param $admin-pass The password for the admin user
+ : @param $new-admin-pass Set the admin password to this new password.
+ :)
+declare function system:import($dir-or-file as xs:string, $admin-pass as xs:string?, $new-admin-pass as xs:string?) as item()* external;
 
 (:~
  : Messagers from exporter reroute to logs.
+ : @param $admin-pass The password for the admin user
+ : @param $new-admin-pass Set the admin password to this new password.
  :)
-declare function system:import-silently() as item()* external;
+declare function system:import-silently($dir-or-file as xs:string, $admin-pass as xs:string?, $new-admin-pass as xs:string?) as item()* external;
 
 (:~
  : Kill a running XQuey (dba role only).
  :)
-declare function system:kill-running-xquery() as empty-sequence() external;
+declare function system:kill-running-xquery($xquery-id as xs:integer) as empty-sequence() external;
+
+(:~
+ : Kill a running XQuey (dba role only).
+ : @param $wait-time The wait time in milliseconds before terminating the XQuery
+ :)
+declare function system:kill-running-xquery($xquery-id as xs:integer, $wait-time as xs:long) as empty-sequence() external;
 
 (:~
  : Restore the database or a section of the database (admin user only).
