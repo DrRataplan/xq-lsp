@@ -240,3 +240,19 @@ declare function request:is-multipart-content() as xs:boolean external;
  : @param $value The attribute value
  :)
 declare function request:set-attribute($name as xs:string, $value as item()*) as empty-sequence() external;
+ : Returns the empty sequence if no item of $available is acceptable; the
+ : caller should then respond with 406 Not Acceptable.
+ : @param $available The media types the server can produce, in order of preference.
+ : @return the best matching media type, or the empty sequence if none is acceptable
+ :)
+declare function request:negotiate-content-type($available as xs:string*) as xs:string? external;
+
+(:~
+ : Returns $default if no item of $available is acceptable.
+ : @param $available The media types the server can produce, in order of preference.
+ : @param $default The media type to fall back to when no item of $available is acceptable.
+ : @return the best matching media type, or $default if none is acceptable
+ :)
+declare function request:negotiate-content-type($available as xs:string*, $default as xs:string?) as xs:string? external;
+
+(:~

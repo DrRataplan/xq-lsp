@@ -14,8 +14,10 @@ declare function util:absolute-resource-id($node-or-path as item()) as xs:intege
 
 (:~
  : Converts the number $number from base $base to xs:integer.
+ : @param $number The number to convert
+ : @param $base The base of $number
  :)
-declare function util:base-to-integer() as item()* external;
+declare function util:base-to-integer($number as item(), $base as xs:integer) as item()* external;
 
 (:~
  : Decode the given Base64 encoded string back to clear text
@@ -409,8 +411,10 @@ declare function util:expand($node as node()*, $serialization-parameters as xs:s
  : name and arity, an error is thrown. Please note: the arguments to this
  : function have to be literals or need to be resolvable at compile time at
  : least.
+ : @param $name The name of the function
+ : @param $arity The arity of the function
  :)
-declare function util:function() as item()* external;
+declare function util:function($name as xs:QName, $arity as xs:integer) as item()* external;
 
 (:~
  : Serializes an XML fragment or a sequence of nodes between two elements
@@ -442,9 +446,10 @@ declare function util:get-fragment-between(
 (:~
  : Returns a short description of the module identified by the namespace URI.
  : @deprecated Use inspect:inspect-module-uri#1 instead!
+ : @param $namespace-uri The namespace URI of the module
  : @return the description of the active function module identified by the namespace URI
  :)
-declare function util:get-module-description() as xs:string+ external;
+declare function util:get-module-description($namespace-uri as xs:string) as xs:string+ external;
 
 (:~
  : Returns an XML fragment providing additional information about the module
@@ -452,6 +457,15 @@ declare function util:get-module-description() as xs:string+ external;
  : @return the description of the active function module identified by the namespace URI
  :)
 declare function util:get-module-info() as element() external;
+
+(:~
+ : Returns an XML fragment providing additional information about the module
+ : identified by the namespace URI.
+ : @deprecated Use inspect:inspect-module-uri#1 instead!
+ : @param $namespace-uri The namespace URI of the module
+ : @return the description of the active function module identified by the namespace URI
+ :)
+declare function util:get-module-info($namespace-uri as xs:string) as element() external;
 
 (:~
  : Gets the value of a serialization option as set with 'declare option'.
@@ -478,8 +492,18 @@ declare function util:get-sequence-type($sequence-type as xs:anyType*) as xs:str
 
 (:~
  : Calculates a hashcode from a string based on a specified algorithm.
+ : @param $message The string to generate the hashcode from
+ : @param $algorithm The algorithm used to generate the hashcode
  :)
-declare function util:hash() as item()* external;
+declare function util:hash($message as item(), $algorithm as xs:string) as item()* external;
+
+(:~
+ : Calculates a hashcode from a string based on a specified algorithm.
+ : @param $message The string to generate the hashcode from
+ : @param $algorithm The algorithm used to generate the hashcode
+ : @param $base64flag The flag that specifies whether to return the result as Base64 encoded
+ :)
+declare function util:hash($message as item(), $algorithm as xs:string, $base64flag as xs:boolean) as item()* external;
 
 (:~
  : Dynamically imports an XQuery module into the current context. The
@@ -498,13 +522,33 @@ declare function util:import-module(
 
 (:~
  : Return the number of documents for an indexed value.
+ : @param $nodes The nodes whose content is indexed
+ : @param $value The indexed value to search for
  :)
-declare function util:index-key-documents() as item()* external;
+declare function util:index-key-documents($nodes as node()*, $value as xs:anyAtomicType) as item()* external;
+
+(:~
+ : Return the number of documents for an indexed value.
+ : @param $nodes The nodes whose content is indexed
+ : @param $value The indexed value to search for
+ : @param $index The index in which the search is made
+ :)
+declare function util:index-key-documents($nodes as node()*, $value as xs:anyAtomicType, $index as xs:string) as item()* external;
 
 (:~
  : Return the number of occurrences for an indexed value.
+ : @param $nodes The nodes whose content is indexed
+ : @param $value The indexed value to search for
  :)
-declare function util:index-key-occurrences() as item()* external;
+declare function util:index-key-occurrences($nodes as node()*, $value as xs:anyAtomicType) as item()* external;
+
+(:~
+ : Return the number of occurrences for an indexed value.
+ : @param $nodes The nodes whose content is indexed
+ : @param $value The indexed value to search for
+ : @param $index The index in which the search is made
+ :)
+declare function util:index-key-occurrences($nodes as node()*, $value as xs:anyAtomicType, $index as xs:string) as item()* external;
 
 (:~
  : Can be used to query existing range indexes defined on a set of nodes. All
@@ -589,8 +633,10 @@ declare function util:int-to-octal($int as xs:int) as xs:string external;
 (:~
  : Converts the xs:integer $number (unsigned) into base $base as xs:string.
  : Bases 2, 8, and 16 are supported.
+ : @param $number The number to convert
+ : @param $base The base of $number
  :)
-declare function util:integer-to-base() as item()* external;
+declare function util:integer-to-base($number as xs:integer, $base as xs:integer) as item()* external;
 
 (:~
  : Checks if the resource identified by $binary-resource is a binary resource.
@@ -602,16 +648,18 @@ declare function util:is-binary-doc($binary-resource as xs:string?) as xs:boolea
 (:~
  : Returns a Boolean value if the module statically mapped to a source location
  : in the configuration file.
+ : @param $namespace-uri The namespace URI of the module
  : @return true if the namespace URI is mapped as an active function module
  :)
-declare function util:is-module-mapped() as xs:boolean external;
+declare function util:is-module-mapped($namespace-uri as xs:string) as xs:boolean external;
 
 (:~
  : Returns a Boolean value if the module identified by the namespace URI is
  : registered.
+ : @param $namespace-uri The namespace URI of the module
  : @return true if the namespace URI is registered as an active function module
  :)
-declare function util:is-module-registered() as xs:boolean external;
+declare function util:is-module-registered($namespace-uri as xs:string) as xs:boolean external;
 
 (:~
  : Retrieves the line number of the expression
@@ -669,11 +717,40 @@ declare function util:list-functions() as function(*)* external;
 declare function util:list-functions($namespace-uri as xs:string) as function(*)* external;
 
 (:~
+ : Logs the message to the current logger.
+ : @param $priority The logging priority: 'error', 'warn', 'debug', 'info', 'trace'
+ : @param $message The message to log
+ :)
+declare function util:log($priority as xs:string, $message as item()*) as empty-sequence() external;
+
+(:~
+ : Logs the message to the named logger
+ : @param $priority The logging priority: 'error', 'warn', 'debug', 'info', 'trace'
+ : @param $logger-name The name of the logger, eg: my.app.log
+ : @param $message The message to log
+ :)
+declare function util:log-app($priority as xs:string, $logger-name as xs:string, $message as item()*) as empty-sequence() external;
+
+(:~
+ : Logs the message to System.err.
+ : @param $message The message to log
+ :)
+declare function util:log-system-err($message as item()*) as empty-sequence() external;
+
+(:~
+ : Logs the message to System.out.
+ : @param $message The message to log
+ :)
+declare function util:log-system-out($message as item()*) as empty-sequence() external;
+
+(:~
  : Map the module to a source location. This function is only available to the
  : DBA role.
+ : @param $namespace-uri The namespace URI of the module
+ : @param $location-uri The location URI of the module
  : @return Returns an empty sequence
  :)
-declare function util:map-module() as empty-sequence() external;
+declare function util:map-module($namespace-uri as xs:string, $location-uri as xs:string) as empty-sequence() external;
 
 (:~
  : Returns a sequence containing the namespace URIs of all XQuery modules which
@@ -722,8 +799,9 @@ declare function util:octal-to-int($octal as xs:string) as xs:int external;
  : be well-formed XML. It will be passed through the Neko HTML parser to make
  : it well-formed. An empty sequence is returned if the argument is an empty
  : string or sequence.
+ : @param $to-be-parsed The string to be parsed
  :)
-declare function util:parse-html() as item()* external;
+declare function util:parse-html($to-be-parsed as xs:string?) as item()* external;
 
 (:~
  : Can be used to query existing qname indexes defined on a set of nodes.
@@ -865,9 +943,10 @@ declare function util:unescape-uri($escaped-string as xs:string, $encoding as xs
 (:~
  : Remove relation between module namespace and source location. This function
  : is only available to the DBA role.
+ : @param $namespace-uri The namespace URI of the module
  : @return Returns an empty sequence
  :)
-declare function util:unmap-module() as empty-sequence() external;
+declare function util:unmap-module($namespace-uri as xs:string) as empty-sequence() external;
 
 (:~
  : Generate a version 4 (random) universally unique identifier (UUID) string,
