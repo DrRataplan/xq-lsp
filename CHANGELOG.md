@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.8.2](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.8.1...lsp-v1.8.2) (2026-09-01)
+
+
+### Bug Fixes
+
+* recover eXist-db functions the generator silently dropped ([6e76557](https://github.com/DrRataplan/xq-lsp/commit/6e765574bb484fa650ab83cf33ee301686b92604))
+* use an explicit textEdit for auto-declare-namespace completions ([b319917](https://github.com/DrRataplan/xq-lsp/commit/b3199170a138bc2281cff86bbd4368b0d1c5b9f7))
+
 ## [1.8.1](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.8.0...lsp-v1.8.1) (2026-07-29)
 
 
