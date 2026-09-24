@@ -35,6 +35,27 @@ describe("runtime defs: fonto", () => {
 		assert.equal(fn.arity, 2);
 	});
 
+	test("documented fonto:* functions are all declared", () => {
+		const names = new Set(fonto.functions.map((f) => formatQName(f.qname)));
+		for (const name of [
+			"fonto:remote-document-id",
+			"fonto:node-id",
+			"fonto:is-node-read-only",
+			"fonto:hierarchy-source-node",
+			"fonto:hierarchy-child-nodes",
+			"fonto:title-content",
+			"fonto:title-content-direction",
+			"fonto:direction",
+			"fonto:is-table",
+			"fonto:is-table-cell",
+			"fonto:is-cals-table",
+			"fonto:is-xhtml-table",
+			"fonto:column-spec",
+		]) {
+			assert.ok(names.has(name), `${name} not found`);
+		}
+	});
+
 	test("functions have @see doc links", () => {
 		const raw = fs.readFileSync(fontoPath, "utf-8");
 		assert.ok(raw.includes("@see https://documentation.fontoxml.com"), "expected @see links");

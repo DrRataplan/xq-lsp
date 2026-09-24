@@ -162,3 +162,98 @@ declare function fonto:document($remoteDocumentId as xs:string?) as node()? exte
  : @see https://documentation.fontoxml.com/latest/fonto-remote-document-state-03df124b223a
  :)
 declare function fonto:remote-document-state($remoteDocumentId as xs:string) as map(*)? external;
+
+(:~
+ : Returns the remoteDocumentId of the document that contains the given node.
+ : Throws an error when the node is not related to a document that has a remote document id.
+ : @param $node The node of which the remote document id should be looked up.
+ : @see https://documentation.fontoxml.com/latest/fonto-remote-document-id-c4f2b7d3ca21
+ :)
+declare function fonto:remote-document-id($node as node()) as xs:string external;
+
+(:~
+ : Returns the Fonto NodeId of the given node. Do not use this in operations.
+ : @param $node The node.
+ : @see https://documentation.fontoxml.com/latest/fonto-node-id-7b60a9382817
+ :)
+declare function fonto:node-id($node as node()) as xs:string external;
+
+(:~
+ : Returns true if the given node is read-only for any reason.
+ : @param $node The node to check.
+ : @see https://documentation.fontoxml.com/latest/fonto-is-node-read-only-72ca327d3704
+ :)
+declare function fonto:is-node-read-only($node as node()) as xs:boolean external;
+
+(:~
+ : Returns the hierarchy source node for the given hierarchy node id.
+ : @param $hierarchyNodeId The hierarchy node id.
+ : @see https://documentation.fontoxml.com/latest/fonto-hierarchy-source-node-346968934801
+ :)
+declare function fonto:hierarchy-source-node($hierarchyNodeId as xs:string?) as node()? external;
+
+(:~
+ : Evaluates the configured hierarchyChildNodesQuery for the given node.
+ : Returns the empty sequence if no node is given or no query is configured.
+ : @param $node The node for which to retrieve the hierarchy child nodes.
+ : @see https://documentation.fontoxml.com/latest/fonto-hierarchy-child-nodes-e46c9fb8f2c0
+ :)
+declare function fonto:hierarchy-child-nodes($node as node()?) as node()* external;
+
+(:~
+ : Returns the contents of the "title" of the given node, as configured with titleQuery.
+ : @param $node The node to resolve the contents of the title of.
+ : @see https://documentation.fontoxml.com/latest/fonto-title-content-1acac0f6c610
+ :)
+declare function fonto:title-content($node as node()) as xs:string? external;
+
+(:~
+ : Returns the direction of the "title" of the given node, as configured with titleDirectionQuery.
+ : @param $node The node to resolve the direction of the title of.
+ : @see https://documentation.fontoxml.com/latest/fonto-title-content-direction-975b104b0a82
+ :)
+declare function fonto:title-content-direction($node as node()) as xs:string external;
+
+(:~
+ : Returns the effective text direction ('ltr' or 'rtl') for the given node.
+ : Returns 'ltr' when no direction is configured or no node is passed.
+ : @param $node The node for which to get the effective direction.
+ : @see https://documentation.fontoxml.com/latest/fonto-direction-193c5dccadfc
+ :)
+declare function fonto:direction($node as node()?) as xs:string external;
+
+(:~
+ : Returns true if the given node is a table according to any table definition.
+ : @param $node The node to check.
+ : @see https://documentation.fontoxml.com/latest/fonto-is-table-a4faf751893d
+ :)
+declare function fonto:is-table($node as node()) as xs:boolean external;
+
+(:~
+ : Returns true if the given node is a table cell according to any table definition.
+ : @param $node The node to check.
+ : @see https://documentation.fontoxml.com/latest/fonto-is-table-cell-7d82e5b1f409
+ :)
+declare function fonto:is-table-cell($node as node()) as xs:boolean external;
+
+(:~
+ : Returns true for any CALS table element (tgroup) or CALS table figure element (table).
+ : @param $node The node to check.
+ : @see https://documentation.fontoxml.com/latest/fonto-is-cals-table-fd98acb9a49f
+ :)
+declare function fonto:is-cals-table($node as node()?) as xs:boolean external;
+
+(:~
+ : Returns true for any XHTML table element.
+ : @param $node The node to check.
+ : @see https://documentation.fontoxml.com/latest/fonto-is-xhtml-table-5e4d4e55a9df
+ :)
+declare function fonto:is-xhtml-table($node as node()?) as xs:boolean external;
+
+(:~
+ : Returns the column specification.
+ : @param $columnSpecifications The column specifications node.
+ : @param $columnIdentifier The column identifier.
+ : @see https://documentation.fontoxml.com/latest/fonto-column-spec-0d3684963eb6
+ :)
+declare function fonto:column-spec($columnSpecifications as node(), $columnIdentifier as xs:string) as item()? external;
