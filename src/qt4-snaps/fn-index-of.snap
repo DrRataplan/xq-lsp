@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "testCase": "K-SeqIndexOfFunc-3",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

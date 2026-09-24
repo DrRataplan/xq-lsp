@@ -193,7 +193,7 @@ declare function fn:format-number($value as xs:numeric?, $picture as xs:string) 
 declare function fn:format-number(
 	$value as xs:numeric?,
 	$picture as xs:string,
-	$decimal-format-name as xs:string
+	$decimal-format-name as xs:string?
 ) as xs:string external;
 
 (: ── String functions ───────────────────────────────────────────────────────── :)

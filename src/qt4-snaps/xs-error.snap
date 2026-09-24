@@ -6,5 +6,13 @@
     "got": [
       "XPTY0004"
     ]
+  },
+  {
+    "testCase": "xs-error-054",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
   }
 ]

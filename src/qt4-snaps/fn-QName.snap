@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "testCase": "K2-ExpandedQNameConstructFunc-1",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

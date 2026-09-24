@@ -193,6 +193,12 @@ Open any `.xq` file and eglot starts the server automatically. Run `M-x eglot` t
 | Document symbols | `M-x imenu`                           |
 | Diagnostics      | `M-x flymake-show-buffer-diagnostics` |
 
+**Inlay hints** (inferred types after untyped `let`/`for`/`declare variable` names, and
+parameter names before call arguments) are shown by `eglot-inlay-hints-mode`, which eglot
+turns on automatically since Emacs 29.1. If they don't appear, check that `:inlayHintProvider`
+isn't listed in `eglot-ignored-server-capabilities`, or toggle them with
+`M-x eglot-inlay-hints-mode`.
+
 ### With lsp-mode
 
 ```elisp
@@ -208,6 +214,15 @@ Open any `.xq` file and eglot starts the server automatically. Run `M-x eglot` t
 
 (add-hook 'xquery-mode-hook #'lsp)
 ```
+
+lsp-mode does not show inlay hints unless asked to:
+
+```elisp
+(setq lsp-inlay-hint-enable t)
+```
+
+The reference counts above each function and module variable are code lenses; lsp-mode shows
+them by default (`lsp-lens-enable`). Eglot does not support code lenses.
 
 ## VS Code
 
