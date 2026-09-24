@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "testCase": "environment-variable-010",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

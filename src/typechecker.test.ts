@@ -589,3 +589,32 @@ describe("formatType", () => {
 		assert.equal(formatType(parseType("function(*)")), "function(*)");
 	});
 });
+
+describe("checkTypes: inferred binding types", () => {
+	function check(src: string) {
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		return checkTypes(ast, src, analyze(src, "file:///test.xq"), new Map());
+	}
+
+	test("untyped let bound to an atomic value is flagged against a node() param", () => {
+		const errors = check(`declare function local:f($x as node()) { $x }; let $s := "a" return local:f($s)`);
+		assert.equal(errors.length, 1);
+		assert.ok(errors[0].message.includes("xs:string"), `message: ${errors[0].message}`);
+	});
+
+	test("if/else yielding a string or () is flagged against a node()? param", () => {
+		const errors = check(`declare function local:f($x as node()?) { $x }; local:f(if (1 = 1) then "a" else ())`);
+		assert.equal(errors.length, 1);
+		assert.ok(errors[0].message.includes("xs:string?"), `message: ${errors[0].message}`);
+	});
+
+	test("if/else yielding elements is accepted by a node() param", () => {
+		assert.equal(check(`declare function local:f($x as node()) { $x }; local:f(if (1 = 1) then <a/> else <b/>)`).length, 0);
+	});
+
+	test("inline function parameters shadow outer bindings", () => {
+		const src = `declare function local:f($x as node()) { $x }; let $n := "a" return function($n as element()) { local:f($n) }`;
+		assert.equal(check(src).length, 0);
+	});
+});

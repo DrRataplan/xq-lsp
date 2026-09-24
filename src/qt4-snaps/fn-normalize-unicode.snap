@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "testCase": "fn-normalize-unicode2args-5",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]
