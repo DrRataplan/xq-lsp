@@ -5,7 +5,7 @@ import type { Node } from "xq-parser";
 import type { FileAnalysis, FunctionSymbol } from "./types.ts";
 import { findAll } from "./analyzer.ts";
 import { asFunctionCall } from "./ast-nodes.ts";
-import { formatType, resolveFunction, walkModuleScopes } from "./typechecker.ts";
+import { formatType, resolveFunction, walkModuleScopes, withInferredReturnTypes } from "./typechecker.ts";
 
 function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, FileAnalysis>): FunctionSymbol[] {
 	const fns = [...analysis.functions];
@@ -85,7 +85,7 @@ export function getInlayHints(
 	range: Range,
 ): InlayHint[] {
 	const offsetRange = { start: doc.offsetAt(range.start), end: doc.offsetAt(range.end) };
-	const allFns = allFunctionsFlat(analysis, imported);
+	const allFns = withInferredReturnTypes(ast, analysis, allFunctionsFlat(analysis, imported));
 	const hints: InlayHint[] = [];
 
 	collectParameterHints(ast, analysis, allFns, offsetRange, hints, doc);
