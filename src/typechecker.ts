@@ -9,7 +9,9 @@ import {
 	firstTerminalValue,
 	parseEQName,
 	resolvePrefix,
+	XMLNS_ARRAY,
 	XMLNS_FN,
+	XMLNS_MAP,
 } from "./analyzer.ts";
 import { asFunctionCall, asNamedFunctionRef, asVarRef, asVarName, literalKind, isPathExpr, argExpr } from "./ast-nodes.ts";
 
@@ -344,16 +346,70 @@ function widenNumeric(a: string, b: string): string {
 	return "xs:double"; // neither promotes to the other — fall back to the widest common type
 }
 
-// Result type of a `+`/`-`/`*`/`div`/`idiv`/`mod` operator per XPath F&O arithmetic rules.
-function arithmeticResult(op: string, a: XQueryType, b: XQueryType): XQueryType {
-	const aName = numericAtomicName(a);
-	const bName = numericAtomicName(b);
-	if (!aName || !bName) return UNKNOWN;
-	if (op === "idiv") return { kind: "atomic", name: "xs:integer", occurrence: "" };
-	if (op === "div" && aName === "xs:integer" && bName === "xs:integer") {
-		return { kind: "atomic", name: "xs:decimal", occurrence: "" }; // integer div integer is never exact
+const UNTYPED_ATOMIC = "xs:untypedAtomic";
+
+// Atomized item type of `t`, keeping its cardinality. Nodes are assumed untyped (not
+// schema-validated), so element/attribute/text/document values atomize to xs:untypedAtomic;
+// comments and processing instructions atomize to xs:string.
+function atomize(t: XQueryType): XQueryType {
+	if (t.kind === "atomic" || t.kind === "empty") return t;
+	if (t.kind === "node") {
+		const name = t.name === "comment" || t.name === "processing-instruction" ? "xs:string" : UNTYPED_ATOMIC;
+		return { kind: "atomic", name, occurrence: t.occurrence };
 	}
-	return { kind: "atomic", name: widenNumeric(aName, bName), occurrence: "" };
+	return UNKNOWN;
+}
+
+/** Arithmetic and aggregate functions cast xs:untypedAtomic operands to xs:double. */
+function arithmeticOperandName(t: XQueryType): string | undefined {
+	return t.name === UNTYPED_ATOMIC ? "xs:double" : t.name;
+}
+
+const YEAR_MONTH = "xs:yearMonthDuration";
+const DAY_TIME = "xs:dayTimeDuration";
+const isDuration = (n: string) => n === YEAR_MONTH || n === DAY_TIME;
+const isDateOrDateTime = (n: string) => n === "xs:date" || n === "xs:dateTime";
+
+// Item type of `a op b` for single atomic operands, per the XPath 3.1 operator mapping table
+// (numeric arithmetic, date/time subtraction, date/time ± duration, duration scaling).
+function arithmeticItemName(op: string, a: string, b: string): string | null {
+	const aNum = isAtomicSubtype(a, "xs:numeric");
+	const bNum = isAtomicSubtype(b, "xs:numeric");
+	if (aNum && bNum) {
+		if (op === "idiv") return "xs:integer";
+		if (op === "div" && isAtomicSubtype(a, "xs:decimal") && isAtomicSubtype(b, "xs:decimal")) {
+			return widenNumeric(widenNumeric(a, b), "xs:decimal"); // integer div integer is never exact
+		}
+		return widenNumeric(a, b);
+	}
+	const additive = op === "+" || op === "-";
+	if (op === "-" && a === b && (isDateOrDateTime(a) || a === "xs:time")) return DAY_TIME;
+	if (additive && isDateOrDateTime(a) && isDuration(b)) return a;
+	if (additive && a === "xs:time" && b === DAY_TIME) return a;
+	if (op === "+" && isDuration(a) && (isDateOrDateTime(b) || (b === "xs:time" && a === DAY_TIME))) return b;
+	if (additive && isDuration(a) && a === b) return a;
+	if ((op === "*" || op === "div") && isDuration(a) && bNum) return a;
+	if (op === "*" && aNum && isDuration(b)) return b;
+	if (op === "div" && isDuration(a) && a === b) return "xs:decimal";
+	return null;
+}
+
+// Result type of a `+`/`-`/`*`/`div`/`idiv`/`mod` operator: operands are atomized, an empty
+// operand gives (), an optional one makes the result optional, and more than one item is a
+// type error (so we don't guess).
+function arithmeticResult(op: string, a: XQueryType, b: XQueryType): XQueryType {
+	const ta = atomize(a);
+	const tb = atomize(b);
+	if (ta.kind === "unknown" || tb.kind === "unknown") return UNKNOWN;
+	if (ta.kind === "empty" || tb.kind === "empty") return EMPTY;
+	const ca = cardOf(ta);
+	const cb = cardOf(tb);
+	if (ca.max > 1 || cb.max > 1) return UNKNOWN;
+	const aName = arithmeticOperandName(ta);
+	const bName = arithmeticOperandName(tb);
+	const name = aName && bName ? arithmeticItemName(op, aName, bName) : null;
+	if (!name) return UNKNOWN;
+	return { kind: "atomic", name, occurrence: ca.min === 1 && cb.min === 1 ? "" : "?" };
 }
 
 function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, FileAnalysis>): FunctionSymbol[] {
@@ -414,19 +470,149 @@ const FN_SEQUENCE_PRESERVING: Record<string, Card | "same"> = {
 	trunk: { min: 0, max: 2 },
 };
 
+/** `R` of a single `function(…) as R` item, if known. */
+function functionResultType(f: XQueryType): XQueryType | undefined {
+	if (f.kind !== "function" || f.occurrence !== "" || !f.name?.includes(" as ")) return undefined;
+	const r = parseType(f.name.slice(f.name.lastIndexOf(" as ") + 4));
+	return r.kind === "unknown" ? undefined : r;
+}
+
+/** Member types of a single map(K, V) / array(T): `[K, V]` or `[T]`, or undefined for `map(*)` etc. */
+function containerArgs(t: XQueryType, kind: "map" | "array"): XQueryType[] | undefined {
+	if (t.kind !== kind || t.occurrence !== "" || !t.name) return undefined;
+	const args = typeArgs(t.name).map(parseType);
+	if (args.length !== (kind === "map" ? 2 : 1) || args.some((a) => a.kind === "unknown")) return undefined;
+	return args;
+}
+
+// Aggregates (sum/avg/min/max): the atomized item name with untypedAtomic cast to xs:double,
+// or undefined when it isn't numeric or a duration (or, for min/max, another comparable type).
+function aggregateItemName(t: XQueryType, allowAnyAtomic: boolean): string | undefined {
+	const atomized = atomize(t);
+	if (atomized.kind !== "atomic") return undefined;
+	const name = arithmeticOperandName(atomized);
+	if (!name) return undefined;
+	if (isAtomicSubtype(name, "xs:numeric") || isDuration(name) || allowAnyAtomic) return name;
+	return undefined;
+}
+
+// Built-ins whose declared signature (item()*, xs:anyAtomicType*, …) loses information the
+// arguments carry: aggregates, atomization, higher-order functions, and map/array accessors.
+function inferPolymorphicBuiltin(ns: string, name: string, args: XQueryType[]): XQueryType | undefined {
+	const [first, second, third] = args;
+	if (!first || first.kind === "unknown") return undefined;
+	const card = cardOf(first);
+	if (ns === XMLNS_FN) {
+		if (name in FN_SEQUENCE_PRESERVING) {
+			const rule = FN_SEQUENCE_PRESERVING[name];
+			return rule === "same" ? first : withCard(first, rule);
+		}
+		switch (name) {
+			case "data":
+				return args.length === 1 ? atomize(first) : undefined;
+			case "distinct-values": {
+				const atomized = atomize(first);
+				return atomized.kind === "unknown" ? undefined : withCard(atomized, { min: card.min, max: card.max });
+			}
+			case "sum": {
+				if (first.kind === "empty") return args.length === 1 ? INTEGER : second;
+				const item = aggregateItemName(first, false);
+				if (!item) return undefined;
+				const t: XQueryType = { kind: "atomic", name: item, occurrence: "" };
+				// sum(()) is 0, or the explicit zero value when one is given.
+				return card.min === 1 || args.length === 1 ? t : second && choiceType(t, second);
+			}
+			case "avg":
+			case "min":
+			case "max": {
+				if (first.kind === "empty") return EMPTY;
+				const item = aggregateItemName(first, name !== "avg");
+				if (!item) return undefined;
+				const avgName = isAtomicSubtype(item, "xs:decimal") ? "xs:decimal" : item;
+				return { kind: "atomic", name: name === "avg" ? avgName : item, occurrence: card.min === 1 ? "" : "?" };
+			}
+			case "for-each": {
+				const r = second && functionResultType(second);
+				return r && withCard(r, multiplyCard(card, cardOf(r)));
+			}
+			case "for-each-pair": {
+				const r = third && functionResultType(third);
+				if (!r || !second || second.kind === "unknown") return undefined;
+				const other = cardOf(second);
+				const pairs: Card = { min: card.min === 1 && other.min === 1 ? 1 : 0, max: card.max < other.max ? card.max : other.max };
+				return withCard(r, multiplyCard(pairs, cardOf(r)));
+			}
+		}
+		return undefined;
+	}
+	if (ns === XMLNS_MAP) {
+		switch (name) {
+			case "entry": {
+				const key = atomize(first);
+				if (key.kind !== "atomic" || !second || second.kind === "unknown") return undefined;
+				return { kind: "map", name: `map(${formatType(itemTypeOf(key))}, ${formatType(second)})`, occurrence: "" };
+			}
+		}
+		const kv = containerArgs(first, "map");
+		if (!kv) return undefined;
+		const [key, value] = kv;
+		switch (name) {
+			case "get":
+				return withCard(value, { min: 0, max: cardOf(value).max });
+			case "keys":
+				return withCard(key, { min: 0, max: 2 });
+			case "remove":
+				return first;
+			case "put": {
+				if (!second || !third || second.kind === "unknown" || third.kind === "unknown") return undefined;
+				const newKey = atomize(itemTypeOf(second));
+				if (newKey.kind !== "atomic") return undefined;
+				return { kind: "map", name: `map(${formatType(itemUnion(key, newKey))}, ${formatType(choiceType(value, third))})`, occurrence: "" };
+			}
+			case "for-each": {
+				const r = second && functionResultType(second);
+				return r && withCard(r, multiplyCard({ min: 0, max: 2 }, cardOf(r)));
+			}
+		}
+		return undefined;
+	}
+	if (ns === XMLNS_ARRAY) {
+		const members = containerArgs(first, "array");
+		if (!members) return undefined;
+		const [member] = members;
+		switch (name) {
+			case "get":
+			case "head":
+			case "foot":
+				return member;
+			case "tail":
+			case "trunk":
+			case "reverse":
+			case "subarray":
+			case "remove":
+			case "filter":
+			case "sort":
+				return first;
+			case "append":
+				return second && second.kind !== "unknown" ? { kind: "array", name: `array(${formatType(choiceType(member, second))})`, occurrence: "" } : undefined;
+			case "for-each": {
+				const r = second && functionResultType(second);
+				return r && { kind: "array", name: `array(${formatType(r)})`, occurrence: "" };
+			}
+		}
+	}
+	return undefined;
+}
+
 function inferCallResult(
 	qname: { namespaceUri: string; localName: string },
 	argTypes: () => XQueryType[],
 	argCount: number,
 	allFns: FunctionSymbol[],
 ): XQueryType {
-	if (qname.namespaceUri === XMLNS_FN && qname.localName in FN_SEQUENCE_PRESERVING && argCount >= 1) {
-		const first = argTypes()[0];
-		if (first.kind !== "unknown") {
-			const rule = FN_SEQUENCE_PRESERVING[qname.localName];
-			if (rule === "same") return first;
-			return withCard(first, rule);
-		}
+	if (argCount >= 1 && (qname.namespaceUri === XMLNS_FN || qname.namespaceUri === XMLNS_MAP || qname.namespaceUri === XMLNS_ARRAY)) {
+		const special = inferPolymorphicBuiltin(qname.namespaceUri, qname.localName, argTypes());
+		if (special) return special;
 	}
 	const fn = resolveFunction(qname, argCount, allFns);
 	return fn?.returnType ? parseType(fn.returnType) : UNKNOWN;
@@ -684,10 +870,14 @@ function processFLWOR(
 				}
 				card = multiplyCard(card, { min: 0, max: 2 });
 				break;
-			case "WhereClause":
-				evaluate(directChildOf(clause, "ExprSingle"));
+			case "WhereClause": {
+				const cond = directChildOf(clause, "ExprSingle");
+				evaluate(cond);
+				// Later clauses only see tuples for which the condition held.
+				if (cond) for (const [k, t] of narrowScope(cond, scope, true, analysis)) scope.set(k, t);
 				card = { min: 0, max: card.max };
 				break;
+			}
 			case "CountClause":
 				bindVarName(directChildOf(clause, "VarName"), analysis, INTEGER, scope);
 				break;
@@ -814,6 +1004,111 @@ function processInlineFunction(
 	return { kind: "function", name: `function(${params.join(", ")}) as ${typeText(ret, "item()*")}`, occurrence: "" };
 }
 
+// Unwraps the grammar's single-child precedence chain down to the node that does something.
+function coreExpr(node: Node): Node {
+	let n = node;
+	while (!isTerminal(n) && n.type !== "VarRef") {
+		const ops = nonTerminalChildren(n as NonTerminal);
+		if (ops.length !== 1) break;
+		n = ops[0];
+	}
+	return n;
+}
+
+function varKeyOf(node: Node, analysis: FileAnalysis): string | null {
+	const core = coreExpr(node);
+	const qname = core.type === "VarRef" ? asVarRef(core, analysis) : null;
+	return qname ? qnameKey(qname) : null;
+}
+
+/**
+ * Variable types that hold where `cond` is known to be true (`positive`) or false.
+ * Understands `$x instance of T`, `exists($x)`, `empty($x)`, a bare `$x` (its effective
+ * boolean value is false for ()), `not(…)`, and conjunctions / disjunctions of those.
+ */
+function narrowScope(cond: Node, scope: Map<string, XQueryType>, positive: boolean, analysis: FileAnalysis): Map<string, XQueryType> {
+	const core = coreExpr(cond);
+	const ops = isTerminal(core) ? [] : nonTerminalChildren(core as NonTerminal);
+	const nonEmpty = (key: string | null, out: Map<string, XQueryType>) => {
+		const t = key ? out.get(key) : undefined;
+		if (!key || !t || t.kind === "unknown" || t.kind === "empty") return out;
+		const c = cardOf(t);
+		if (c.min === 0) out.set(key, withCard(t, { min: 1, max: c.max }));
+		return out;
+	};
+
+	if ((core.type === "AndExpr" && positive) || (core.type === "OrExpr" && !positive)) {
+		return ops.reduce((s, op) => narrowScope(op, s, positive, analysis), scope);
+	}
+	if (core.type === "VarRef" && positive) return nonEmpty(varKeyOf(core, analysis), new Map(scope));
+	if (core.type === "InstanceofExpr" && positive && ops.length === 2) {
+		const key = varKeyOf(ops[0], analysis);
+		const narrowed = sequenceTypeOf(directChildOf(core, "SequenceType"));
+		const current = key ? scope.get(key) : undefined;
+		if (!key || !narrowed || narrowed.kind === "unknown") return scope;
+		// Only ever make a type more specific: `$int instance of xs:decimal` tells us nothing new.
+		if (current && current.kind !== "unknown" && !isAssignable(narrowed, current)) return scope;
+		return new Map(scope).set(key, narrowed);
+	}
+	if (core.type === "FunctionCall") {
+		const call = asFunctionCall(core, analysis);
+		if (!call || call.qname.namespaceUri !== XMLNS_FN || call.args.length !== 1) return scope;
+		const arg = argExpr(call.args[0]);
+		if (!arg) return scope;
+		const name = call.qname.localName;
+		if (name === "not") return narrowScope(arg, scope, !positive, analysis);
+		if ((name === "exists" && positive) || (name === "empty" && !positive) || (name === "boolean" && positive)) {
+			return nonEmpty(varKeyOf(arg, analysis), new Map(scope));
+		}
+	}
+	return scope;
+}
+
+function processIf(
+	node: NonTerminal,
+	scope: Map<string, XQueryType>,
+	analysis: FileAnalysis,
+	allFns: FunctionSymbol[],
+	visitor: ScopeVisitor = {},
+): XQueryType {
+	const cond = directChildOf(node, "Expr");
+	if (cond) visitor.expr?.(cond, scope);
+	// `then`/`else` are ExprSingle; XQuery 4's braced `if (c) { … }` has one EnclosedExpr.
+	const branches = [...directChildrenOf(node, "ExprSingle"), ...directChildrenOf(node, "EnclosedExpr")];
+	const types = branches.map((branch, i) => {
+		const branchScope = cond ? narrowScope(cond, scope, i === 0, analysis) : scope;
+		visitor.expr?.(branch, branchScope);
+		return inferExprType(branch, branchScope, analysis, allFns);
+	});
+	if (types.length === 0) return UNKNOWN;
+	return types.length === 1 ? choiceType(types[0], EMPTY) : types.reduce(choiceType);
+}
+
+// `copy $c := E modify U return R` — `$c` is a copy of E, so it has E's type.
+function processTransform(
+	node: NonTerminal,
+	outer: Map<string, XQueryType>,
+	analysis: FileAnalysis,
+	allFns: FunctionSymbol[],
+	visitor: ScopeVisitor = {},
+): XQueryType {
+	const scope = new Map(outer);
+	const bindingList = directChildOf(node, "XQUF_CopyBindingList");
+	for (const b of bindingList ? directChildrenOf(bindingList, "XQUF_CopyBinding") : []) {
+		const init = directChildOf(b, "ExprSingle");
+		if (init) visitor.expr?.(init, scope);
+		const t = init ? inferExprType(init, scope, analysis, allFns) : UNKNOWN;
+		const nameNode = directChildOf(b, "VarName");
+		bindVarName(nameNode, analysis, t, scope);
+		if (nameNode) visitor.binding?.(nameNode, t);
+	}
+	const [modifyExpr, returnExpr] = directChildrenOf(node, "ExprSingle");
+	if (modifyExpr) visitor.expr?.(modifyExpr, scope);
+	if (!returnExpr) return UNKNOWN;
+	visitor.expr?.(returnExpr, scope);
+	return inferExprType(returnExpr, scope, analysis, allFns);
+}
+
 // ── Expression inference ──────────────────────────────────────────────────────
 
 function nonTerminalChildren(nt: NonTerminal): Node[] {
@@ -857,13 +1152,10 @@ export function inferExprType(
 				return operands.map((o) => inferExprType(o, varTypes, analysis, allFns)).reduce(concatType);
 			}
 			break;
-		case "IfExpr": {
-			const branches = directChildrenOf(node, "ExprSingle");
-			const enclosed = directChildrenOf(node, "EnclosedExpr"); // XQuery 4 braced `if (c) { … }`
-			const types = [...branches, ...enclosed].map((b) => inferExprType(b, varTypes, analysis, allFns));
-			if (types.length === 0) return UNKNOWN;
-			return types.length === 1 ? choiceType(types[0], EMPTY) : types.reduce(choiceType);
-		}
+		case "IfExpr":
+			return processIf(nt, varTypes, analysis, allFns);
+		case "XQUF_TransformExpr":
+			return processTransform(nt, varTypes, analysis, allFns);
 		case "SwitchExpr": {
 			const results = [
 				...directChildrenOf(node, "SwitchCaseClause").map((c) => directChildOf(c, "ExprSingle")),
@@ -890,9 +1182,18 @@ export function inferExprType(
 			const fn = ref ? resolveFunction(ref.qname, ref.arity, allFns) : undefined;
 			return fn ? functionTypeOf(fn) : { kind: "function", name: "function(*)", occurrence: "" };
 		}
+		case "ComparisonExpr": {
+			if (operands.length < 3) break;
+			// General comparisons (=, <, …) are always a boolean. Value and node comparisons
+			// (eq, is, <<, …) yield () for an empty operand.
+			if (operands[1].type === "GeneralComp") return BOOLEAN;
+			const [a, b] = [operands[0], operands[2]].map((o) => inferExprType(o, varTypes, analysis, allFns));
+			if (a.kind === "unknown" || b.kind === "unknown") return withCard(BOOLEAN, { min: 0, max: 1 });
+			if (a.kind === "empty" || b.kind === "empty") return EMPTY;
+			return cardOf(a).min === 1 && cardOf(b).min === 1 ? BOOLEAN : withCard(BOOLEAN, { min: 0, max: 1 });
+		}
 		case "OrExpr":
 		case "AndExpr":
-		case "ComparisonExpr":
 		case "InstanceofExpr":
 		case "CastableExpr":
 			if (operands.length > 1) return BOOLEAN;
@@ -912,8 +1213,8 @@ export function inferExprType(
 			// Every expression passes through UnaryExpr; only a leading +/- makes it arithmetic.
 			const operand = directChildOf(node, "ValueExpr");
 			if (!operand || !nt.children.some(isTerminal)) break;
-			const t = inferExprType(operand, varTypes, analysis, allFns);
-			return numericAtomicName(t) ? t : UNKNOWN;
+			// Same operand rules as binary arithmetic: `-$x` behaves like `0 - $x` type-wise.
+			return arithmeticResult("*", inferExprType(operand, varTypes, analysis, allFns), INTEGER);
 		}
 		case "AdditiveExpr":
 		case "MultiplicativeExpr": {
@@ -935,8 +1236,14 @@ export function inferExprType(
 			}
 			return result ?? UNKNOWN;
 		}
-		case "UnionExpr":
 		case "IntersectExceptExpr":
+			// `a intersect b` / `a except b` select a subset of `a`.
+			if (operands.length > 1) {
+				const left = inferExprType(operands[0], varTypes, analysis, allFns);
+				return left.kind === "node" ? withCard(left, { min: 0, max: cardOf(left).max }) : NODE_STEP;
+			}
+			break;
+		case "UnionExpr":
 			if (operands.length > 1) {
 				const types = operands.map((o) => inferExprType(o, varTypes, analysis, allFns));
 				const nodes = types.filter((t) => t.kind === "node");
@@ -969,13 +1276,16 @@ export function inferExprType(
 		case "CurlyArrayConstructor":
 			return inferArrayConstructor(nt, varTypes, analysis, allFns);
 		case "FunctionCall": {
-			// Partial application — one or more ArgumentPlaceholder nodes ('?') are present.
-			// The result is a function type we don't fully infer yet; return UNKNOWN to avoid
-			// misidentifying it as the function's plain return type.
-			const argList = directChildOf(node, "ArgumentList");
-			if (argList && findAll(argList, "ArgumentPlaceholder").length > 0) return UNKNOWN;
 			const call = asFunctionCall(node, analysis);
 			if (!call) return UNKNOWN;
+			// Partial application — one or more `?` placeholders: a function over the missing arguments.
+			const placeholders = call.args.map((a) => directChildOf(a, "ArgumentPlaceholder") !== undefined);
+			if (placeholders.some(Boolean)) {
+				const fn = resolveFunction(call.qname, call.args.length, allFns);
+				if (!fn || fn.variadic) return { kind: "function", name: "function(*)", occurrence: "" };
+				const params = fn.params.filter((_, i) => placeholders[i]).map((p) => p.type ?? "item()*");
+				return { kind: "function", name: `function(${params.join(", ")}) as ${fn.returnType ?? "item()*"}`, occurrence: "" };
+			}
 			return inferCallResult(
 				call.qname,
 				() => call.args.map((a) => inferExprType(a, varTypes, analysis, allFns)),
@@ -1072,9 +1382,74 @@ function walkScoped(
 		case "InlineFunctionExpr":
 			processInlineFunction(nt, scope, analysis, allFns, visitor);
 			return;
+		case "IfExpr":
+			processIf(nt, scope, analysis, allFns, visitor);
+			return;
+		case "XQUF_TransformExpr":
+			processTransform(nt, scope, analysis, allFns, visitor);
+			return;
 	}
 
 	for (const child of nt.children) walkScoped(child, scope, analysis, allFns, hooks);
+}
+
+/**
+ * Fills in `returnType` for functions in this module declared without `as …`, inferred from
+ * their bodies. Iterates to a fixpoint (bounded) so functions calling other untyped functions,
+ * declared before or after them, resolve too; directly recursive functions stay unknown unless
+ * a non-recursive branch alone determines the type. Callers use the returned list in place of
+ * `allFns` so every call site — hints and type checks alike — sees the inferred types.
+ */
+export function withInferredReturnTypes(ast: Node, analysis: FileAnalysis, allFns: FunctionSymbol[]): FunctionSymbol[] {
+	const bodies = new Map<number, { decl: Node; body: Node }>();
+	for (const annotated of findAll(ast, "AnnotatedDecl")) {
+		const decl = directChildOf(annotated, "FunctionDecl");
+		const body = decl ? directChildOf(decl, "FunctionBody") : undefined;
+		if (decl && body && !directChildOf(decl, "SequenceType")) bodies.set(annotated.start, { decl, body });
+	}
+	const untyped = analysis.functions.filter((f) => !f.returnType && f.sourceOffset !== undefined && bodies.has(f.sourceOffset));
+	if (untyped.length === 0) return allFns;
+
+	const inferred = new Map<FunctionSymbol, string>();
+	let fns = allFns;
+	for (let pass = 0; pass < 4; pass++) {
+		let changed = false;
+		const moduleTypes = new Map<string, XQueryType>();
+		walkModuleVariables(ast, moduleTypes, analysis, fns, {});
+		for (const fn of untyped) {
+			const { decl, body } = bodies.get(fn.sourceOffset!)!;
+			const scope = new Map(moduleTypes);
+			collectParamTypes(directChildOf(decl, "ParamList"), analysis, scope);
+			const t = inferExprType(body, scope, analysis, fns);
+			const text = formatType(t);
+			// Only keep types that round-trip through the signature parser the call sites use.
+			if (t.kind === "unknown" || parseType(text).kind === "unknown" || inferred.get(fn) === text) continue;
+			inferred.set(fn, text);
+			changed = true;
+		}
+		if (!changed) break;
+		fns = allFns.map((f) => (inferred.has(f) ? { ...f, returnType: inferred.get(f) } : f));
+	}
+	return fns;
+}
+
+// Module variables in declaration order: declared type, else inferred from the initializer.
+function walkModuleVariables(
+	ast: Node,
+	moduleTypes: Map<string, XQueryType>,
+	analysis: FileAnalysis,
+	allFns: FunctionSymbol[],
+	hooks: ScopeWalkHooks,
+): void {
+	for (const decl of findAll(ast, "VarDecl")) {
+		const value = directChildOf(decl, "VarValue");
+		if (value && (hooks.onNode || hooks.onBinding)) walkScoped(value, moduleTypes, analysis, allFns, hooks);
+		const declared = declaredTypeOf(decl);
+		const inferred = value ? inferExprType(value, moduleTypes, analysis, allFns) : UNKNOWN;
+		const nameNode = directChildOf(decl, "VarName");
+		bindVarName(nameNode, analysis, declared ?? inferred, moduleTypes);
+		if (!declared && value && nameNode) hooks.onBinding?.(nameNode, inferred);
+	}
 }
 
 /**
@@ -1089,15 +1464,7 @@ export function walkModuleScopes(
 	hooks: ScopeWalkHooks,
 ): void {
 	const moduleTypes = new Map<string, XQueryType>();
-	for (const decl of findAll(ast, "VarDecl")) {
-		const value = directChildOf(decl, "VarValue");
-		if (value) walkScoped(value, moduleTypes, analysis, allFns, hooks);
-		const declared = declaredTypeOf(decl);
-		const inferred = value ? inferExprType(value, moduleTypes, analysis, allFns) : UNKNOWN;
-		const nameNode = directChildOf(decl, "VarName");
-		bindVarName(nameNode, analysis, declared ?? inferred, moduleTypes);
-		if (!declared && value && nameNode) hooks.onBinding?.(nameNode, inferred);
-	}
+	walkModuleVariables(ast, moduleTypes, analysis, allFns, hooks);
 
 	for (const annotated of findAll(ast, "AnnotatedDecl")) {
 		const decl = directChildOf(annotated, "FunctionDecl");
@@ -1173,7 +1540,7 @@ export function checkTypes(
 	importedAnalyses: Map<string, FileAnalysis>,
 ): TypeDiagnostic[] {
 	const errors: TypeDiagnostic[] = [];
-	const allFns = allFunctionsFlat(analysis, importedAnalyses);
+	const allFns = withInferredReturnTypes(ast, analysis, allFunctionsFlat(analysis, importedAnalyses));
 	walkModuleScopes(ast, analysis, allFns, {
 		onNode: (node, scope) => {
 			if (node.type === "FunctionCall") typeCheckCall(node, scope, analysis, allFns, errors);

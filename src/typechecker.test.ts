@@ -613,6 +613,17 @@ describe("checkTypes: inferred binding types", () => {
 		assert.equal(check(`declare function local:f($x as node()) { $x }; local:f(if (1 = 1) then <a/> else <b/>)`).length, 0);
 	});
 
+	test("inferred return type of an untyped function is checked at call sites", () => {
+		const errors = check(`declare function local:f($x as node()) { $x }; declare function local:s() { "a" }; local:f(local:s())`);
+		assert.equal(errors.length, 1);
+		assert.ok(errors[0].message.includes("xs:string"), `message: ${errors[0].message}`);
+	});
+
+	test("narrowing with instance of avoids a false positive in the then-branch", () => {
+		const src = `declare function local:f($x as element()) { $x }; declare function local:g($i as item()) { if ($i instance of element()) then local:f($i) else () }; 1`;
+		assert.equal(check(src).length, 0);
+	});
+
 	test("inline function parameters shadow outer bindings", () => {
 		const src = `declare function local:f($x as node()) { $x }; let $n := "a" return function($n as element()) { local:f($n) }`;
 		assert.equal(check(src).length, 0);

@@ -4,6 +4,7 @@ import { InlayHintKind } from "vscode-languageserver/node.js";
 import { analyzeWithAst } from "./analyzer.ts";
 import { getInlayHints } from "./inlay-hints.ts";
 import { makeDoc } from "./test-utils.ts";
+import { getBuiltins } from "./builtins.ts";
 import type { FileAnalysis } from "./types.ts";
 
 function hintsFor(src: string, imported: Map<string, FileAnalysis> = new Map()) {
@@ -113,7 +114,7 @@ describe("inlay-hints: inferred type hints", () => {
 function typeHintsByVar(src: string): Record<string, string> {
 	const doc = makeDoc(src);
 	const out: Record<string, string> = {};
-	for (const h of hintsFor(src).filter((h) => h.kind === InlayHintKind.Type)) {
+	for (const h of hintsFor(src, new Map([["builtin:fn", getBuiltins()]])).filter((h) => h.kind === InlayHintKind.Type)) {
 		const end = doc.offsetAt(h.position);
 		const name = /\$([\w:-]+)$/.exec(src.slice(0, end))?.[1] ?? "?";
 		out[name] = h.label as string;
@@ -244,6 +245,162 @@ describe("inlay-hints: inferred types of compound expressions", () => {
 	test("simple map operator tracks the context item", () => {
 		const hints = typeHintsByVar(`let $plus := (1, 2) ! (. + 1) return 1`);
 		assert.equal(hints.plus, ": xs:integer+");
+	});
+});
+
+describe("inlay-hints: operator and built-in type rules", () => {
+	test("arithmetic keeps optionality, atomizes nodes and handles dates and durations", () => {
+		const hints = typeHintsByVar(`
+			declare function local:opt() as xs:integer? { () };
+			let $opt := local:opt()
+			let $plus := $opt + 1
+			let $neg := -$opt
+			let $node := <a>1</a> + 1
+			let $days := xs:date("2020-01-02") - xs:date("2020-01-01")
+			let $later := xs:dateTime("2020-01-01T00:00:00") + xs:dayTimeDuration("PT1H")
+			let $scaled := xs:dayTimeDuration("PT1H") * 2
+			let $ratio := xs:dayTimeDuration("PT1H") div xs:dayTimeDuration("PT1M")
+			let $none := () + 1
+			return 1`);
+		assert.equal(hints.plus, ": xs:integer?");
+		assert.equal(hints.neg, ": xs:integer?");
+		assert.equal(hints.node, ": xs:double");
+		assert.equal(hints.days, ": xs:dayTimeDuration");
+		assert.equal(hints.later, ": xs:dateTime");
+		assert.equal(hints.scaled, ": xs:dayTimeDuration");
+		assert.equal(hints.ratio, ": xs:decimal");
+		assert.equal(hints.none, ": empty-sequence()");
+	});
+
+	test("value comparisons are optional when an operand is, general comparisons never are", () => {
+		const hints = typeHintsByVar(`
+			declare function local:opt() as xs:integer? { () };
+			let $value := local:opt() eq 1
+			let $general := local:opt() = 1
+			return 1`);
+		assert.equal(hints.value, ": xs:boolean?");
+		assert.equal(hints.general, ": xs:boolean");
+	});
+
+	test("aggregates and atomization follow their argument types", () => {
+		const hints = typeHintsByVar(`
+			let $sum := sum((1, 2))
+			let $avg := avg((1, 2))
+			let $max := max((1.5, 2.5))
+			let $maybe := min(())
+			let $data := data(<a/>)
+			let $distinct := distinct-values(("a", "b"))
+			return 1`);
+		assert.equal(hints.sum, ": xs:integer");
+		assert.equal(hints.avg, ": xs:decimal");
+		assert.equal(hints.max, ": xs:decimal");
+		assert.equal(hints.maybe, ": empty-sequence()");
+		assert.equal(hints.data, ": xs:untypedAtomic");
+		assert.equal(hints.distinct, ": xs:string+");
+	});
+
+	test("higher-order functions and map/array accessors keep member types", () => {
+		const hints = typeHintsByVar(`
+			let $strings := for-each((1, 2), function($x) as xs:string { string($x) })
+			let $got := map:get(map { "a": 1 }, "a")
+			let $keys := map:keys(map { "a": 1 })
+			let $entry := map:entry("k", 1)
+			let $member := array:get([1, 2], 1)
+			let $head := array:head(["a"])
+			let $mapped := array:for-each([1], function($x) as xs:boolean { true() })
+			return 1`);
+		assert.equal(hints.strings, ": xs:string+");
+		assert.equal(hints.got, ": xs:integer?");
+		assert.equal(hints.keys, ": xs:string*");
+		assert.equal(hints.entry, ": map(xs:string, xs:integer)");
+		assert.equal(hints.member, ": xs:integer");
+		assert.equal(hints.head, ": xs:string");
+		assert.equal(hints.mapped, ": array(xs:boolean)");
+	});
+
+	test("except/intersect keep the left operand's node kind", () => {
+		const hints = typeHintsByVar(`let $d := <a><b/></a> let $rest := $d//b except $d/b return 1`);
+		assert.equal(hints.rest, ": element()*");
+	});
+
+	test("copy/modify returns the copied node's type", () => {
+		const hints = typeHintsByVar(`let $copy := copy $c := <a/> modify () return $c return 1`);
+		assert.equal(hints.c, ": element()");
+		assert.equal(hints.copy, ": element()");
+	});
+});
+
+describe("inlay-hints: user functions", () => {
+	test("functions without a declared return type get one inferred from their body", () => {
+		const hints = typeHintsByVar(`
+			declare function local:double($a as xs:integer) { $a * 2 };
+			declare function local:uses-later() { local:later() };
+			declare function local:later() { "x" };
+			let $d := local:double(1)
+			let $l := local:uses-later()
+			return 1`);
+		assert.equal(hints.d, ": xs:integer");
+		assert.equal(hints.l, ": xs:string");
+	});
+
+	test("recursive functions without a return type stay unknown", () => {
+		const hints = typeHintsByVar(`
+			declare function local:fact($n as xs:integer) { if ($n le 1) then 1 else $n * local:fact($n - 1) };
+			let $f := local:fact(3)
+			return 1`);
+		assert.equal(hints.f, undefined);
+	});
+
+	test("partial application yields a function over the placeholder arguments", () => {
+		const hints = typeHintsByVar(`
+			declare function local:add($a as xs:integer, $b as xs:decimal) as xs:decimal { $a + $b };
+			let $inc := local:add(1, ?)
+			return 1`);
+		assert.equal(hints.inc, ": function(xs:decimal) as xs:decimal");
+	});
+});
+
+describe("inlay-hints: narrowing", () => {
+	test("instance of narrows the variable inside the then-branch", () => {
+		const hints = typeHintsByVar(`
+			declare function local:opt() as xs:integer? { () };
+			let $x := local:opt()
+			let $r := if ($x instance of xs:integer) then $x else 0
+			let $inside := if ($x instance of xs:integer) then let $y := $x return $y else ()
+			return 1`);
+		assert.equal(hints.r, ": xs:integer");
+		assert.equal(hints.y, ": xs:integer");
+	});
+
+	test("exists(), empty(), not() and a bare variable narrow optional values", () => {
+		const hints = typeHintsByVar(`
+			declare function local:opt() as xs:string? { () };
+			let $x := local:opt()
+			let $e := if (exists($x)) then $x else "none"
+			let $n := if (empty($x)) then "none" else $x
+			let $nn := if (not(empty($x))) then $x else "none"
+			let $b := if ($x) then $x else "none"
+			return 1`);
+		assert.equal(hints.e, ": xs:string");
+		assert.equal(hints.n, ": xs:string");
+		assert.equal(hints.nn, ": xs:string");
+		assert.equal(hints.b, ": xs:string");
+	});
+
+	test("where clauses narrow the variables seen by later clauses", () => {
+		const hints = typeHintsByVar(`
+			declare function local:opt() as xs:string? { () };
+			for $i in 1 to 3
+			let $x := local:opt()
+			where exists($x)
+			let $y := $x
+			return $y`);
+		assert.equal(hints.y, ": xs:string");
+	});
+
+	test("instance of never widens an already more specific type", () => {
+		const hints = typeHintsByVar(`let $x := 1 let $r := if ($x instance of xs:decimal) then $x else 0 return 1`);
+		assert.equal(hints.r, ": xs:integer");
 	});
 });
 
