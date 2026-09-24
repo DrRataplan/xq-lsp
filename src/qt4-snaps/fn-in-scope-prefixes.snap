@@ -1,7 +1,7 @@
 [
   {
     "testCase": "fn-in-scope-prefixes-2",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"
@@ -9,7 +9,7 @@
   },
   {
     "testCase": "fn-in-scope-prefixes-23",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"
@@ -17,7 +17,7 @@
   },
   {
     "testCase": "K2-InScopePrefixesFunc-3",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"
@@ -25,7 +25,7 @@
   },
   {
     "testCase": "K2-InScopePrefixesFunc-4",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"
@@ -33,7 +33,7 @@
   },
   {
     "testCase": "K2-InScopePrefixesFunc-5",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"

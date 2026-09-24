@@ -1,7 +1,7 @@
 [
   {
     "testCase": "K-ReplaceFunc-2",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"
@@ -9,7 +9,7 @@
   },
   {
     "testCase": "K-ReplaceFunc-3",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"

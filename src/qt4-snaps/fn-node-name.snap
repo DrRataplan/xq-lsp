@@ -1,7 +1,7 @@
 [
   {
     "testCase": "K2-NodeNameFunc-2",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"
@@ -9,7 +9,7 @@
   },
   {
     "testCase": "K3-NodeNameFunc-1",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"
@@ -17,7 +17,7 @@
   },
   {
     "testCase": "K3-NodeNameFunc-4",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"

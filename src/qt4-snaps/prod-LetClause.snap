@@ -1,7 +1,7 @@
 [
   {
     "testCase": "K2-LetExprWithout-3",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPDY0002",
     "got": [
       "XPDY0002"
@@ -9,7 +9,7 @@
   },
   {
     "testCase": "K2-LetExprWithout-4",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPDY0002",
     "got": [
       "XPDY0002"
@@ -17,7 +17,7 @@
   },
   {
     "testCase": "K2-LetExprWithout-5",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPDY0002",
     "got": [
       "XPDY0002"

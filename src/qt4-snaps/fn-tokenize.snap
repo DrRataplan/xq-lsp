@@ -1,7 +1,7 @@
 [
   {
     "testCase": "K-TokenizeFunc-2",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"

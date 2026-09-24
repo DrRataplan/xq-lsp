@@ -37,7 +37,7 @@
   },
   {
     "testCase": "XPTY0004_11",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"
