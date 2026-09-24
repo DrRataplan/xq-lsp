@@ -318,12 +318,15 @@ function extractModuleVariables(
 		const name = varName ? firstTerminalValue(varName) : null;
 		if (!name) continue;
 		const doc = findPrecedingDoc(comments, text, annotated.start);
+		const typeDecl = directChildOf(varDecl, "TypeDeclaration");
+		const seqType = typeDecl ? directChildOf(typeDecl, "SequenceType") : undefined;
 		results.push({
 			qname: makeVarQName(name, prefixMap),
 			offset: varDecl.start,
 			isModuleLevel: true,
 			sourceUri,
 			doc: doc?.description || undefined,
+			type: seqType ? sequenceTypeText(text, seqType) : undefined,
 		});
 	}
 	return results;
@@ -466,12 +469,15 @@ function analyzeRegex(text: string, sourceUri: string): FileAnalysis {
 	RE_VAR_DECL.lastIndex = 0;
 	while ((m = RE_VAR_DECL.exec(text)) !== null) {
 		const doc = findPrecedingDocInText(text, m.index);
+		// `declare variable $x as T := …` / `… as T external` — T runs up to `:=` or `external`.
+		const typeMatch = /^\s+as\s+([^;]{1,200}?)\s*(?::=|\bexternal\b)/.exec(text.slice(m.index + m[0].length));
 		moduleVariables.push({
 			qname: makeVarQName(m[1], prefixMap),
 			offset: m.index,
 			isModuleLevel: true,
 			sourceUri,
 			doc: doc?.description || undefined,
+			type: typeMatch?.[1],
 		});
 	}
 

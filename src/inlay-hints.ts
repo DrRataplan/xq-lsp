@@ -2,10 +2,16 @@ import { InlayHintKind } from "vscode-languageserver/node.js";
 import type { InlayHint, Range } from "vscode-languageserver/node.js";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 import type { Node } from "xq-parser";
-import type { FileAnalysis, FunctionSymbol } from "./types.ts";
+import type { FileAnalysis, FunctionSymbol, XQueryType } from "./types.ts";
 import { findAll } from "./analyzer.ts";
 import { asFunctionCall } from "./ast-nodes.ts";
-import { formatType, resolveFunction, walkModuleScopes, withInferredReturnTypes } from "./typechecker.ts";
+import {
+	externalVariableTypes,
+	formatType,
+	resolveFunction,
+	walkModuleScopes,
+	withInferredReturnTypes,
+} from "./typechecker.ts";
 
 function allFunctionsFlat(analysis: FileAnalysis, importedAnalyses: Map<string, FileAnalysis>): FunctionSymbol[] {
 	const fns = [...analysis.functions];
@@ -58,21 +64,28 @@ function collectTypeHints(
 	range: { start: number; end: number },
 	hints: InlayHint[],
 	doc: TextDocument,
+	outerScope: Map<string, XQueryType>,
 ): void {
 	const seen = new Set<number>();
-	walkModuleScopes(ast, analysis, allFns, {
-		onBinding: (nameNode, type) => {
-			const nameEnd = nameNode.end ?? nameNode.start;
-			if (type.kind === "unknown" || !inRange(nameEnd, range) || seen.has(nameEnd)) return;
-			seen.add(nameEnd);
-			hints.push({
-				position: doc.positionAt(nameEnd),
-				label: `: ${formatType(type)}`,
-				kind: InlayHintKind.Type,
-				paddingLeft: true,
-			});
+	walkModuleScopes(
+		ast,
+		analysis,
+		allFns,
+		{
+			onBinding: (nameNode, type) => {
+				const nameEnd = nameNode.end ?? nameNode.start;
+				if (type.kind === "unknown" || !inRange(nameEnd, range) || seen.has(nameEnd)) return;
+				seen.add(nameEnd);
+				hints.push({
+					position: doc.positionAt(nameEnd),
+					label: `: ${formatType(type)}`,
+					kind: InlayHintKind.Type,
+					paddingLeft: true,
+				});
+			},
 		},
-	});
+		outerScope,
+	);
 }
 
 // ── Entry point ───────────────────────────────────────────────────────────────
@@ -85,12 +98,14 @@ export function getInlayHints(
 	range: Range,
 ): InlayHint[] {
 	const offsetRange = { start: doc.offsetAt(range.start), end: doc.offsetAt(range.end) };
-	const allFns = withInferredReturnTypes(ast, analysis, allFunctionsFlat(analysis, imported));
+	const declaredFns = allFunctionsFlat(analysis, imported);
+	const outerScope = externalVariableTypes(analysis, imported.values(), declaredFns);
+	const allFns = withInferredReturnTypes(ast, analysis, declaredFns, outerScope);
 	const hints: InlayHint[] = [];
 
 	collectParameterHints(ast, analysis, allFns, offsetRange, hints, doc);
 
-	collectTypeHints(ast, analysis, allFns, offsetRange, hints, doc);
+	collectTypeHints(ast, analysis, allFns, offsetRange, hints, doc, outerScope);
 
 	return hints;
 }

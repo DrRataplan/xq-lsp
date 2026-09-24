@@ -5,6 +5,7 @@ import { analyzeWithAst } from "./analyzer.ts";
 import { getInlayHints } from "./inlay-hints.ts";
 import { makeDoc } from "./test-utils.ts";
 import { getBuiltins } from "./builtins.ts";
+import { getRuntimePredeclaredVariables, withPredeclaredVariables } from "./predeclared-namespaces.ts";
 import type { FileAnalysis } from "./types.ts";
 
 function hintsFor(src: string, imported: Map<string, FileAnalysis> = new Map()) {
@@ -357,6 +358,80 @@ describe("inlay-hints: user functions", () => {
 			let $inc := local:add(1, ?)
 			return 1`);
 		assert.equal(hints.inc, ": function(xs:decimal) as xs:decimal");
+	});
+});
+
+describe("inlay-hints: imported and predeclared variables", () => {
+	const MODULE_URI = "http://example.com/m";
+	function withModule(moduleSrc: string, mainSrc: string): Record<string, string> {
+		const { analysis: moduleAnalysis } = analyzeWithAst(moduleSrc, "file:///m.xqm");
+		const doc = makeDoc(mainSrc);
+		const { analysis, ast } = analyzeWithAst(mainSrc, doc.uri);
+		if (!ast) throw new Error("expected AST parse to succeed");
+		const imported = new Map([
+			["builtin:fn", getBuiltins()],
+			[MODULE_URI, moduleAnalysis],
+			["m.xqm", moduleAnalysis], // registered under both its URI and its `at` path, like the server does
+		]);
+		const range = { start: doc.positionAt(0), end: doc.positionAt(mainSrc.length) };
+		const out: Record<string, string> = {};
+		for (const h of getInlayHints(doc, ast, analysis, imported, range).filter((h) => h.kind === InlayHintKind.Type)) {
+			const name = /\$([\w:-]+)$/.exec(mainSrc.slice(0, doc.offsetAt(h.position)))?.[1] ?? "?";
+			out[name] = h.label as string;
+		}
+		return out;
+	}
+	const main = `import module namespace m = "${MODULE_URI}" at "m.xqm";
+		let $typed := $m:typed
+		let $external := $m:external
+		let $untyped := $m:untyped
+		let $derived := $m:derived
+		return 1`;
+
+	test("declared types of imported variables are used", () => {
+		const hints = withModule(
+			`module namespace m = "${MODULE_URI}";
+			declare variable $m:typed as xs:string := "a";
+			declare variable $m:external as element()* external;`,
+			main,
+		);
+		assert.equal(hints.typed, ": xs:string");
+		assert.equal(hints.external, ": element()*");
+	});
+
+	test("untyped imported variables are inferred from their initializer", () => {
+		const hints = withModule(
+			`module namespace m = "${MODULE_URI}";
+			declare variable $m:untyped := 42;
+			declare variable $m:derived := $m:untyped * 1.5;`,
+			main,
+		);
+		assert.equal(hints.untyped, ": xs:integer");
+		assert.equal(hints.derived, ": xs:decimal");
+	});
+
+	test("declared types are still found when the imported module does not parse", () => {
+		const hints = withModule(
+			`module namespace m = "${MODULE_URI}";
+			declare variable $m:typed as xs:string := "a";
+			declare function m:broken( {`,
+			main,
+		);
+		assert.equal(hints.typed, ": xs:string");
+	});
+
+	test("eXist-db install-script variables are strings", () => {
+		const src = `let $path := $target return $path`;
+		const doc = makeDoc(src, "file:///pre-install.xq");
+		const { analysis, ast } = analyzeWithAst(src, doc.uri);
+		if (!ast) throw new Error("expected AST parse to succeed");
+		const withVars = withPredeclaredVariables(analysis, getRuntimePredeclaredVariables(["existdb"], doc.uri));
+		const range = { start: doc.positionAt(0), end: doc.positionAt(src.length) };
+		const hints = getInlayHints(doc, ast, withVars, new Map(), range).filter((h) => h.kind === InlayHintKind.Type);
+		assert.deepEqual(
+			hints.map((h) => h.label),
+			[": xs:string"],
+		);
 	});
 });
 
