@@ -24,7 +24,9 @@ export interface TestInput {
 export interface TestOutput {
 	testSetSlug: string;
 	testCase: string;
-	outcome: "pass" | "false-positive" | "false-negative";
+	// "caught-statically": the test expects a dynamic error (e.g. XPTY0004) and that is exactly
+	// what our static analysis reported — not a false positive, the error really does occur.
+	outcome: "pass" | "false-positive" | "false-negative" | "caught-statically";
 	expectedCode: string | null;
 	got: string[];
 }
@@ -92,14 +94,16 @@ const batch = workerData as TestInput[];
 const results: TestOutput[] = batch.map((tc) => {
 	const got = collectCodes(tc.query, tc.envNamespaces, tc.envVariables, tc.moduleCatalog);
 	const hasError = got.length > 0;
-	const outcome =
+	const outcome: TestOutput["outcome"] =
 		tc.expected === "static-error"
 			? hasError
 				? "pass"
 				: "false-negative"
-			: hasError
-				? "false-positive"
-				: "pass";
+			: !hasError
+				? "pass"
+				: tc.expectedCode !== null && got.every((c) => c === tc.expectedCode)
+					? "caught-statically"
+					: "false-positive";
 	return { testSetSlug: tc.testSetSlug, testCase: tc.testCase, outcome, expectedCode: tc.expectedCode, got };
 });
 

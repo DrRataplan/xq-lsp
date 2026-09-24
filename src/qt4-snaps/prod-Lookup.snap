@@ -1,7 +1,7 @@
 [
   {
     "testCase": "Lookup-011",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPDY0002",
     "got": [
       "XPDY0002"

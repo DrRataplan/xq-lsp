@@ -13,7 +13,7 @@
   },
   {
     "testCase": "K2-InternalVariablesWithout-14",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPDY0002",
     "got": [
       "XPDY0002"

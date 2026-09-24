@@ -9,7 +9,7 @@
   },
   {
     "testCase": "xs-error-054",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"

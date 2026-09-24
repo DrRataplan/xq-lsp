@@ -1,7 +1,7 @@
 [
   {
     "testCase": "array-get-008",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"
@@ -9,7 +9,7 @@
   },
   {
     "testCase": "array-get-009",
-    "outcome": "false-positive",
+    "outcome": "caught-statically",
     "expectedCode": "XPTY0004",
     "got": [
       "XPTY0004"
