@@ -133,6 +133,7 @@ export function getRuntimePredeclaredVariables(runtimes: string[], sourceUri: st
 		isModuleLevel: true,
 		sourceUri,
 		doc,
+		type: "xs:string", // all three are file system / collection paths
 	}));
 }
 

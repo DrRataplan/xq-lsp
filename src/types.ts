@@ -43,6 +43,7 @@ export interface VariableSymbol {
 	isModuleLevel: boolean;
 	sourceUri: string;
 	doc?: string; // markdown description from a preceding xqDoc comment, if any
+	type?: string; // declared `as SequenceType` of a module variable, as written in source
 }
 
 export interface ImportInfo {

@@ -1400,7 +1400,12 @@ function walkScoped(
  * a non-recursive branch alone determines the type. Callers use the returned list in place of
  * `allFns` so every call site — hints and type checks alike — sees the inferred types.
  */
-export function withInferredReturnTypes(ast: Node, analysis: FileAnalysis, allFns: FunctionSymbol[]): FunctionSymbol[] {
+export function withInferredReturnTypes(
+	ast: Node,
+	analysis: FileAnalysis,
+	allFns: FunctionSymbol[],
+	outerScope: Map<string, XQueryType> = new Map(),
+): FunctionSymbol[] {
 	const bodies = new Map<number, { decl: Node; body: Node }>();
 	for (const annotated of findAll(ast, "AnnotatedDecl")) {
 		const decl = directChildOf(annotated, "FunctionDecl");
@@ -1414,7 +1419,7 @@ export function withInferredReturnTypes(ast: Node, analysis: FileAnalysis, allFn
 	let fns = allFns;
 	for (let pass = 0; pass < 4; pass++) {
 		let changed = false;
-		const moduleTypes = new Map<string, XQueryType>();
+		const moduleTypes = new Map(outerScope);
 		walkModuleVariables(ast, moduleTypes, analysis, fns, {});
 		for (const fn of untyped) {
 			const { decl, body } = bodies.get(fn.sourceOffset!)!;
@@ -1431,6 +1436,45 @@ export function withInferredReturnTypes(ast: Node, analysis: FileAnalysis, allFn
 		fns = allFns.map((f) => (inferred.has(f) ? { ...f, returnType: inferred.get(f) } : f));
 	}
 	return fns;
+}
+
+/**
+ * Types of variables visible in this module without being declared in its source: variables
+ * of imported modules and runtime-predeclared ones. A declared `as` type is used as written;
+ * an untyped imported variable is inferred from its initializer when that module's AST is at
+ * hand (it isn't for lightweight glob summaries).
+ */
+export function externalVariableTypes(
+	analysis: FileAnalysis,
+	imported: Iterable<FileAnalysis>,
+	allFns: FunctionSymbol[],
+): Map<string, XQueryType> {
+	const out = new Map<string, XQueryType>();
+	const add = (key: string, t: XQueryType | undefined) => {
+		if (t && t.kind !== "unknown") out.set(key, t);
+	};
+	for (const v of analysis.moduleVariables) {
+		if (v.offset < 0 && v.type) add(qnameKey(v.qname), parseType(v.type));
+	}
+	const seen = new Set<FileAnalysis>([analysis]);
+	for (const module of imported) {
+		if (seen.has(module)) continue; // the same module is registered under its URI and its `at` path
+		seen.add(module);
+		let inferred: Map<string, XQueryType> | undefined;
+		for (const v of module.moduleVariables) {
+			const key = qnameKey(v.qname);
+			if (v.type) {
+				add(key, parseType(v.type));
+			} else if (module.ast) {
+				if (!inferred) {
+					inferred = new Map();
+					walkModuleVariables(module.ast, inferred, module, allFns, {});
+				}
+				add(key, inferred.get(key));
+			}
+		}
+	}
+	return out;
 }
 
 // Module variables in declaration order: declared type, else inferred from the initializer.
@@ -1462,8 +1506,9 @@ export function walkModuleScopes(
 	analysis: FileAnalysis,
 	allFns: FunctionSymbol[],
 	hooks: ScopeWalkHooks,
+	outerScope: Map<string, XQueryType> = new Map(),
 ): void {
-	const moduleTypes = new Map<string, XQueryType>();
+	const moduleTypes = new Map(outerScope);
 	walkModuleVariables(ast, moduleTypes, analysis, allFns, hooks);
 
 	for (const annotated of findAll(ast, "AnnotatedDecl")) {
@@ -1540,11 +1585,19 @@ export function checkTypes(
 	importedAnalyses: Map<string, FileAnalysis>,
 ): TypeDiagnostic[] {
 	const errors: TypeDiagnostic[] = [];
-	const allFns = withInferredReturnTypes(ast, analysis, allFunctionsFlat(analysis, importedAnalyses));
-	walkModuleScopes(ast, analysis, allFns, {
-		onNode: (node, scope) => {
-			if (node.type === "FunctionCall") typeCheckCall(node, scope, analysis, allFns, errors);
+	const declaredFns = allFunctionsFlat(analysis, importedAnalyses);
+	const outerScope = externalVariableTypes(analysis, importedAnalyses.values(), declaredFns);
+	const allFns = withInferredReturnTypes(ast, analysis, declaredFns, outerScope);
+	walkModuleScopes(
+		ast,
+		analysis,
+		allFns,
+		{
+			onNode: (node, scope) => {
+				if (node.type === "FunctionCall") typeCheckCall(node, scope, analysis, allFns, errors);
+			},
 		},
-	});
+		outerScope,
+	);
 	return errors;
 }
