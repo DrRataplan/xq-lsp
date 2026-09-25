@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.9.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.8.2...lsp-v1.9.0) (2026-09-25)
+
+
+### Features
+
+* extend type inference with operator rules, built-ins and narrowing ([5c6d9b7](https://github.com/DrRataplan/xq-lsp/commit/5c6d9b77353cbbb6800399aa5c5c21cd91c45201))
+* infer types through if/else, sequences, FLWOR and more for inlay hints ([a77ccaf](https://github.com/DrRataplan/xq-lsp/commit/a77ccaf0b634e28ebf664ae9d7a543b59f93e180))
+* use the types of imported and predeclared variables ([1f64aae](https://github.com/DrRataplan/xq-lsp/commit/1f64aaeca9195d8a0998e2836425e1315750f4e4))
+
+
+### Bug Fixes
+
+* **fonto:** declare 13 missing fonto:* runtime functions ([161a0c9](https://github.com/DrRataplan/xq-lsp/commit/161a0c9994015f906787fa550f01547c7fc34788)), closes [#157](https://github.com/DrRataplan/xq-lsp/issues/157)
+
 ## [1.8.2](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.8.1...lsp-v1.8.2) (2026-09-01)
 
 
