@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "map-contains-904",
-    "outcome": "caught-statically",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

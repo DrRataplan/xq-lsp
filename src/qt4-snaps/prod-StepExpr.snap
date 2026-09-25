@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "K2-Steps-1",
-    "outcome": "caught-statically",
-    "expectedCode": "XPDY0002",
-    "got": [
-      "XPDY0002"
-    ]
-  },
-  {
-    "testCase": "K2-Steps-4",
-    "outcome": "caught-statically",
-    "expectedCode": "XPDY0002",
-    "got": [
-      "XPDY0002"
-    ]
-  }
-]
+[]

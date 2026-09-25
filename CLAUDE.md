@@ -29,7 +29,7 @@ QT4_TESTS_DIR=qt4tests node --test src/qt4-diagnostic.test.ts
 QT4_TESTS_DIR=qt4tests node --test --test-update-snapshots src/qt4-diagnostic.test.ts
 ```
 
-Snapshots live in `src/qt4-snaps/` — one JSON file per QT4 test-set, listing every non-passing case with its outcome, the expected error code, and what codes we actually emitted. Outcomes are `false-positive` (we flagged a query that has no static error), `false-negative` (we missed a static error), or `caught-statically` (the test expects a dynamic error such as `XPTY0004`, and our static analysis reported exactly that code — a win, kept in the snapshot so losing it shows up as a diff). CI checks out the submodule automatically via `submodules: true` on `actions/checkout`.
+Snapshots live in `src/qt4-snaps/` — one JSON file per QT4 test-set, listing every failing case with its outcome (`false-positive` or `false-negative`), the expected error code, and what codes we actually emitted. A query that expects a dynamic error (e.g. `XPTY0004`) and only gets that exact code from our static analysis counts as a pass — we're allowed to detect dynamic errors statically. CI checks out the submodule automatically via `submodules: true` on `actions/checkout`.
 
 The pinned commit is the submodule pointer in `.gitmodules`. A weekly CI workflow (`qt4-update.yml`) checks for new upstream commits and opens a PR that advances the submodule and regenerates snapshots.
 

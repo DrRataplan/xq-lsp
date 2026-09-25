@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "fn-has-children-009",
-    "outcome": "caught-statically",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]
