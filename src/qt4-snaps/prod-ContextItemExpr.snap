@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "externalcontextitem-1",
-    "outcome": "caught-statically",
-    "expectedCode": "XPDY0002",
-    "got": [
-      "XPDY0002"
-    ]
-  },
-  {
-    "testCase": "internalcontextitem-1",
-    "outcome": "caught-statically",
-    "expectedCode": "XPDY0002",
-    "got": [
-      "XPDY0002"
-    ]
-  }
-]
+[]

@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "generate-id-903",
-    "outcome": "caught-statically",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

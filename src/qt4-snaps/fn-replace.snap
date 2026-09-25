@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "K-ReplaceFunc-2",
-    "outcome": "caught-statically",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "K-ReplaceFunc-3",
-    "outcome": "caught-statically",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "K-MatchesFunc-1",
-    "outcome": "caught-statically",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "K-MatchesFunc-3",
-    "outcome": "caught-statically",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "K-NilledFunc-4",
-    "outcome": "caught-statically",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

@@ -1,18 +1,1 @@
-[
-  {
-    "testCase": "K2-TranslateFunc-1",
-    "outcome": "caught-statically",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  },
-  {
-    "testCase": "K2-TranslateFunc-2",
-    "outcome": "caught-statically",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

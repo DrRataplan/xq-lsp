@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "K-StringJoinFunc-7",
-    "outcome": "caught-statically",
-    "expectedCode": "XPTY0004",
-    "got": [
-      "XPTY0004"
-    ]
-  }
-]
+[]

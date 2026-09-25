@@ -16,13 +16,5 @@
     "outcome": "false-negative",
     "expectedCode": "XQST0039",
     "got": []
-  },
-  {
-    "testCase": "xqhof13",
-    "outcome": "caught-statically",
-    "expectedCode": "XPDY0002",
-    "got": [
-      "XPDY0002"
-    ]
   }
 ]

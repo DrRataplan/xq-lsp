@@ -1,10 +1,1 @@
-[
-  {
-    "testCase": "fn-base-uri-22",
-    "outcome": "caught-statically",
-    "expectedCode": "XPDY0002",
-    "got": [
-      "XPDY0002"
-    ]
-  }
-]
+[]
