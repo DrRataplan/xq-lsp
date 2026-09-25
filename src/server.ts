@@ -44,6 +44,7 @@ import {
 import { buildOrganizeImportsEdit, buildExtractVariableEdit, buildExtractFunctionEdit } from "./refactor-actions.ts";
 import type { OffsetEdit } from "./refactor-actions.ts";
 import { getWorkspaceSymbols } from "./workspace-symbol.ts";
+import { siblingModuleAnalysis } from "./module-siblings.ts";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -256,6 +257,12 @@ function resolveContext(
 			if (imp.atPath) result.set(imp.atPath, imported);
 			result.set(imp.namespaceUri, imported);
 		}
+	}
+	// Other files implementing the same module namespace are in scope without an import.
+	if (rawAnalysis.moduleNamespaceUri) {
+		const merged = globAnalyses.get(rawAnalysis.moduleNamespaceUri);
+		const siblings = merged && siblingModuleAnalysis(merged, currentUri);
+		if (siblings) result.set(rawAnalysis.moduleNamespaceUri, siblings);
 	}
 	// Add pre-declared runtime analyses directly — available without explicit import
 	for (const nd of predeclaredNs) {
