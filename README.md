@@ -148,14 +148,6 @@ map {
 - **Context-depending completion** — which prevent syntactical errors
 - **Treesitter parser** — should improve performance and scalability for huge files
 - **XQuery 4** — the parser already supports this. Just make it work
-- **Arity checks** — report when one calls `fn:document('too', 'many', 'arguments')`
-- **Register or discover known prefix/namespace combinations** — if you have the `tei` namespace
-  declared in another file, you might mean that when you type `tei:TEI` in another file
-- **Context items** — doing `declare function xx () { bla };` is an error: there is no context
-  item. Check if there is a context item available when you use the context item expression (`.`) or
-  a step expression.
-- **Unused functions and variables** — no one likes those. Except when prefixed with `_`, then they
-  make sense
 - More of the (static) errors in the spec at [The spec at section F Error
   Conditions](https://www.w3.org/TR/xquery-31/#id-errors), whichever are easy to implement
 
