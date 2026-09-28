@@ -1,0 +1,10 @@
+[
+  {
+    "testCase": "ft-3.4.6-expressions-q4",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

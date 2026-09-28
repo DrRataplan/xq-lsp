@@ -1,0 +1,18 @@
+[
+  {
+    "testCase": "ft-3.4.6-examples-q1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "ft-3.4.6-examples-q2",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

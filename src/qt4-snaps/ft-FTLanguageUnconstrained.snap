@@ -1,0 +1,18 @@
+[
+  {
+    "testCase": "ft-5.2.12-expressions-q1",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "ft-5.2.12-expressions-q2",
+    "outcome": "false-positive",
+    "expectedCode": "FTST0009",
+    "got": [
+      "XPST0003"
+    ]
+  }
+]

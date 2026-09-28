@@ -1,0 +1,42 @@
+[
+  {
+    "testCase": "FTSelection-Weight-q1a",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "FTSelection-Weight-q1c",
+    "outcome": "false-positive",
+    "expectedCode": null,
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "FTSelection-Weight-q2a",
+    "outcome": "false-positive",
+    "expectedCode": "FTDY0016",
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "FTSelection-Weight-q2b",
+    "outcome": "false-positive",
+    "expectedCode": "FTDY0016",
+    "got": [
+      "XPST0003"
+    ]
+  },
+  {
+    "testCase": "FTSelection-Weight-q3",
+    "outcome": "false-positive",
+    "expectedCode": "XPTY0004",
+    "got": [
+      "XPST0003"
+    ]
+  }
+]
