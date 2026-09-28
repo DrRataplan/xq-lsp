@@ -1,0 +1,8 @@
+[
+  {
+    "testCase": "FTExtension-Opt-q5",
+    "outcome": "false-negative",
+    "expectedCode": "XQST0013",
+    "got": []
+  }
+]
