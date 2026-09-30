@@ -48,18 +48,6 @@
     "got": []
   },
   {
-    "testCase": "modules-34",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "modules-35",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
     "testCase": "modules-44",
     "outcome": "false-negative",
     "expectedCode": "XQST0048",
@@ -78,33 +66,15 @@
     "got": []
   },
   {
-    "testCase": "modules-pub-priv-2",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
     "testCase": "modules-pub-priv-4",
     "outcome": "false-negative",
     "expectedCode": "XPST0008",
     "got": []
   },
   {
-    "testCase": "modules-pub-priv-14",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
     "testCase": "modules-pub-priv-16",
     "outcome": "false-negative",
     "expectedCode": "XPST0008",
-    "got": []
-  },
-  {
-    "testCase": "modules-pub-priv-22",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
     "got": []
   },
   {
@@ -165,12 +135,6 @@
     "testCase": "modules-pub-priv-36",
     "outcome": "false-negative",
     "expectedCode": "XQST0116",
-    "got": []
-  },
-  {
-    "testCase": "modules-pub-priv-37",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
     "got": []
   },
   {

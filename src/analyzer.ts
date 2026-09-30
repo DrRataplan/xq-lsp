@@ -176,7 +176,10 @@ function findPrecedingDoc(comments: Terminal[], text: string, offset: number): D
 // ── Namespace helpers ────────────────────────────────────────────────────────
 
 function extractModuleNamespace(text: string): { prefix: string; uri: string } | undefined {
-	const m = text.match(/module\s+namespace\s+([\w\-]+)\s*=\s*["']([^"']*)["']/);
+	// The negative lookbehind excludes `import module namespace ...` — a module
+	// import, not this file's own `module namespace` declaration — which would
+	// otherwise match the same pattern and be mistaken for it.
+	const m = text.match(/(?<!import\s+)\bmodule\s+namespace\s+([\w\-]+)\s*=\s*["']([^"']*)["']/);
 	return m ? { prefix: m[1], uri: m[2] } : undefined;
 }
 
@@ -201,6 +204,25 @@ function resolveNamespaceUri(prefix: string, prefixMap: Map<string, string>): st
 	return prefixMap.get(prefix) ?? `urn:xq-lsp:undeclared:${prefix}`;
 }
 
+const PREDEFINED_ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
+
+/**
+ * A BracedURILiteral's content may contain PredefinedEntityRef (&amp; &lt; &gt;
+ * &quot; &apos;) and CharRef (&#DDDD; / &#xHHHH;) escapes, same as string content —
+ * e.g. `Q{http:&#x2F;&#x2F;example.com}` names the URI "http://example.com". The
+ * parser's terminal value is the raw, un-decoded source slice, so this decoding
+ * has to happen here rather than being assumed already done.
+ */
+function decodeCharRefs(text: string): string {
+	return text.replace(/&(#x[0-9a-fA-F]+|#[0-9]+|[a-zA-Z]+);/g, (match, ref: string) => {
+		if (ref[0] === "#") {
+			const codePoint = ref[1] === "x" ? parseInt(ref.slice(2), 16) : parseInt(ref.slice(1), 10);
+			return Number.isNaN(codePoint) ? match : String.fromCodePoint(codePoint);
+		}
+		return PREDEFINED_ENTITIES[ref] ?? match;
+	});
+}
+
 /**
  * Per the BracedURILiteral grammar, whitespace inside `Q{...}` is insignificant:
  * leading/trailing whitespace is trimmed and internal runs are collapsed to a
@@ -208,7 +230,7 @@ function resolveNamespaceUri(prefix: string, prefixMap: Map<string, string>): st
  * This does not decode percent-escapes — `Q{foo%20bar}` stays distinct from `Q{foo bar}`.
  */
 function normalizeBracedUri(uri: string): string {
-	return uri.trim().replace(/\s+/g, " ");
+	return decodeCharRefs(uri).trim().replace(/\s+/g, " ");
 }
 
 /**
@@ -242,6 +264,19 @@ const makeVarQName = (name: string, prefixMap: Map<string, string>) => makeQName
 export function sequenceTypeText(text: string, node: Node): string | undefined {
 	if (node.start === undefined || node.end === null) return undefined;
 	return text.slice(node.start, node.end ?? undefined).trim() || undefined;
+}
+
+// A %public/%private annotation on an AnnotatedDecl controls whether the
+// declaration is visible to modules that import it (XQuery 3.0+). Returns
+// undefined when neither annotation is present; callers treat that as public,
+// same as FunctionSymbol.visibility's own default.
+function extractVisibility(annotated: Node): "public" | "private" | undefined {
+	for (const ann of directChildrenOf(annotated, "Annotation")) {
+		const eqname = directChildOf(ann, "EQName");
+		const raw = eqname ? firstTerminalValue(eqname) : null;
+		if (raw === "private" || raw === "public") return raw;
+	}
+	return undefined;
 }
 
 function extractFunctions(
@@ -296,6 +331,7 @@ function extractFunctions(
 			doc,
 			sourceUri,
 			sourceOffset: annotated.start,
+			visibility: extractVisibility(annotated),
 		});
 	}
 	return results;
