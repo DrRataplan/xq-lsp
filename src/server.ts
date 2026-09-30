@@ -5,6 +5,7 @@ import {
 	ProposedFeatures,
 	TextDocumentSyncKind,
 	DiagnosticSeverity,
+	DocumentDiagnosticReportKind,
 	CodeAction,
 	CodeActionKind,
 	TextEdit,
@@ -309,12 +310,12 @@ connection.onInitialize((params) => {
 			documentLinkProvider: { resolveProvider: false },
 			callHierarchyProvider: true,
 			inlayHintProvider: true,
+			diagnosticProvider: { interFileDependencies: true, workspaceDiagnostics: false },
 		},
 	};
 });
 
-documents.onDidChangeContent((change) => {
-	const doc = change.document;
+function computeDiagnostics(doc: TextDocument) {
 	const { analysis: rawAnalysis, parseDiagnostics: parseDiags, hasAst, ast } = analyzeDocumentFull(doc);
 	const { analysis, imported: resolvedImported } = resolveContext(doc.uri, rawAnalysis);
 
@@ -342,10 +343,26 @@ documents.onDidChangeContent((change) => {
 	const errorDiags = errorDiagRaw.filter((d) => d.code !== "XQST0081").map((d) => toLsp(d, DiagnosticSeverity.Error));
 	const hintDiags = hintDiagRaw.map((d) => toLsp(d, DiagnosticSeverity.Hint));
 
-	connection.sendDiagnostics({
-		uri: doc.uri,
-		diagnostics: [...parseDiags, ...nsDiags, ...errorDiags, ...hintDiags],
-	});
+	return [...parseDiags, ...nsDiags, ...errorDiags, ...hintDiags];
+}
+
+documents.onDidChangeContent((change) => {
+	connection.sendDiagnostics({ uri: change.document.uri, diagnostics: computeDiagnostics(change.document) });
+});
+
+// LSP 3.17 pull diagnostics. Falls back to reading the file from disk so clients that edit
+// files outside an editor session (no didOpen) can still ask "does this file have errors?".
+connection.languages.diagnostics.on((params) => {
+	let doc = documents.get(params.textDocument.uri);
+	if (!doc) {
+		try {
+			const text = fs.readFileSync(uriToPath(params.textDocument.uri), "utf-8");
+			doc = TextDocument.create(params.textDocument.uri, "xquery", 0, text);
+		} catch {
+			return { kind: DocumentDiagnosticReportKind.Full, items: [] };
+		}
+	}
+	return { kind: DocumentDiagnosticReportKind.Full, items: computeDiagnostics(doc) };
 });
 
 connection.onCompletion((params) => {

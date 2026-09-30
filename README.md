@@ -12,7 +12,7 @@ Language Server Protocol implementation for XQuery, providing autocompletion, ho
 - **Signature help** — active parameter hints inside function calls
 - **Go to definition** — jump to function or variable declarations, including across imported files
 - **Document symbols** — file outline of all declared functions and variables
-- **Diagnostics** — syntax errors, undeclared namespace prefixes, type mismatches, and unused symbols
+- **Diagnostics** — syntax errors, undeclared namespace prefixes, type mismatches, and unused symbols — pushed on change, and also available on request via LSP 3.17 pull diagnostics (`textDocument/diagnostic`), including for files that are not open
 
 ## Configuration
 
