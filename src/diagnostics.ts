@@ -28,12 +28,13 @@ export function runDiagnostics(
 	text: string,
 	analysis: FileAnalysis,
 	imports: Map<string, FileAnalysis>,
+	options: { externalContextItem?: boolean } = {},
 ): TypeDiagnostic[] {
 	return [
 		...checkTypes(ast, text, analysis, imports),
 		...checkFunctionCalls(ast, analysis, imports),
 		...findUndeclaredPrefixUsages(ast, analysis),
-		...checkContextItemUsage(ast),
+		...checkContextItemUsage(ast, options),
 		...checkUndeclaredVariables(ast, analysis, imports),
 		...checkDuplicateFunctions(ast, analysis, imports),
 		...checkDuplicatePrologDecls(ast, analysis),

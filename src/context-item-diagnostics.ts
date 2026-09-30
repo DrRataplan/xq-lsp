@@ -8,7 +8,13 @@ export interface ContextItemDiagnostic {
 	length: number;
 }
 
-function walk(node: Node, hasContextItem: boolean, out: ContextItemDiagnostic[]): void {
+function hasContextItemDecl(node: Node): boolean {
+	if (isTerminal(node)) return false;
+	if (node.type === "ContextItemDecl") return true;
+	return (node as NonTerminal).children.some(hasContextItemDecl);
+}
+
+function walk(node: Node, hasContextItem: boolean, out: ContextItemDiagnostic[], globalFocus: boolean): void {
 	if (isTerminal(node)) return;
 	const nt = node as NonTerminal;
 
@@ -19,13 +25,15 @@ function walk(node: Node, hasContextItem: boolean, out: ContextItemDiagnostic[])
 			const fnDecl = directChildOf(node, "FunctionDecl");
 			if (fnDecl) {
 				const body = directChildOf(fnDecl, "FunctionBody");
-				if (body) walk(body, false, out);
+				if (body) walk(body, false, out, globalFocus);
 				return;
 			}
 			const varDecl = directChildOf(node, "VarDecl");
 			if (varDecl) {
 				const varValue = directChildOf(varDecl, "VarValue");
-				if (varValue) walk(varValue, false, out);
+				// A declared (or externally supplied) context item is the focus
+				// for global variable initializers.
+				if (varValue) walk(varValue, globalFocus, out, globalFocus);
 				return;
 			}
 			return;
@@ -34,14 +42,14 @@ function walk(node: Node, hasContextItem: boolean, out: ContextItemDiagnostic[])
 		case "InlineFunctionExpr": {
 			// Inline function body: no context item, same as declared functions.
 			const body = directChildOf(node, "FunctionBody");
-			if (body) walk(body, false, out);
+			if (body) walk(body, false, out, globalFocus);
 			return;
 		}
 
 		case "Predicate": {
 			// [Expr] — the expression evaluates with CI = the node being filtered.
 			for (const child of nt.children) {
-				if (!isTerminal(child)) walk(child, true, out);
+				if (!isTerminal(child)) walk(child, true, out, globalFocus);
 			}
 			return;
 		}
@@ -56,7 +64,7 @@ function walk(node: Node, hasContextItem: boolean, out: ContextItemDiagnostic[])
 				isTerminal(firstChild) &&
 				(firstChild.value === "/" || firstChild.value === "//");
 			for (const child of nt.children) {
-				if (!isTerminal(child)) walk(child, absolute || hasContextItem, out);
+				if (!isTerminal(child)) walk(child, absolute || hasContextItem, out, globalFocus);
 			}
 			return;
 		}
@@ -68,7 +76,7 @@ function walk(node: Node, hasContextItem: boolean, out: ContextItemDiagnostic[])
 			let stepIndex = 0;
 			for (const child of nt.children) {
 				if (isTerminal(child)) continue;
-				walk(child, stepIndex === 0 ? hasContextItem : true, out);
+				walk(child, stepIndex === 0 ? hasContextItem : true, out, globalFocus);
 				stepIndex++;
 			}
 			return;
@@ -81,7 +89,7 @@ function walk(node: Node, hasContextItem: boolean, out: ContextItemDiagnostic[])
 			let operandIndex = 0;
 			for (const child of nt.children) {
 				if (isTerminal(child)) continue;
-				walk(child, operandIndex === 0 ? hasContextItem : true, out);
+				walk(child, operandIndex === 0 ? hasContextItem : true, out, globalFocus);
 				operandIndex++;
 			}
 			return;
@@ -99,7 +107,7 @@ function walk(node: Node, hasContextItem: boolean, out: ContextItemDiagnostic[])
 			}
 			// Recurse into predicates on this step (they introduce their own CI).
 			for (const child of nt.children) {
-				if (!isTerminal(child)) walk(child, true, out);
+				if (!isTerminal(child)) walk(child, true, out, globalFocus);
 			}
 			return;
 		}
@@ -118,7 +126,7 @@ function walk(node: Node, hasContextItem: boolean, out: ContextItemDiagnostic[])
 		}
 
 		default: {
-			for (const child of nt.children) walk(child, hasContextItem, out);
+			for (const child of nt.children) walk(child, hasContextItem, out, globalFocus);
 		}
 	}
 }
@@ -131,13 +139,20 @@ function walk(node: Node, hasContextItem: boolean, out: ContextItemDiagnostic[])
  * bindings.  CI is re-introduced by predicates `[…]`, path steps after `/`,
  * and the right-hand side of a simple-map `!` expression.
  *
+ * A `declare context item` (or `externalContextItem`, for hosts that supply
+ * one) provides the focus for global variable initializers.
+ *
  * The main-module query body is not checked — implementations may supply a
  * context item externally (e.g. when running a query against a document).
  */
-export function checkContextItemUsage(ast: Node): ContextItemDiagnostic[] {
+export function checkContextItemUsage(
+	ast: Node,
+	options: { externalContextItem?: boolean } = {},
+): ContextItemDiagnostic[] {
 	const out: ContextItemDiagnostic[] = [];
+	const globalFocus = !!options.externalContextItem || hasContextItemDecl(ast);
 	// hasContextItem starts true for the module top level; it is set to false
 	// only when entering FunctionBody or VarDecl value expressions.
-	walk(ast, true, out);
+	walk(ast, true, out, globalFocus);
 	return out;
 }
