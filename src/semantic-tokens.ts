@@ -1,13 +1,13 @@
-import type { Node, NonTerminal, Terminal } from "xq-parser";
-import type { FileAnalysis, FunctionSymbol, QName } from "./types.ts";
+import type { Node, NonTerminal } from "xq-parser";
+import type { FileAnalysis, QName } from "./types.ts";
 import { isTerminal, directChildOf, directChildrenOf, firstTerminalValue, BUILTIN_PREFIXES } from "./analyzer.ts";
 import { asFunctionCall, asNamedFunctionRef, asFunctionDecl, asVarDecl } from "./ast-nodes.ts";
 import { checkUnused } from "./unused-diagnostics.ts";
 
 // ── Legend ────────────────────────────────────────────────────────────────────
 
-export const TOKEN_TYPES = ["namespace", "function", "parameter", "variable", "string", "keyword"] as const;
-export const TOKEN_MODIFIERS = ["defaultLibrary", "readonly", "unused"] as const;
+export const TOKEN_TYPES = ["namespace", "function", "parameter", "variable"] as const;
+export const TOKEN_MODIFIERS = ["defaultLibrary", "unused"] as const;
 
 export type SemanticTokenType = (typeof TOKEN_TYPES)[number];
 export type SemanticTokenModifier = (typeof TOKEN_MODIFIERS)[number];
@@ -91,10 +91,13 @@ function isDefaultLibraryPrefix(prefix: string, analysis: FileAnalysis): boolean
 	return prefix in BUILTIN_PREFIXES;
 }
 
-function isDefaultLibraryFunction(qname: QName, allFns: FunctionSymbol[]): boolean {
-	return allFns.some(
-		(f) => f.qname.namespaceUri === qname.namespaceUri && f.qname.localName === qname.localName && f.sourceUri.startsWith("builtin:"),
-	);
+const builtinKey = (q: QName) => `${q.namespaceUri}|${q.localName}`;
+
+function buildBuiltinKeys(analysis: FileAnalysis, importedAnalyses: Map<string, FileAnalysis>): Set<string> {
+	const keys = new Set<string>();
+	for (const a of [analysis, ...importedAnalyses.values()])
+		for (const f of a.functions) if (f.sourceUri.startsWith("builtin:")) keys.add(builtinKey(f.qname));
+	return keys;
 }
 
 /** Splits a raw EQName/VarName/FunctionEQName node's text into its prefix and local-name spans. */
@@ -143,12 +146,6 @@ function pushNamespaceOnly(node: Node | undefined, analysis: FileAnalysis, out: 
 	out.push({ offset: node.start, length: colon, type: "namespace", modifiers });
 }
 
-const KEYWORD_TERMINAL_RE = /^'[A-Za-z]+'$/;
-
-function isKeywordTerminal(node: Terminal): boolean {
-	return KEYWORD_TERMINAL_RE.test(node.type) && /^[A-Za-z]+$/.test(node.value);
-}
-
 function buildUnusedOffsets(ast: Node, analysis: FileAnalysis): Set<number> {
 	const offsets = new Set<number>();
 	for (const d of checkUnused(ast, analysis))
@@ -158,12 +155,8 @@ function buildUnusedOffsets(ast: Node, analysis: FileAnalysis): Set<number> {
 
 // ── AST walk ──────────────────────────────────────────────────────────────────
 
-function walk(node: Node, analysis: FileAnalysis, allFns: FunctionSymbol[], unusedOffsets: Set<number>, out: RawToken[]): void {
-	if (isTerminal(node)) {
-		if (node.type === "StringLiteral") out.push({ offset: node.start, length: node.value.length, type: "string", modifiers: [] });
-		else if (isKeywordTerminal(node)) out.push({ offset: node.start, length: node.value.length, type: "keyword", modifiers: [] });
-		return;
-	}
+function walk(node: Node, analysis: FileAnalysis, builtinKeys: Set<string>, unusedOffsets: Set<number>, out: RawToken[]): void {
+	if (isTerminal(node)) return;
 
 	const { children } = node as NonTerminal;
 
@@ -172,10 +165,10 @@ function walk(node: Node, analysis: FileAnalysis, allFns: FunctionSymbol[], unus
 			const call = asFunctionCall(node, analysis);
 			const eqname = directChildOf(node, "FunctionEQName");
 			if (call && eqname) {
-				const mods: SemanticTokenModifier[] = isDefaultLibraryFunction(call.qname, allFns) ? ["defaultLibrary"] : [];
+				const mods: SemanticTokenModifier[] = builtinKeys.has(builtinKey(call.qname)) ? ["defaultLibrary"] : [];
 				pushNameTokens(eqname, "function", analysis, mods, out);
 			}
-			for (const c of children) walk(c, analysis, allFns, unusedOffsets, out);
+			for (const c of children) walk(c, analysis, builtinKeys, unusedOffsets, out);
 			return;
 		}
 
@@ -183,7 +176,7 @@ function walk(node: Node, analysis: FileAnalysis, allFns: FunctionSymbol[], unus
 			const ref = asNamedFunctionRef(node, analysis);
 			const eqname = directChildOf(node, "EQName");
 			if (ref && eqname) {
-				const mods: SemanticTokenModifier[] = isDefaultLibraryFunction(ref.qname, allFns) ? ["defaultLibrary"] : [];
+				const mods: SemanticTokenModifier[] = builtinKeys.has(builtinKey(ref.qname)) ? ["defaultLibrary"] : [];
 				pushNameTokens(eqname, "function", analysis, mods, out);
 			}
 			return;
@@ -191,7 +184,7 @@ function walk(node: Node, analysis: FileAnalysis, allFns: FunctionSymbol[], unus
 
 		case "VarRef": {
 			const varNameNode = directChildOf(node, "VarName");
-			if (varNameNode) pushNameTokens(varNameNode, "variable", analysis, ["readonly"], out);
+			if (varNameNode) pushNameTokens(varNameNode, "variable", analysis, [], out);
 			return;
 		}
 
@@ -205,9 +198,9 @@ function walk(node: Node, analysis: FileAnalysis, allFns: FunctionSymbol[], unus
 					const paramList = directChildOf(fnDeclNode, "ParamList");
 					for (const p of paramList ? directChildrenOf(paramList, "Param") : []) {
 						const peq = directChildOf(p, "EQName");
-						if (peq) pushNameTokens(peq, "parameter", analysis, ["readonly"], out);
+						if (peq) pushNameTokens(peq, "parameter", analysis, [], out);
 					}
-					if (fn.body) walk(fn.body, analysis, allFns, unusedOffsets, out);
+					if (fn.body) walk(fn.body, analysis, builtinKeys, unusedOffsets, out);
 				}
 				return;
 			}
@@ -215,22 +208,21 @@ function walk(node: Node, analysis: FileAnalysis, allFns: FunctionSymbol[], unus
 			if (varDeclNode) {
 				const v = asVarDecl(varDeclNode, analysis);
 				if (v) {
-					const mods: SemanticTokenModifier[] = ["readonly"];
-					if (unusedOffsets.has(v.nameNode.start)) mods.push("unused");
+					const mods: SemanticTokenModifier[] = unusedOffsets.has(v.nameNode.start) ? ["unused"] : [];
 					pushNameTokens(v.nameNode, "variable", analysis, mods, out);
 				}
-				for (const c of (varDeclNode as NonTerminal).children) walk(c, analysis, allFns, unusedOffsets, out);
+				for (const c of (varDeclNode as NonTerminal).children) walk(c, analysis, builtinKeys, unusedOffsets, out);
 				return;
 			}
-			for (const c of children) walk(c, analysis, allFns, unusedOffsets, out);
+			for (const c of children) walk(c, analysis, builtinKeys, unusedOffsets, out);
 			return;
 		}
 
 		case "LetBinding":
 		case "ForBinding": {
 			const varNameNode = directChildOf(node, "VarName");
-			if (varNameNode) pushNameTokens(varNameNode, "variable", analysis, ["readonly"], out);
-			for (const c of children) if (c !== varNameNode) walk(c, analysis, allFns, unusedOffsets, out);
+			if (varNameNode) pushNameTokens(varNameNode, "variable", analysis, [], out);
+			for (const c of children) if (c !== varNameNode) walk(c, analysis, builtinKeys, unusedOffsets, out);
 			return;
 		}
 
@@ -238,26 +230,26 @@ function walk(node: Node, analysis: FileAnalysis, allFns: FunctionSymbol[], unus
 			const paramList = directChildOf(node, "ParamList");
 			for (const p of paramList ? directChildrenOf(paramList, "Param") : []) {
 				const peq = directChildOf(p, "EQName");
-				if (peq) pushNameTokens(peq, "parameter", analysis, ["readonly"], out);
+				if (peq) pushNameTokens(peq, "parameter", analysis, [], out);
 			}
 			const body = directChildOf(node, "FunctionBody");
-			if (body) walk(body, analysis, allFns, unusedOffsets, out);
+			if (body) walk(body, analysis, builtinKeys, unusedOffsets, out);
 			return;
 		}
 
 		case "DirElemConstructor":
 			pushNamespaceOnly(directChildOf(node, "QName"), analysis, out);
-			for (const c of children) walk(c, analysis, allFns, unusedOffsets, out);
+			for (const c of children) walk(c, analysis, builtinKeys, unusedOffsets, out);
 			return;
 
 		case "CompElemConstructor":
 		case "CompAttrConstructor":
 			pushNamespaceOnly(directChildOf(node, "EQName"), analysis, out);
-			for (const c of children) walk(c, analysis, allFns, unusedOffsets, out);
+			for (const c of children) walk(c, analysis, builtinKeys, unusedOffsets, out);
 			return;
 
 		default:
-			for (const c of children) walk(c, analysis, allFns, unusedOffsets, out);
+			for (const c of children) walk(c, analysis, builtinKeys, unusedOffsets, out);
 	}
 }
 
@@ -276,10 +268,10 @@ export function getSemanticTokensData(
 ): number[] {
 	if (!ast) return [];
 
-	const allFns = [analysis, ...importedAnalyses.values()].flatMap((a) => a.functions);
+	const builtinKeys = buildBuiltinKeys(analysis, importedAnalyses);
 	const unusedOffsets = buildUnusedOffsets(ast, analysis);
 	const rawTokens: RawToken[] = [];
-	walk(ast, analysis, allFns, unusedOffsets, rawTokens);
+	walk(ast, analysis, builtinKeys, unusedOffsets, rawTokens);
 
 	const lineStarts = computeLineStarts(text);
 	const encoded: EncodedToken[] = rawTokens.map((t) => {
