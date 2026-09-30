@@ -147,6 +147,20 @@ export function asFunctionDecl(node: Node, analysis: FileAnalysis): FunctionDecl
 
 // ── Prolog declarations ───────────────────────────────────────────────────────
 
+/** The version string of `xquery version "x"` (quotes stripped) and its literal node; null when only an encoding is given. */
+export function asVersionDecl(node: Node): { version: string; versionNode: Node } | null {
+	if (node.type !== "VersionDecl" || !directChildOf(node, "'version'")) return null;
+	const versionNode = directChildOf(node, "StringLiteral");
+	const raw = versionNode ? firstTerminalValue(versionNode) : null;
+	if (!versionNode || !raw) return null;
+	// String literals may contain character references, e.g. '1&#x2e;0'
+	const version = raw
+		.slice(1, -1)
+		.replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+		.replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)));
+	return { version, versionNode };
+}
+
 /** Prefix bound by a `declare namespace p = "uri"` NamespaceDecl. */
 export function asNamespaceDecl(node: Node): { prefix: string } | null {
 	if (node.type !== "NamespaceDecl") return null;
