@@ -55,6 +55,7 @@ const SKIP_FEATURES = new Set([
 	"externalFunctions",
 	"serialization",
 	"namespace-axis", // xq-parser doesn't parse the deprecated `namespace::` axis
+	"fullText",
 ]);
 
 // ── DOM helpers ───────────────────────────────────────────────────────────────
