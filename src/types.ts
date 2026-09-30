@@ -35,6 +35,7 @@ export interface FunctionSymbol {
 	doc?: DocComment;
 	sourceUri: string;
 	sourceOffset?: number; // char offset of the declare keyword
+	visibility?: "public" | "private"; // from a %public/%private annotation; undeclared defaults to public
 }
 
 export interface VariableSymbol {

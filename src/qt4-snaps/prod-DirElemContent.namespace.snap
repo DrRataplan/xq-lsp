@@ -72,19 +72,7 @@
     "got": []
   },
   {
-    "testCase": "K2-DirectConElemNamespace-7",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
     "testCase": "K2-DirectConElemNamespace-8",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
-    "testCase": "K2-DirectConElemNamespace-9",
     "outcome": "false-negative",
     "expectedCode": "XPST0017",
     "got": []

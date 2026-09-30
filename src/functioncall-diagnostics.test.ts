@@ -167,3 +167,104 @@ describe("functioncall-diagnostics: no error", () => {
 		});
 	}
 });
+
+// ── closed-world namespaces: local:, in-file namespace decls, default function
+// namespace, and Q{} literals are all namespaces this file has (or could have)
+// complete knowledge of, so an unmatched call there is XPST0017 rather than
+// silently skipped — see issue #93. ────────────────────────────────────────────
+
+describe("functioncall-diagnostics: closed-world namespaces report XPST0017", () => {
+	test("undeclared local: function, even with no local: functions declared at all", () => {
+		const ds = fnCallDiags(`local:doesNotExist(1, 2, 3)`);
+		const d = ds.find((d) => d.code === "XPST0017");
+		assert.ok(d, `expected XPST0017, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("not declared"), `got: ${d!.message}`);
+	});
+
+	test("a namespace declared via 'declare namespace' but never imported has zero visible functions", () => {
+		const ds = fnCallDiags(`declare namespace my = "http://example.com/ANamespace"; my:function(1)`);
+		assert.ok(ds.some((d) => d.code === "XPST0017"), `expected XPST0017, got ${JSON.stringify(ds)}`);
+	});
+
+	test("an explicit default function namespace with no matching declaration", () => {
+		const ds = fnCallDiags(`declare default function namespace "http://example.com/"; boolean(1)`);
+		assert.ok(ds.some((d) => d.code === "XPST0017"), `expected XPST0017, got ${JSON.stringify(ds)}`);
+	});
+
+	test("a Q{} call into a namespace this file never imports", () => {
+		const ds = fnCallDiags(
+			`import module namespace b = 'http://example.com/m34/b'; Q{http://example.com/m34/c}c()`,
+			new Map([
+				["builtin:fn", builtins],
+				["http://example.com/m34/b", analyzeWithAst(`module namespace b="http://example.com/m34/b"; declare function b:b(){1};`, "file:///b.xq").analysis],
+				// "c" sits in the imports map (as a QT4-style catalog would provide it)
+				// but was never imported by the query above — it must stay invisible.
+				["http://example.com/m34/c", analyzeWithAst(`module namespace c="http://example.com/m34/c"; declare function c:c(){1};`, "file:///c.xq").analysis],
+			]),
+		);
+		assert.ok(ds.some((d) => d.code === "XPST0017"), `expected XPST0017, got ${JSON.stringify(ds)}`);
+	});
+
+	test("a genuinely undeclared prefix is left to findUndeclaredPrefixUsages, not flagged here", () => {
+		// myns: is never bound by any declaration — this is the same case the
+		// "unknown namespace (not our concern)" NO_ERROR case above covers.
+		const ds = fnCallDiags(`myns:whatever()`);
+		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
+	});
+});
+
+describe("functioncall-diagnostics: unresolved imports stay silent", () => {
+	test("an import present in source but absent from importedAnalyses is not flagged", () => {
+		// Simulates an "import module namespace ... at \"missing.xq\";" whose target
+		// couldn't be resolved: the namespace is a real import, but we have no
+		// analysis for it, so we can't know whether the function exists.
+		const ds = fnCallDiags(`import module namespace ext = "http://example.com/ext" at "missing.xq"; ext:doStuff(1, 2)`, withBuiltins);
+		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
+	});
+});
+
+// ── %private/%public visibility across module imports ───────────────────────────
+
+describe("functioncall-diagnostics: private function visibility", () => {
+	const LIB_URI = "http://example.com/lib";
+	function libAnalysis() {
+		return analyzeWithAst(
+			`module namespace lib = "${LIB_URI}";
+			declare %private function lib:helper() { 1 };
+			declare function lib:publicFn() { lib:helper() };`,
+			"file:///lib.xq",
+		).analysis;
+	}
+
+	test("a private function is not callable from an importing module", () => {
+		const ds = fnCallDiags(
+			`import module namespace lib = "${LIB_URI}"; lib:helper()`,
+			new Map([
+				["builtin:fn", builtins],
+				[LIB_URI, libAnalysis()],
+			]),
+		);
+		assert.ok(
+			ds.some((d) => d.code === "XPST0017" && d.message.includes("not declared")),
+			`expected XPST0017, got ${JSON.stringify(ds)}`,
+		);
+	});
+
+	test("a public function is still callable and arity-checked normally", () => {
+		const ds = fnCallDiags(
+			`import module namespace lib = "${LIB_URI}"; lib:publicFn(1)`,
+			new Map([
+				["builtin:fn", builtins],
+				[LIB_URI, libAnalysis()],
+			]),
+		);
+		const d = ds.find((d) => d.code === "XPST0017");
+		assert.ok(d, `expected XPST0017 for wrong arity, got ${JSON.stringify(ds)}`);
+		assert.ok(d!.message.includes("got 1"), `got: ${d!.message}`);
+	});
+
+	test("a private function remains callable from within its own declaring file", () => {
+		const ds = fnCallDiags(`declare %private function local:helper() { 1 }; local:helper()`);
+		assert.equal(ds.length, 0, `expected no diagnostics, got ${JSON.stringify(ds)}`);
+	});
+});
