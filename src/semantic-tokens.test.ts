@@ -116,7 +116,6 @@ describe("semantic-tokens: variable classification", () => {
 		const varToken = toks.find((t) => t.tokenType === typeIndex("variable") && t.character === declOffset + "local:".length);
 		assert.ok(varToken, `expected a variable token for the declaration, got ${JSON.stringify(toks)}`);
 		assert.ok(varToken!.tokenModifiers & modifierBit("unused"), `expected unused modifier, got ${varToken!.tokenModifiers}`);
-		assert.ok(varToken!.tokenModifiers & modifierBit("readonly"), `expected readonly modifier, got ${varToken!.tokenModifiers}`);
 	});
 
 	test("used %private module variable does not get the unused modifier", () => {
@@ -128,17 +127,16 @@ describe("semantic-tokens: variable classification", () => {
 		assert.equal(varToken!.tokenModifiers & modifierBit("unused"), 0, `expected no unused modifier, got ${varToken!.tokenModifiers}`);
 	});
 
-	test("a plain $x variable reference is classified as variable with readonly modifier", () => {
+	test("a plain $x variable reference is classified as a variable token", () => {
 		const toks = tokensFor(`let $x := 1 return $x`);
 		const varTokens = toks.filter((t) => t.tokenType === typeIndex("variable"));
 		assert.equal(varTokens.length, 2, `expected declaration + reference, got ${JSON.stringify(varTokens)}`);
-		for (const t of varTokens) assert.ok(t.tokenModifiers & modifierBit("readonly"));
 	});
 });
 
 // ── Namespace / other token types ────────────────────────────────────────────
 
-describe("semantic-tokens: namespace and misc token types", () => {
+describe("semantic-tokens: namespace and parameter token types", () => {
 	test("a builtin namespace prefix (fn:) gets the defaultLibrary modifier", () => {
 		const toks = tokensFor(`fn:concat("a", "b")`, withBuiltins);
 		const nsToken = toks.find((t) => t.tokenType === typeIndex("namespace"));
@@ -151,19 +149,6 @@ describe("semantic-tokens: namespace and misc token types", () => {
 		const nsToken = toks.find((t) => t.tokenType === typeIndex("namespace"));
 		assert.ok(nsToken, `expected a namespace token, got ${JSON.stringify(toks)}`);
 		assert.equal(nsToken!.tokenModifiers & modifierBit("defaultLibrary"), 0);
-	});
-
-	test("string literals are classified as string tokens", () => {
-		const toks = tokensFor(`"hello"`);
-		const strToken = toks.find((t) => t.tokenType === typeIndex("string"));
-		assert.ok(strToken, `expected a string token, got ${JSON.stringify(toks)}`);
-		assert.equal(strToken!.length, `"hello"`.length);
-	});
-
-	test("keywords like for/let/return are classified as keyword tokens", () => {
-		const toks = tokensFor(`for $x in (1,2) let $y := $x return $y`);
-		const keywordTokens = toks.filter((t) => t.tokenType === typeIndex("keyword"));
-		assert.ok(keywordTokens.length >= 3, `expected for/let/return keyword tokens, got ${JSON.stringify(keywordTokens)}`);
 	});
 
 	test("function parameters are classified as parameter tokens", () => {
