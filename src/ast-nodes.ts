@@ -161,6 +161,14 @@ export function asVersionDecl(node: Node): { version: string; versionNode: Node 
 	return { version, versionNode };
 }
 
+/** Resolved QName and name node of a `declare option` OptionDecl. */
+export function asOptionDecl(node: Node, analysis: FileAnalysis): { qname: QName; nameNode: Node } | null {
+	if (node.type !== "OptionDecl") return null;
+	const nameNode = directChildOf(node, "EQName");
+	const qname = nameNode ? qnameFromRawTerminal(nameNode, analysis) : null;
+	return nameNode && qname ? { qname, nameNode } : null;
+}
+
 /** Prefix bound by a `declare namespace p = "uri"` NamespaceDecl. */
 export function asNamespaceDecl(node: Node): { prefix: string } | null {
 	if (node.type !== "NamespaceDecl") return null;

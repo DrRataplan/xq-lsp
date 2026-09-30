@@ -9,8 +9,14 @@ function codes(src: string): string[] {
 	return checkDuplicatePrologDecls(ast, analysis).map((d) => d.code);
 }
 
+const NS = 'declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";';
+
 describe("prolog-diagnostics: duplicate declarations reported", () => {
 	const cases: Array<[string, string, string]> = [
+		["XQST0108", "output option in a library module", `module namespace t = "u"; ${NS} declare option output:indent "yes";`],
+		["XQST0109", "use-character-maps in the prolog", `${NS} declare option output:use-character-maps "..."; 1`],
+		["XQST0109", "unknown output parameter", `${NS} declare option output:bogus "x"; 1`],
+		["XQST0110", "repeated output parameter", `${NS} declare option output:indent "yes"; declare option output:indent "no"; 1`],
 		["XQST0031", "unsupported version", `xquery version "2.0"; 1`],
 		["XQST0031", "malformed version", `xquery version "abc"; 1`],
 		["XQST0031", "three-part version", `xquery version "4.0.0"; 1`],
@@ -40,6 +46,8 @@ describe("prolog-diagnostics: valid prologs not flagged", () => {
 	const cases: Array<[string, string]> = [
 		["supported version with encoding", `xquery version "3.1" encoding "utf-8"; 1`],
 		["version with character reference", `xquery version "1&#x2e;0"; 1`],
+		["distinct output parameters", `${NS} declare option output:indent "yes"; declare option output:method "xml"; 1`],
+		["same local name outside the output namespace", `declare namespace o = "urn:o"; declare option o:indent "a"; declare option o:indent "b"; 1`],
 		["encoding only", `xquery encoding "utf-8"; 1`],
 		["distinct prefixes", `declare namespace p = "a"; declare namespace q = "b"; 1`],
 		["element + function default namespaces", `declare default element namespace "a"; declare default function namespace "b"; 1`],
