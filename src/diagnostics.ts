@@ -12,6 +12,7 @@ import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
 import { checkContextItemUsage } from "./context-item-diagnostics.ts";
 import { checkUndeclaredVariables } from "./variable-diagnostics.ts";
 import { checkDuplicateFunctions } from "./duplicate-function-diagnostics.ts";
+import { checkDuplicatePrologDecls } from "./prolog-diagnostics.ts";
 import { checkModuleImportTargets } from "./module-import-diagnostics.ts";
 import { checkUnused } from "./unused-diagnostics.ts";
 import { checkBracedUriWhitespace } from "./braced-uri-diagnostics.ts";
@@ -35,6 +36,7 @@ export function runDiagnostics(
 		...checkContextItemUsage(ast),
 		...checkUndeclaredVariables(ast, analysis, imports),
 		...checkDuplicateFunctions(ast, analysis, imports),
+		...checkDuplicatePrologDecls(ast, analysis),
 		...checkModuleImportTargets(analysis, imports),
 	];
 }

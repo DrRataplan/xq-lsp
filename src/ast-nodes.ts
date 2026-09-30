@@ -145,6 +145,41 @@ export function asFunctionDecl(node: Node, analysis: FileAnalysis): FunctionDecl
 	return { nameNode, qname: { prefix, localName, namespaceUri }, params, body: directChildOf(node, "FunctionBody") ?? null };
 }
 
+// ── Prolog declarations ───────────────────────────────────────────────────────
+
+/** Prefix bound by a `declare namespace p = "uri"` NamespaceDecl. */
+export function asNamespaceDecl(node: Node): { prefix: string } | null {
+	if (node.type !== "NamespaceDecl") return null;
+	const prefixNode = directChildOf(node, "NCName");
+	const prefix = prefixNode ? firstTerminalValue(prefixNode) : null;
+	return prefix === null ? null : { prefix };
+}
+
+/** Which default namespace a `declare default element|function namespace` DefaultNamespaceDecl sets. */
+export function asDefaultNamespaceDecl(node: Node): { kind: "element" | "function" } | null {
+	if (node.type !== "DefaultNamespaceDecl") return null;
+	if (directChildOf(node, "'element'")) return { kind: "element" };
+	if (directChildOf(node, "'function'")) return { kind: "function" };
+	return null;
+}
+
+export interface DecimalFormatDeclShape {
+	/** Expanded name of the format; "" for the default decimal format. */
+	key: string;
+	properties: Array<{ nameNode: Node; name: string }>;
+}
+
+export function asDecimalFormatDecl(node: Node, analysis: FileAnalysis): DecimalFormatDeclShape | null {
+	if (node.type !== "DecimalFormatDecl") return null;
+	const eqname = directChildOf(node, "EQName");
+	const qname = eqname ? qnameFromRawTerminal(eqname, analysis) : null;
+	const properties = directChildrenOf(node, "DFPropertyName").flatMap((nameNode) => {
+		const name = firstTerminalValue(nameNode);
+		return name ? [{ nameNode, name }] : [];
+	});
+	return { key: qname ? `${qname.namespaceUri}#${qname.localName}` : "", properties };
+}
+
 // ── InlineFunctionExpr ────────────────────────────────────────────────────────
 
 export interface InlineFunctionExprShape {

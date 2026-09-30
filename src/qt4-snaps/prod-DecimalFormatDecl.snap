@@ -1,23 +1,5 @@
 [
   {
-    "testCase": "decimal-format-31",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0111",
-    "got": []
-  },
-  {
-    "testCase": "decimal-format-32",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0111",
-    "got": []
-  },
-  {
-    "testCase": "decimal-format-34",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0114",
-    "got": []
-  },
-  {
     "testCase": "decimal-format-35",
     "outcome": "false-negative",
     "expectedCode": "XQST0097",
@@ -39,24 +21,6 @@
     "testCase": "decimal-format-901err",
     "outcome": "false-negative",
     "expectedCode": "XQST0098",
-    "got": []
-  },
-  {
-    "testCase": "decimal-format-903err",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0111",
-    "got": []
-  },
-  {
-    "testCase": "decimal-format-904err",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0111",
-    "got": []
-  },
-  {
-    "testCase": "decimal-format-907err",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0114",
     "got": []
   },
   {
