@@ -11,6 +11,9 @@ function codes(src: string): string[] {
 
 describe("prolog-diagnostics: duplicate declarations reported", () => {
 	const cases: Array<[string, string, string]> = [
+		["XQST0031", "unsupported version", `xquery version "2.0"; 1`],
+		["XQST0031", "malformed version", `xquery version "abc"; 1`],
+		["XQST0031", "three-part version", `xquery version "4.0.0"; 1`],
 		["XQST0032", "base-uri", `declare base-uri "a"; declare base-uri "b"; 1`],
 		["XQST0033", "namespace prefix", `declare namespace p = "a"; declare namespace p = "b"; 1`],
 		["XQST0038", "default collation", `declare default collation "a"; declare default collation "b"; 1`],
@@ -35,6 +38,9 @@ describe("prolog-diagnostics: duplicate declarations reported", () => {
 
 describe("prolog-diagnostics: valid prologs not flagged", () => {
 	const cases: Array<[string, string]> = [
+		["supported version with encoding", `xquery version "3.1" encoding "utf-8"; 1`],
+		["version with character reference", `xquery version "1&#x2e;0"; 1`],
+		["encoding only", `xquery encoding "utf-8"; 1`],
 		["distinct prefixes", `declare namespace p = "a"; declare namespace q = "b"; 1`],
 		["element + function default namespaces", `declare default element namespace "a"; declare default function namespace "b"; 1`],
 		["different setters", `declare base-uri "a"; declare ordering ordered; declare boundary-space strip; 1`],

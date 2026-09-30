@@ -1,26 +1,8 @@
 [
   {
-    "testCase": "version_declaration-007",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0031",
-    "got": []
-  },
-  {
-    "testCase": "version_declaration-008",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0031",
-    "got": []
-  },
-  {
     "testCase": "version_declaration-010-v3",
     "outcome": "false-negative",
     "expectedCode": "XQST0087",
-    "got": []
-  },
-  {
-    "testCase": "version_declaration-014",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0031",
     "got": []
   },
   {

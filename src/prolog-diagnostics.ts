@@ -3,6 +3,7 @@ import type { TypeDiagnostic, FileAnalysis } from "./types.ts";
 import { qnameKey } from "./types.ts";
 import { findAll } from "./analyzer.ts";
 import {
+	asVersionDecl,
 	asNamespaceDecl,
 	asDefaultNamespaceDecl,
 	asDecimalFormatDecl,
@@ -36,14 +37,22 @@ const SINGLE_USE_DECLS: Array<{ type: string; code: string; what: string }> = [
 	{ type: "EmptyOrderDecl", code: "XQST0069", what: "default empty order" },
 ];
 
+const SUPPORTED_XQUERY_VERSIONS = new Set(["1.0", "3.0", "3.1", "4.0"]);
+
 /**
- * Report prolog components that the spec allows only once: setters such as
+ * Report an unsupported `xquery version` (XQST0031) and prolog components that the spec allows only once: setters such as
  * `declare base-uri`, namespace prefixes, default element/function namespaces,
  * decimal formats, and duplicate function parameter names.
  * Only the second and later occurrences are flagged.
  */
 export function checkDuplicatePrologDecls(ast: Node, analysis: FileAnalysis): TypeDiagnostic[] {
 	const out: TypeDiagnostic[] = [];
+
+	for (const node of findAll(ast, "VersionDecl")) {
+		const decl = asVersionDecl(node);
+		if (decl && !SUPPORTED_XQUERY_VERSIONS.has(decl.version))
+			out.push(diagnostic(decl.versionNode, "XQST0031", `XQuery version '${decl.version}' is not supported`));
+	}
 
 	for (const { type, code, what } of SINGLE_USE_DECLS)
 		for (const node of repeats(findAll(ast, type), () => type))
