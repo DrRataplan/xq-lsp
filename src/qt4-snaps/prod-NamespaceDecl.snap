@@ -1,11 +1,5 @@
 [
   {
-    "testCase": "namespaceDecl-1",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0033",
-    "got": []
-  },
-  {
     "testCase": "namespaceDecl-3",
     "outcome": "false-negative",
     "expectedCode": "XQST0070",
@@ -21,24 +15,6 @@
     "testCase": "namespaceDecl-5",
     "outcome": "false-negative",
     "expectedCode": "XQST0070",
-    "got": []
-  },
-  {
-    "testCase": "K2-NamespaceProlog-1",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0033",
-    "got": []
-  },
-  {
-    "testCase": "K2-NamespaceProlog-2",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0033",
-    "got": []
-  },
-  {
-    "testCase": "K2-NamespaceProlog-3",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0033",
     "got": []
   },
   {

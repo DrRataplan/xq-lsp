@@ -4,11 +4,5 @@
     "outcome": "false-negative",
     "expectedCode": "XQST0070",
     "got": []
-  },
-  {
-    "testCase": "eqname-913",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0039",
-    "got": []
   }
 ]

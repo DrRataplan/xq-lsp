@@ -1,17 +1,5 @@
 [
   {
-    "testCase": "defaultnamespacedeclerr-1",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0066",
-    "got": []
-  },
-  {
-    "testCase": "defaultnamespacedeclerr-2",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0066",
-    "got": []
-  },
-  {
     "testCase": "defaultnamespacedeclerr-3",
     "outcome": "false-negative",
     "expectedCode": "XQST0070",

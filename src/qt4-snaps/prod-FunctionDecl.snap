@@ -6,12 +6,6 @@
     "got": []
   },
   {
-    "testCase": "function-declaration-024",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0039",
-    "got": []
-  },
-  {
     "testCase": "function-declaration-025",
     "outcome": "false-negative",
     "expectedCode": "XQST0060",

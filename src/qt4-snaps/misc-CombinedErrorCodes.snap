@@ -54,33 +54,9 @@
     "got": []
   },
   {
-    "testCase": "XQST0032",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0032",
-    "got": []
-  },
-  {
-    "testCase": "XQST0033",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0033",
-    "got": []
-  },
-  {
-    "testCase": "XQST0038_1",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0038",
-    "got": []
-  },
-  {
     "testCase": "XQST0038_3",
     "outcome": "false-negative",
     "expectedCode": "XQST0038",
-    "got": []
-  },
-  {
-    "testCase": "XQST0039",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0039",
     "got": []
   },
   {
@@ -189,42 +165,6 @@
     "testCase": "XQST0060",
     "outcome": "false-negative",
     "expectedCode": "XQST0060",
-    "got": []
-  },
-  {
-    "testCase": "XQST0065",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0065",
-    "got": []
-  },
-  {
-    "testCase": "XQST0066_1",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0066",
-    "got": []
-  },
-  {
-    "testCase": "XQST0066_3",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0066",
-    "got": []
-  },
-  {
-    "testCase": "XQST0067",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0067",
-    "got": []
-  },
-  {
-    "testCase": "XQST0068",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0068",
-    "got": []
-  },
-  {
-    "testCase": "XQST0069",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0069",
     "got": []
   },
   {
