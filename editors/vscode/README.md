@@ -99,3 +99,9 @@ Prettier options (print width, tab width, etc.) are read from your project's [Pr
 ## Requirements
 
 Node.js must be installed and available on your `PATH`.
+
+## Pre-release versions
+
+Every change to the language server or extension on `main` is published as a pre-release. To try it, open the extension in VS Code and click **Switch to Pre-Release Version**; click **Switch to Release Version** to go back. Pre-releases use the next minor version with the CI run number as patch (e.g. `0.9.57`), so they always sort above the current stable release.
+
+To test a specific build without the Marketplace, download the `.vsix` from the "VS Code pre-release" workflow run and install it with `code --install-extension <file>.vsix`.
