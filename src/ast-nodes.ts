@@ -489,7 +489,11 @@ export function argExpr(node: Node): Node | null {
 export interface ArithmeticExprShape {
 	/** Operand expressions in source order (always at least two). */
 	operands: Node[];
-	/** Operators in source order; `operators[i]` sits between `operands[i]` and `operands[i + 1]`. */
+	/**
+	 * Operators in source order; `operators[i]` sits between `operands[i]` and `operands[i + 1]`.
+	 * Invariant: `operators.length === operands.length - 1`, so `operands[i + 1]` is always
+	 * defined for every index into `operators`.
+	 */
 	operators: string[];
 }
 
@@ -504,5 +508,6 @@ export function asArithmeticExpr(node: Node): ArithmeticExprShape | null {
 		if (isTerminal(c)) operators.push(c.value);
 		else operands.push(c);
 	}
+	// Enforces the invariant documented on ArithmeticExprShape; a malformed chain is not arithmetic.
 	return operands.length > 1 && operators.length === operands.length - 1 ? { operands, operators } : null;
 }
