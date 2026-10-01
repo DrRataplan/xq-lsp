@@ -1576,6 +1576,32 @@ function typeCheckCall(
 	}
 }
 
+// Flags `a op b` chains where an operand is statically a string or boolean: neither is ever a
+// valid operand of an arithmetic operator (XPTY0004). Deliberately conservative: operands of
+// unknown or imprecise type, and empty operands, are not reported.
+function typeCheckArithmetic(
+	node: Node,
+	varTypes: Map<string, XQueryType>,
+	analysis: FileAnalysis,
+	allFns: FunctionSymbol[],
+	errors: TypeDiagnostic[],
+): void {
+	if (isTerminal(node)) return;
+	const operands = node.children.filter((c) => !isTerminal(c));
+	if (operands.length < 2) return; // every expression passes through here; only a real operator counts
+	for (const operand of operands) {
+		const t = atomize(inferExprType(operand, varTypes, analysis, allFns));
+		if (t.kind !== "atomic" || !t.name) continue;
+		if (!isAtomicSubtype(t.name, "xs:string") && !isAtomicSubtype(t.name, "xs:boolean")) continue;
+		errors.push({
+			message: `Arithmetic operand of type ${formatType(t)} is not numeric, date/time or duration [XPTY0004]`,
+			code: "XPTY0004",
+			offset: operand.start,
+			length: (operand.end ?? operand.start + 1) - operand.start,
+		});
+	}
+}
+
 // ── Main entry point ─────────────────────────────────────────────────────────
 
 export function checkTypes(
@@ -1595,6 +1621,9 @@ export function checkTypes(
 		{
 			onNode: (node, scope) => {
 				if (node.type === "FunctionCall") typeCheckCall(node, scope, analysis, allFns, errors);
+				else if (node.type === "AdditiveExpr" || node.type === "MultiplicativeExpr") {
+					typeCheckArithmetic(node, scope, analysis, allFns, errors);
+				}
 			},
 		},
 		outerScope,

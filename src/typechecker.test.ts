@@ -558,6 +558,26 @@ describe("checkTypes", () => {
 	});
 });
 
+describe("checkTypes arithmetic", () => {
+	const run = (src: string) => {
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		return checkTypes(ast, src, analyze(src, "file:///test.xq"), new Map());
+	};
+
+	test("flags a string operand bound via let", () => {
+		const errors = run(`for $x in (1, 2, 3)\nlet $y := "aaa"\nreturn $x * $y`);
+		assert.equal(errors.length, 1, JSON.stringify(errors));
+		assert.equal(errors[0].code, "XPTY0004");
+	});
+
+	test("does not flag numeric, unknown or non-arithmetic expressions", () => {
+		assert.equal(run(`1 + 2.5`).length, 0);
+		assert.equal(run(`let $s := "a" return $s`).length, 0);
+		assert.equal(run(`declare variable $v external; $v * 2`).length, 0);
+	});
+});
+
 // ── formatType ────────────────────────────────────────────────────────────────
 
 describe("formatType", () => {
