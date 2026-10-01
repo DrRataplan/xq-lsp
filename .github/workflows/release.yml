@@ -50,6 +50,29 @@ jobs:
             - run: npm ci
             - run: npm publish --provenance --access public
 
+    # Every push to main that isn't a release gets published under the `next`
+    # dist-tag (npm i xq-lsp@next). Lives in this workflow because npm trusted
+    # publishing is bound to this workflow file.
+    publish-npm-prerelease:
+        needs: release-please
+        if: needs.release-please.outputs.npm-released != 'true'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "26"
+                  registry-url: "https://registry.npmjs.org"
+            - run: npm ci
+            - name: Set pre-release version (next patch, below the next stable)
+              run: |
+                  VERSION=$(node -p "const [a,b,c]=require('./package.json').version.split('.'); \`\${a}.\${b}.\${+c+1}-next.${{ github.run_number }}\`")
+                  npm version "$VERSION" --no-git-tag-version
+            - run: npm publish --provenance --access public --tag next
+
     bump-vscode-xqlsp:
         needs: [release-please, publish-npm]
         if: needs.publish-npm.result == 'success' && needs.release-please.outputs.vscode-released != 'true'
