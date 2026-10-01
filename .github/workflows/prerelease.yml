@@ -1,0 +1,76 @@
+name: VS Code pre-release
+
+# Publishes the VS Code extension (bundling the xq-lsp built from this commit)
+# to the Marketplace and Open VSX as a *pre-release*. Stable users are not
+# affected; testers opt in via "Switch to Pre-Release Version" on the extension page.
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - "src/**"
+            - "builtins/**"
+            - "editors/vscode/**"
+            - "package.json"
+            - ".github/workflows/prerelease.yml"
+    workflow_dispatch:
+
+concurrency:
+    group: vscode-prerelease
+    cancel-in-progress: true
+
+jobs:
+    prerelease:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "26"
+                  cache: npm
+            - run: npm ci
+            - run: npm run build
+            - run: npm pack
+            - name: Install extension deps with the freshly packed xq-lsp tarball
+              working-directory: editors/vscode
+              run: npm install ../../xq-lsp-*.tgz
+
+            # The Marketplace only accepts plain major.minor.patch versions and
+            # a given version can be published once. Pre-releases use the *next*
+            # minor of the stable version, with the run number as patch, so they
+            # always sort above the current stable and never collide with it.
+            - name: Compute pre-release version
+              id: version
+              working-directory: editors/vscode
+              run: |
+                  STABLE=$(node -p "require('./package.json').version")
+                  MAJOR=${STABLE%%.*}
+                  MINOR=$(echo "$STABLE" | cut -d. -f2)
+                  echo "value=${MAJOR}.$((MINOR + 1)).${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+
+            - name: Package pre-release
+              working-directory: editors/vscode
+              run: >
+                  node build.mjs && npx vsce package "${{ steps.version.outputs.value }}"
+                  --pre-release --no-dependencies
+                  --no-git-tag-version --no-update-package-json
+
+            - name: Upload .vsix for manual install
+              uses: actions/upload-artifact@v4
+              with:
+                  name: xquery-lsp-vscode-${{ steps.version.outputs.value }}
+                  path: editors/vscode/*.vsix
+
+            - name: Publish to VS Code Marketplace
+              working-directory: editors/vscode
+              run: npx vsce publish --pre-release --packagePath *.vsix
+              env:
+                  VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+            - name: Publish to Open VSX Registry
+              working-directory: editors/vscode
+              run: npx ovsx publish --pre-release *.vsix -p $OVSX_PAT
+              env:
+                  OVSX_PAT: ${{ secrets.OVSX_PAT }}
