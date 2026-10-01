@@ -483,3 +483,26 @@ export function argExpr(node: Node): Node | null {
 	if (node.type !== "Argument") return null;
 	return directChildOf(node, "ExprSingle") ?? null;
 }
+
+// ── Arithmetic expressions ────────────────────────────────────────────────────
+
+export interface ArithmeticExprShape {
+	/** Operand expressions in source order (always at least two). */
+	operands: Node[];
+	/** Operators in source order; `operators[i]` sits between `operands[i]` and `operands[i + 1]`. */
+	operators: string[];
+}
+
+// The grammar produces a flat, left-associative chain `operand (op operand)*`. Every expression
+// passes through these node types, so a chain with a single operand is not arithmetic → null.
+export function asArithmeticExpr(node: Node): ArithmeticExprShape | null {
+	if (node.type !== "AdditiveExpr" && node.type !== "MultiplicativeExpr") return null;
+	if (isTerminal(node)) return null;
+	const operands: Node[] = [];
+	const operators: string[] = [];
+	for (const c of (node as import("xq-parser").NonTerminal).children) {
+		if (isTerminal(c)) operators.push(c.value);
+		else operands.push(c);
+	}
+	return operands.length > 1 && operators.length === operands.length - 1 ? { operands, operators } : null;
+}
