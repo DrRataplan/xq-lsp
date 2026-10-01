@@ -1,7 +1,8 @@
 import type { Node, NonTerminal } from "xq-parser";
 import type { FileAnalysis } from "./types.ts";
 import { qnameKey, formatQName } from "./types.ts";
-import { XMLNS_FN, XMLNS_XS, isTerminal, directChildOf, directChildrenOf, findAll, firstTerminalValue, parseEQName, resolvePrefix } from "./analyzer.ts";
+import { findDynamicPrefixUses } from "./namespace-diagnostics.ts";
+import { isTerminal, directChildOf, directChildrenOf, findAll, firstTerminalValue, parseEQName, resolvePrefix } from "./analyzer.ts";
 import {
 	asFunctionCall,
 	asNamedFunctionRef,
@@ -222,59 +223,8 @@ function collectUsedPrefixes(ast: Node, analysis: FileAnalysis): Set<string> {
 	return used;
 }
 
-/** Unwraps single-child grammar wrappers down to a StringLiteral terminal's text (unquoted). */
-function stringLiteralValue(node: Node): string | null {
-	let cur: Node = node;
-	while (!isTerminal(cur)) {
-		const children = (cur as NonTerminal).children;
-		if (children.length !== 1) return null;
-		cur = children[0];
-	}
-	if (cur.type !== "StringLiteral") return null;
-	const v = (cur as { value: string }).value;
-	return v.slice(1, -1);
-}
-
-function addPrefixOf(lexicalQName: string, used: Set<string>): void {
-	const colonIdx = lexicalQName.trim().indexOf(":");
-	if (colonIdx > 0) used.add(lexicalQName.trim().slice(0, colonIdx));
-}
-
-/**
- * Functions and casts that resolve a prefix against the static in-scope
- * namespaces at runtime, taking the prefix from a string: `xs:QName("p:l")`,
- * `"p:l" cast as xs:QName`, `fn:namespace-uri-for-prefix("p", ...)`. The prefix
- * never appears as a QName token, so it must be read from the string literal.
- * Only literal arguments are detected; computed strings are unknowable.
- */
 function collectDynamicPrefixUses(ast: Node, analysis: FileAnalysis, used: Set<string>): void {
-	for (const call of findAll(ast, "FunctionCall")) {
-		const fc = asFunctionCall(call, analysis);
-		if (!fc || !fc.args[0]) continue;
-		const lit = stringLiteralValue(fc.args[0]);
-		if (lit === null) continue;
-		const { namespaceUri, localName } = fc.qname;
-		if (namespaceUri === XMLNS_XS && (localName === "QName" || localName === "NOTATION")) {
-			addPrefixOf(lit, used);
-		} else if (namespaceUri === XMLNS_FN && localName === "namespace-uri-for-prefix" && lit.length > 0) {
-			used.add(lit);
-		}
-	}
-
-	for (const type of ["CastExpr", "CastableExpr"]) {
-		for (const node of findAll(ast, type)) {
-			const { children } = node as NonTerminal;
-			const single = directChildOf(node, "SingleType");
-			const typeNode = single && findAll(single, "QName")[0];
-			const typeName = typeNode && firstTerminalValue(typeNode);
-			if (!typeName || !children[0]) continue;
-			const { prefix, localName, uri } = parseEQName(typeName);
-			const typeUri = uri ?? resolvePrefix(prefix, analysis);
-			if (typeUri !== XMLNS_XS || (localName !== "QName" && localName !== "NOTATION")) continue;
-			const lit = stringLiteralValue(children[0]);
-			if (lit !== null) addPrefixOf(lit, used);
-		}
-	}
+	for (const use of findDynamicPrefixUses(ast, analysis)) used.add(use.prefix);
 }
 
 // ── Public entry point ────────────────────────────────────────────────────────

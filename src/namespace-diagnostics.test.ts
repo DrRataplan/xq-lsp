@@ -220,3 +220,32 @@ test("undeclared prefix still reported even when in config prefixMap (quickfix n
 	assert.ok(d, `expected XQST0081 for 'tei'`);
 	assert.equal(d!.code, "XQST0081");
 });
+
+describe("undeclared prefixes inside string literals", () => {
+	test("xs:QName('p:l') with undeclared p is reported at the prefix", () => {
+		const src = `xs:QName("p:l")`;
+		const ds = diags(src);
+		assert.equal(ds.length, 1);
+		assert.equal(ds[0].prefix, "p");
+		assert.equal(src.slice(ds[0].offset, ds[0].offset + ds[0].length), "p");
+	});
+
+	test("'p:l' cast as xs:QName is reported", () => {
+		assert.equal(diags(`"p:l" cast as xs:QName`).length, 1);
+	});
+
+	test("castable as and namespace-uri-for-prefix are not errors", () => {
+		assert.deepEqual(diags(`"p:l" castable as xs:QName`), []);
+		assert.deepEqual(diags(`namespace-uri-for-prefix("p", <a/>)`), []);
+	});
+
+	test("declared, built-in and unprefixed names are fine", () => {
+		assert.deepEqual(diags(`declare namespace p = "urn:p"; xs:QName("p:l")`), []);
+		assert.deepEqual(diags(`xs:QName("xs:string")`), []);
+		assert.deepEqual(diags(`xs:QName("local")`), []);
+	});
+
+	test("enclosing direct constructor xmlns declaration binds the prefix", () => {
+		assert.deepEqual(diags(`<a xmlns:p="urn:p">{ xs:QName("p:l") }</a>`), []);
+	});
+});
