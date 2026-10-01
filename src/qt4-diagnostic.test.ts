@@ -48,7 +48,6 @@ const XQ31_COMPAT = new Set(["XQ10+", "XQ30+", "XQ31", "XQ31+"]);
 
 // Feature dependencies that require infrastructure we don't have.
 const SKIP_FEATURES = new Set([
-	"staticTyping",
 	"schemaImport",
 	"schemaValidation",
 	"schemaAware",

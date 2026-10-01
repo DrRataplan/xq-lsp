@@ -1,0 +1,92 @@
+[
+  {
+    "testCase": "ST-Axes001",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes002",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes003",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes004",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes005",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes006",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes007",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes008",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes009",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes010",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes011",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes012",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes013",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes014",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  },
+  {
+    "testCase": "ST-Axes015",
+    "outcome": "false-negative",
+    "expectedCode": "XPST0005",
+    "got": []
+  }
+]
