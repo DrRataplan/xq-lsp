@@ -13,7 +13,7 @@ import {
 	XMLNS_FN,
 	XMLNS_MAP,
 } from "./analyzer.ts";
-import { asFunctionCall, asNamedFunctionRef, asVarRef, asVarName, literalKind, isPathExpr, argExpr } from "./ast-nodes.ts";
+import { asArithmeticExpr, asFunctionCall, asNamedFunctionRef, asVarRef, asVarName, literalKind, isPathExpr, argExpr } from "./ast-nodes.ts";
 
 // ── Type constants ───────────────────────────────────────────────────────────
 
@@ -1218,23 +1218,14 @@ export function inferExprType(
 		}
 		case "AdditiveExpr":
 		case "MultiplicativeExpr": {
-			// Grammar produces a flat, left-associative chain: operand (op operand)*.
-			let result: XQueryType | undefined;
-			let pendingOp: string | undefined;
-			for (const c of nt.children) {
-				if (isTerminal(c)) {
-					pendingOp = c.value;
-					continue;
-				}
-				const t = inferExprType(c, varTypes, analysis, allFns);
-				if (result === undefined) {
-					result = t;
-				} else if (pendingOp) {
-					result = arithmeticResult(pendingOp, result, t);
-					pendingOp = undefined;
-				}
+			const arith = asArithmeticExpr(node);
+			if (!arith) break;
+			let result = inferExprType(arith.operands[0], varTypes, analysis, allFns);
+			for (let i = 0; i < arith.operators.length; i++) {
+				const t = inferExprType(arith.operands[i + 1], varTypes, analysis, allFns);
+				result = arithmeticResult(arith.operators[i], result, t);
 			}
-			return result ?? UNKNOWN;
+			return result;
 		}
 		case "IntersectExceptExpr":
 			// `a intersect b` / `a except b` select a subset of `a`.
@@ -1586,10 +1577,9 @@ function typeCheckArithmetic(
 	allFns: FunctionSymbol[],
 	errors: TypeDiagnostic[],
 ): void {
-	if (isTerminal(node)) return;
-	const operands = node.children.filter((c) => !isTerminal(c));
-	if (operands.length < 2) return; // every expression passes through here; only a real operator counts
-	for (const operand of operands) {
+	const arith = asArithmeticExpr(node);
+	if (!arith) return;
+	for (const operand of arith.operands) {
 		const t = atomize(inferExprType(operand, varTypes, analysis, allFns));
 		if (t.kind !== "atomic" || !t.name) continue;
 		if (!isAtomicSubtype(t.name, "xs:string") && !isAtomicSubtype(t.name, "xs:boolean")) continue;
@@ -1621,9 +1611,7 @@ export function checkTypes(
 		{
 			onNode: (node, scope) => {
 				if (node.type === "FunctionCall") typeCheckCall(node, scope, analysis, allFns, errors);
-				else if (node.type === "AdditiveExpr" || node.type === "MultiplicativeExpr") {
-					typeCheckArithmetic(node, scope, analysis, allFns, errors);
-				}
+				else typeCheckArithmetic(node, scope, analysis, allFns, errors);
 			},
 		},
 		outerScope,
