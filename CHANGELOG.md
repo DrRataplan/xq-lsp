@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.9.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.8.2...lsp-v1.9.0) (2026-10-02)
+
+
+### Features
+
+* add semantic tokens support ([2fa8278](https://github.com/DrRataplan/xq-lsp/commit/2fa827832e6ee89fcbf0480527b34a6863243d46)), closes [#120](https://github.com/DrRataplan/xq-lsp/issues/120)
+* extend type inference with operator rules, built-ins and narrowing ([5c6d9b7](https://github.com/DrRataplan/xq-lsp/commit/5c6d9b77353cbbb6800399aa5c5c21cd91c45201))
+* infer types through if/else, sequences, FLWOR and more for inlay hints ([a77ccaf](https://github.com/DrRataplan/xq-lsp/commit/a77ccaf0b634e28ebf664ae9d7a543b59f93e180))
+* report duplicate prolog declarations (XQST0032/33/38/39/65-69/111/114) ([ae4832b](https://github.com/DrRataplan/xq-lsp/commit/ae4832b94460dcca2b2e3caf3f0fbf68f7c1907d))
+* report serialization option misuse (XQST0108/0109/0110) ([549ee7b](https://github.com/DrRataplan/xq-lsp/commit/549ee7b7bcdae38584aa40b69a1e9644b5fcf0f9))
+* report unsupported xquery version (XQST0031) ([e3e099b](https://github.com/DrRataplan/xq-lsp/commit/e3e099b3994e2cbca20b46823504b2c287670b31))
+* report XPTY0004 for string/boolean arithmetic operands ([03220ca](https://github.com/DrRataplan/xq-lsp/commit/03220caff5f443fc05d08b227493f821210ac656))
+* support LSP 3.17 pull diagnostics (textDocument/diagnostic) ([87fb7d3](https://github.com/DrRataplan/xq-lsp/commit/87fb7d3d0f661ee5e149f2c95a26f6ccd7a7e3c0))
+* use the types of imported and predeclared variables ([1f64aae](https://github.com/DrRataplan/xq-lsp/commit/1f64aaeca9195d8a0998e2836425e1315750f4e4))
+
+
+### Bug Fixes
+
+* **fonto:** declare 13 missing fonto:* runtime functions ([161a0c9](https://github.com/DrRataplan/xq-lsp/commit/161a0c9994015f906787fa550f01547c7fc34788)), closes [#157](https://github.com/DrRataplan/xq-lsp/issues/157)
+* report XPST0017 for calls into closed-world namespaces ([023e373](https://github.com/DrRataplan/xq-lsp/commit/023e37306c48feaecf66c537e5f0488e9f4c057b))
+* resolve functions from sibling module files sharing a target namespace ([b8042b2](https://github.com/DrRataplan/xq-lsp/commit/b8042b2167ee5f0831bbb04f1e6e1ecaf90072aa)), closes [#158](https://github.com/DrRataplan/xq-lsp/issues/158)
+
 ## [1.8.2](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.8.1...lsp-v1.8.2) (2026-09-01)
 
 
