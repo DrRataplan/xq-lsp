@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { analyze, analyzeWithAst } from "./analyzer.ts";
 import { getBuiltins } from "./builtins.ts";
 import { parseType, isAssignable, checkTypes, formatType } from "./typechecker.ts";
+import { clearInferenceCache, inferenceCacheSize } from "./inference-cache.ts";
 import type { XQueryType } from "./types.ts";
 
 // ── parseType ────────────────────────────────────────────────────────────────
@@ -670,5 +671,34 @@ describe("inference memoization", () => {
 		const errors = check(src);
 		assert.equal(errors.length, 1);
 		assert.match(errors[0].message, /xs:string/);
+	});
+
+	test("an edited document reuses unchanged bodies and still reports fresh offsets", () => {
+		clearInferenceCache();
+		const body = `declare function local:f($x as xs:integer) { $x + "a" };`;
+		const first = check(`${body} 1`);
+		const sized = inferenceCacheSize();
+		// Prepending text shifts every offset but leaves the body (and its context) untouched.
+		const prefix = "(: edit :) ";
+		const second = check(`${prefix}${body} 1`);
+		assert.equal(first.length, 1);
+		assert.equal(second.length, 1);
+		assert.equal(second[0].offset, first[0].offset + prefix.length);
+		// Only the query body (`1`) may be new; the function body was reused.
+		assert.equal(inferenceCacheSize(), sized);
+	});
+
+	test("changing a function signature invalidates dependent bodies", () => {
+		clearInferenceCache();
+		const user = `declare function local:u() { local:g() + 1 };`;
+		assert.equal(check(`declare function local:g() as xs:string { "a" }; ${user} 1`).length, 1);
+		assert.equal(check(`declare function local:g() as xs:integer { 1 }; ${user} 1`).length, 0);
+	});
+
+	test("changing a module variable type invalidates bodies that read it", () => {
+		clearInferenceCache();
+		const use = `declare function local:u() { $v + 1 };`;
+		assert.equal(check(`declare variable $v := "a"; ${use} 1`).length, 1);
+		assert.equal(check(`declare variable $v := 1; ${use} 1`).length, 0);
 	});
 });

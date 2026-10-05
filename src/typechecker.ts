@@ -13,6 +13,7 @@ import {
 	XMLNS_FN,
 	XMLNS_MAP,
 } from "./analyzer.ts";
+import { withBodyFrame, asBodyMemoized, type BodyContext } from "./inference-cache.ts";
 import { asArithmeticExpr, asFunctionCall, asNamedFunctionRef, asVarRef, asVarName, literalKind, isPathExpr, argExpr } from "./ast-nodes.ts";
 
 // ── Type constants ───────────────────────────────────────────────────────────
@@ -1109,6 +1110,18 @@ function processTransform(
 	return inferExprType(returnExpr, scope, analysis, allFns);
 }
 
+/** Runs `fn` inside the persistent inference frame of `body`, starting from `scope`. */
+function inBody<T>(
+	body: Node,
+	scope: Map<string, XQueryType>,
+	analysis: FileAnalysis,
+	allFns: FunctionSymbol[],
+	fn: () => T,
+): T {
+	const ctx: BodyContext = { analysis, allFns, scope, formatType };
+	return withBodyFrame(body, ctx, fn);
+}
+
 // ── Expression inference ──────────────────────────────────────────────────────
 
 function nonTerminalChildren(nt: NonTerminal): Node[] {
@@ -1140,6 +1153,9 @@ export function inferExprType(
 	allFns: FunctionSymbol[],
 ): XQueryType {
 	if (isTerminal(node)) return inferNodeType(node, varTypes, analysis, allFns);
+	// Inside a body frame the memo persists across calls (edits); elsewhere it lives for this signature list.
+	const persisted = asBodyMemoized(node, () => inferNodeType(node, varTypes, analysis, allFns));
+	if (persisted) return persisted;
 	const cache = asTypeCache(allFns);
 	let type = cache.get(node);
 	if (!type) cache.set(node, (type = inferNodeType(node, varTypes, analysis, allFns)));
@@ -1450,7 +1466,7 @@ export function withInferredReturnTypes(
 			const { decl, body } = bodies.get(fn.sourceOffset!)!;
 			const scope = new Map(moduleTypes);
 			collectParamTypes(directChildOf(decl, "ParamList"), analysis, scope);
-			const t = inferExprType(body, scope, analysis, fns);
+			const t = inBody(body, scope, analysis, fns, () => inferExprType(body, scope, analysis, fns));
 			const text = formatType(t);
 			// Only keep types that round-trip through the signature parser the call sites use.
 			if (t.kind === "unknown" || parseType(text).kind === "unknown" || inferred.get(fn) === text) continue;
@@ -1512,9 +1528,12 @@ function walkModuleVariables(
 ): void {
 	for (const decl of findAll(ast, "VarDecl")) {
 		const value = directChildOf(decl, "VarValue");
-		if (value && (hooks.onNode || hooks.onBinding)) walkScoped(value, moduleTypes, analysis, allFns, hooks);
 		const declared = declaredTypeOf(decl);
-		const inferred = value ? inferExprType(value, moduleTypes, analysis, allFns) : UNKNOWN;
+		const inferValue = (): XQueryType => {
+			if (value && (hooks.onNode || hooks.onBinding)) walkScoped(value, moduleTypes, analysis, allFns, hooks);
+			return value ? inferExprType(value, moduleTypes, analysis, allFns) : UNKNOWN;
+		};
+		const inferred = value ? inBody(value, moduleTypes, analysis, allFns, inferValue) : inferValue();
 		const nameNode = directChildOf(decl, "VarName");
 		bindVarName(nameNode, analysis, declared ?? inferred, moduleTypes);
 		if (!declared && value && nameNode) hooks.onBinding?.(nameNode, inferred);
@@ -1542,12 +1561,13 @@ export function walkModuleScopes(
 		if (!decl || !body) continue; // external function — nothing to walk
 		const scope = new Map(moduleTypes);
 		collectParamTypes(directChildOf(decl, "ParamList"), analysis, scope);
-		walkScoped(body, scope, analysis, allFns, hooks);
+		inBody(body, scope, analysis, allFns, () => walkScoped(body, scope, analysis, allFns, hooks));
 	}
 
 	// Top-level query body (present in main modules, absent in library modules).
 	for (const queryBody of findAll(ast, "QueryBody")) {
-		walkScoped(queryBody, new Map(moduleTypes), analysis, allFns, hooks);
+		const scope = new Map(moduleTypes);
+		inBody(queryBody, scope, analysis, allFns, () => walkScoped(queryBody, scope, analysis, allFns, hooks));
 	}
 }
 
