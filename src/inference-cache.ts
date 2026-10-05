@@ -82,8 +82,22 @@ function scopeDigest(scope: Map<string, XQueryType>, formatType: (t: XQueryType)
 	return hash(s);
 }
 
+interface BodyShape {
+	index: WeakMap<Node, number>;
+	shape: string;
+}
+
+// A body is walked once per AST: the inference passes of one check all reuse its shape.
+const shapes = new WeakMap<Node, BodyShape>();
+
 /** Shape of a subtree, ignoring offsets and whitespace; also assigns the depth-first indexes. */
-function indexBody(root: Node): { index: WeakMap<Node, number>; shape: string } {
+function asBodyShape(root: Node): BodyShape {
+	let result = shapes.get(root);
+	if (!result) shapes.set(root, (result = indexBody(root)));
+	return result;
+}
+
+function indexBody(root: Node): BodyShape {
 	const index = new WeakMap<Node, number>();
 	let h = "";
 	let count = 0;
@@ -116,7 +130,7 @@ export interface BodyContext {
  * read from and write to the persistent memo for this exact body shape and context.
  */
 export function withBodyFrame<T>(body: Node, ctx: BodyContext, fn: () => T): T {
-	const { index, shape } = indexBody(body);
+	const { index, shape } = asBodyShape(body);
 	const key = `${shape}|${signaturesDigest(ctx.allFns)}|${namespacesDigest(ctx.analysis)}|${scopeDigest(ctx.scope, ctx.formatType)}`;
 	let memo = bodies.get(key);
 	if (memo) {
