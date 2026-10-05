@@ -649,3 +649,26 @@ describe("checkTypes: inferred binding types", () => {
 		assert.equal(check(src).length, 0);
 	});
 });
+
+describe("inference memoization", () => {
+	function check(src: string) {
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		return checkTypes(ast, src, analyze(src, "file:///test.xq"), new Map());
+	}
+
+	test("deeply nested arithmetic reports the bad operand once", () => {
+		const depth = 60;
+		const src = "1 + (".repeat(depth) + `"a"` + ")".repeat(depth);
+		const errors = check(src);
+		assert.equal(errors.length, 1);
+		assert.equal(errors[0].code, "XPTY0004");
+	});
+
+	test("the same variable name infers per body, not across bodies", () => {
+		const src = `declare function local:a($x as xs:string) { $x + 1 }; declare function local:b($x as xs:integer) { $x + 1 }; local:b(1)`;
+		const errors = check(src);
+		assert.equal(errors.length, 1);
+		assert.match(errors[0].message, /xs:string/);
+	});
+});

@@ -1115,7 +1115,38 @@ function nonTerminalChildren(nt: NonTerminal): Node[] {
 	return nt.children.filter((c) => !isTerminal(c));
 }
 
+// Inferred types per function-signature list. A node's type depends on its enclosing body (a
+// function body or a variable value — these never influence each other) and on the function
+// signatures, so within one signature list every node has exactly one type. A new list (e.g. after
+// `withInferredReturnTypes` changes a signature) starts with an empty cache. The WeakMaps let both
+// the lists and the nodes be collected once an analysis pass is done.
+const typeCaches = new WeakMap<FunctionSymbol[], WeakMap<Node, XQueryType>>();
+
+function asTypeCache(allFns: FunctionSymbol[]): WeakMap<Node, XQueryType> {
+	let cache = typeCaches.get(allFns);
+	if (!cache) typeCaches.set(allFns, (cache = new WeakMap()));
+	return cache;
+}
+
+/**
+ * Infers the static type of `node`, memoized so each node is inferred once per signature list —
+ * without it, checks that infer a node's children at every visit are quadratic in nesting depth.
+ * `varTypes` is deliberately not part of the key: see `typeCaches`.
+ */
 export function inferExprType(
+	node: Node,
+	varTypes: Map<string, XQueryType>,
+	analysis: FileAnalysis,
+	allFns: FunctionSymbol[],
+): XQueryType {
+	if (isTerminal(node)) return inferNodeType(node, varTypes, analysis, allFns);
+	const cache = asTypeCache(allFns);
+	let type = cache.get(node);
+	if (!type) cache.set(node, (type = inferNodeType(node, varTypes, analysis, allFns)));
+	return type;
+}
+
+function inferNodeType(
 	node: Node,
 	varTypes: Map<string, XQueryType>,
 	analysis: FileAnalysis,
@@ -1319,7 +1350,10 @@ export function inferExprType(
 		}
 	}
 
-	if (operands.length === 1) return inferExprType(operands[0], varTypes, analysis, allFns);
+	// A pass-through wrapper (the grammar nests ~15 of them per expression) skips the cache: it is
+	// reached through the cached top of its chain, and the extra frame per wrapper would shrink the
+	// nesting depth we can recurse to.
+	if (operands.length === 1) return inferNodeType(operands[0], varTypes, analysis, allFns);
 
 	return UNKNOWN;
 }
