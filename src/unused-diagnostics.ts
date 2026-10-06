@@ -1,6 +1,7 @@
 import type { Node, NonTerminal } from "xq-parser";
 import type { FileAnalysis } from "./types.ts";
 import { qnameKey, formatQName } from "./types.ts";
+import { findDynamicPrefixUses } from "./namespace-diagnostics.ts";
 import { isTerminal, directChildOf, directChildrenOf, findAll, firstTerminalValue, parseEQName, resolvePrefix } from "./analyzer.ts";
 import {
 	asFunctionCall,
@@ -198,7 +199,7 @@ function walk(
  * two terminal types catches every usage site without enumerating each
  * grammar production that can carry a prefix.
  */
-function collectUsedPrefixes(ast: Node): Set<string> {
+function collectUsedPrefixes(ast: Node, analysis: FileAnalysis): Set<string> {
 	const used = new Set<string>();
 
 	for (const node of findAll(ast, "QName")) {
@@ -217,7 +218,13 @@ function collectUsedPrefixes(ast: Node): Set<string> {
 		if (prefix !== "*") used.add(prefix);
 	}
 
+	collectDynamicPrefixUses(ast, analysis, used);
+
 	return used;
+}
+
+function collectDynamicPrefixUses(ast: Node, analysis: FileAnalysis, used: Set<string>): void {
+	for (const use of findDynamicPrefixUses(ast, analysis)) used.add(use.prefix);
 }
 
 // ── Public entry point ────────────────────────────────────────────────────────
@@ -278,7 +285,7 @@ export function checkUnused(ast: Node, analysis: FileAnalysis): UnusedDiagnostic
 
 	// ── Check imports and namespace declarations ─────────────────────────────
 
-	const usedPrefixes = collectUsedPrefixes(ast);
+	const usedPrefixes = collectUsedPrefixes(ast, analysis);
 
 	for (const imp of analysis.imports) {
 		if (usedPrefixes.has(imp.prefix)) continue;

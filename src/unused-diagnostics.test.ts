@@ -284,3 +284,24 @@ declare function m:f() { 1 };
 		assert.equal(ds.filter((d) => d.code === "xq-lsp:unused-namespace").length, 0, `got ${JSON.stringify(ds)}`);
 	});
 });
+
+describe("unused-diagnostics: dynamic prefix resolution", () => {
+	const nsUnused = (src: string) =>
+		unusedDiags(src).filter((d) => d.code === "xq-lsp:unused-namespace");
+
+	test("xs:QName('p:l') counts as a use of p", () => {
+		assert.deepEqual(nsUnused(`declare namespace p = "urn:p"; xs:QName("p:l")`), []);
+	});
+
+	test("'p:l' cast as xs:QName counts as a use of p", () => {
+		assert.deepEqual(nsUnused(`declare namespace p = "urn:p"; "p:l" cast as xs:QName`), []);
+	});
+
+	test("namespace-uri-for-prefix('p', .) counts as a use of p", () => {
+		assert.deepEqual(nsUnused(`declare namespace p = "urn:p"; fn:namespace-uri-for-prefix("p", <a/>)`), []);
+	});
+
+	test("unrelated string literal still flags", () => {
+		assert.equal(nsUnused(`declare namespace p = "urn:p"; concat("p:l", "x")`).length, 1);
+	});
+});

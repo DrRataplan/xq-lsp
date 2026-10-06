@@ -588,7 +588,7 @@ connection.onCodeAction((params) => {
 	const only = params.context.only as CodeActionKind[] | undefined;
 
 	for (const diag of params.context.diagnostics) {
-		if (diag.code !== "XQST0081") continue;
+		if (diag.code !== "XQST0081" && diag.code !== "FONS0004") continue;
 		const data = diag.data as { prefix: string; usageKind: NamespaceUsageKind } | undefined;
 		if (!data?.prefix) continue;
 
