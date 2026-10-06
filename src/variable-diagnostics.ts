@@ -23,9 +23,12 @@ class ScopeStack {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function isKnown(qname: QName, scope: ScopeStack, moduleVarKeys: Set<string>): boolean {
+function isKnown(qname: QName, scope: ScopeStack, moduleVarKeys: Set<string>, unresolvedImportUris: Set<string>): boolean {
 	// Variables with an undeclared-prefix URI are already caught by XQST0081; skip here.
 	if (qname.namespaceUri.startsWith("urn:xq-lsp:undeclared:")) return true;
+	// The import exists but its module was not analysed (outside the workspace,
+	// generated at install time, …): we cannot know what it declares, so stay silent.
+	if (unresolvedImportUris.has(qname.namespaceUri)) return true;
 	return scope.has(qnameKey(qname)) || moduleVarKeys.has(qnameKey(qname));
 }
 
@@ -44,11 +47,12 @@ function addBinding(
 	scope: ScopeStack,
 	analysis: FileAnalysis,
 	moduleVarKeys: Set<string>,
+	unresolvedImportUris: Set<string>,
 	out: UndeclaredVariableDiagnostic[],
 ): void {
 	const b = asBinding(bindingNode, analysis);
 	if (!b) return;
-	if (b.initExpr) walk(b.initExpr, scope, analysis, moduleVarKeys, out);
+	if (b.initExpr) walk(b.initExpr, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 	scope.add(qnameKey(b.qname));
 	if (b.positionalVar) scope.add(qnameKey(b.positionalVar.qname));
 }
@@ -60,6 +64,7 @@ function walk(
 	scope: ScopeStack,
 	analysis: FileAnalysis,
 	moduleVarKeys: Set<string>,
+	unresolvedImportUris: Set<string>,
 	out: UndeclaredVariableDiagnostic[],
 ): void {
 	if (isTerminal(node)) return;
@@ -72,7 +77,7 @@ function walk(
 			if (fn) {
 				scope.push();
 				for (const p of fn.params) scope.add(qnameKey(p.qname));
-				if (fn.body) walk(fn.body, scope, analysis, moduleVarKeys, out);
+				if (fn.body) walk(fn.body, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 				scope.pop();
 				return;
 			}
@@ -80,7 +85,7 @@ function walk(
 			const varDecl = directChildOf(node, "VarDecl");
 			if (varDecl && !isTerminal(varDecl)) {
 				for (const child of (varDecl as NonTerminal).children)
-					walk(child, scope, analysis, moduleVarKeys, out);
+					walk(child, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 			}
 			return;
 		}
@@ -99,19 +104,19 @@ function walk(
 				switch (clause.type) {
 					case "ForClause":
 						for (const b of directChildrenOf(clause, "ForBinding"))
-							addBinding(b, scope, analysis, moduleVarKeys, out);
+							addBinding(b, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 						break;
 					case "LetClause":
 						for (const b of directChildrenOf(clause, "LetBinding"))
-							addBinding(b, scope, analysis, moduleVarKeys, out);
+							addBinding(b, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 						break;
 					case "CountClause":
-						addBinding(clause, scope, analysis, moduleVarKeys, out);
+						addBinding(clause, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 						break;
 					case "GroupByClause": {
 						const specList = directChildOf(clause, "GroupingSpecList");
 						for (const spec of specList ? directChildrenOf(specList, "GroupingSpec") : [])
-							addBinding(spec, scope, analysis, moduleVarKeys, out);
+							addBinding(spec, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 						break;
 					}
 					case "WindowClause": {
@@ -121,7 +126,7 @@ function walk(
 						const b = inner ? asBinding(inner, analysis) : null;
 						if (b) {
 							// The "in" source expr is evaluated in the outer scope, before $w exists.
-							if (b.initExpr) walk(b.initExpr, scope, analysis, moduleVarKeys, out);
+							if (b.initExpr) walk(b.initExpr, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 							// Start/end condition vars ($current/$positional/$previous/$next) are visible
 							// across both conditions and the return clause — but $w itself is not yet bound
 							// while its own boundary conditions are being evaluated.
@@ -137,14 +142,14 @@ function walk(
 									if (wv.nextItem) scope.add(qnameKey(wv.nextItem));
 								}
 								const whenExpr = directChildOf(cond, "ExprSingle");
-								if (whenExpr) walk(whenExpr, scope, analysis, moduleVarKeys, out);
+								if (whenExpr) walk(whenExpr, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 							}
 							scope.add(qnameKey(b.qname));
 						}
 						break;
 					}
 					default:
-						walk(clause, scope, analysis, moduleVarKeys, out);
+						walk(clause, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 				}
 			}
 			scope.pop();
@@ -159,7 +164,7 @@ function walk(
 					const qname = asVarName(child, analysis);
 					if (qname) scope.add(qnameKey(qname));
 				} else {
-					walk(child, scope, analysis, moduleVarKeys, out);
+					walk(child, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 				}
 			}
 			scope.pop();
@@ -171,7 +176,7 @@ function walk(
 			if (!fn) break;
 			scope.push();
 			for (const p of fn.params) scope.add(qnameKey(p.qname));
-			if (fn.body) walk(fn.body, scope, analysis, moduleVarKeys, out);
+			if (fn.body) walk(fn.body, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 			scope.pop();
 			return;
 		}
@@ -182,14 +187,14 @@ function walk(
 
 		case "TypeswitchExpr": {
 			const operand = directChildOf(node, "Expr");
-			if (operand) walk(operand, scope, analysis, moduleVarKeys, out);
+			if (operand) walk(operand, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 			for (const caseClause of directChildrenOf(node, "CaseClause")) {
 				scope.push();
 				const varNameNode = directChildOf(caseClause, "VarName");
 				const qname = varNameNode ? asVarName(varNameNode, analysis) : null;
 				if (qname) scope.add(qnameKey(qname));
 				const returnExpr = directChildOf(caseClause, "ExprSingle");
-				if (returnExpr) walk(returnExpr, scope, analysis, moduleVarKeys, out);
+				if (returnExpr) walk(returnExpr, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 				scope.pop();
 			}
 			// `default $v return ...` — $v (optional) and the return expr are direct
@@ -199,7 +204,7 @@ function walk(
 			const defaultQname = defaultVarNode ? asVarName(defaultVarNode, analysis) : null;
 			if (defaultQname) scope.add(qnameKey(defaultQname));
 			const defaultExpr = directChildOf(node, "ExprSingle");
-			if (defaultExpr) walk(defaultExpr, scope, analysis, moduleVarKeys, out);
+			if (defaultExpr) walk(defaultExpr, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 			scope.pop();
 			return;
 		}
@@ -209,24 +214,24 @@ function walk(
 			if (!tx) break;
 			scope.push();
 			for (const b of tx.copyBindings) {
-				walk(b.initExpr, scope, analysis, moduleVarKeys, out);
+				walk(b.initExpr, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 				scope.add(qnameKey(b.qname));
 			}
-			if (tx.modifyExpr) walk(tx.modifyExpr, scope, analysis, moduleVarKeys, out);
-			if (tx.returnExpr) walk(tx.returnExpr, scope, analysis, moduleVarKeys, out);
+			if (tx.modifyExpr) walk(tx.modifyExpr, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
+			if (tx.returnExpr) walk(tx.returnExpr, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 			scope.pop();
 			return;
 		}
 
 		case "VarRef": {
 			const qname = asVarRef(node, analysis);
-			if (qname && !isKnown(qname, scope, moduleVarKeys))
+			if (qname && !isKnown(qname, scope, moduleVarKeys, unresolvedImportUris))
 				reportVarRef(node, qname, out);
 			return;
 		}
 
 		default:
-			for (const child of children) walk(child, scope, analysis, moduleVarKeys, out);
+			for (const child of children) walk(child, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 	}
 }
 
@@ -237,6 +242,8 @@ function walk(
  * to a declared variable: function parameter, let/for binding, module-level
  * `declare variable`, or an imported module variable.
  *
+ * Variables whose prefix is bound by an import that did not resolve to an
+ * analysed module are skipped too (XQST0059 reports the import itself).
  * Variables whose namespace prefix is undeclared are skipped — XQST0081
  * already fires for those, and adding XPST0008 on top would be noisy.
  * Variables inside catch clauses are also skipped since the implicit
@@ -252,7 +259,12 @@ export function checkUndeclaredVariables(
 	for (const imported of importedAnalyses.values())
 		for (const v of imported.moduleVariables) moduleVarKeys.add(qnameKey(v.qname));
 
+	// Imports whose module was not analysed: their variables are unknowable.
+	const unresolvedImportUris = new Set(
+		analysis.imports.map((i) => i.namespaceUri).filter((u) => !importedAnalyses.has(u)),
+	);
+
 	const out: UndeclaredVariableDiagnostic[] = [];
-	walk(ast, new ScopeStack(), analysis, moduleVarKeys, out);
+	walk(ast, new ScopeStack(), analysis, moduleVarKeys, unresolvedImportUris, out);
 	return out;
 }

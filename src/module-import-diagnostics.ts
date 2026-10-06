@@ -41,3 +41,31 @@ export function checkModuleImportTargets(
 	}
 	return out;
 }
+
+export interface UnresolvedImportDiagnostic extends TypeDiagnostic {
+	code: "xq-lsp:unresolved-import";
+}
+
+/**
+ * Report imports whose module could not be loaded. Variable and function
+ * checks stay silent for such namespaces, so this is where the user learns
+ * why. Reported as a warning (not XQST0059) because the module may
+ * legitimately live outside the workspace or be generated at install time.
+ */
+export function checkUnresolvedImports(
+	analysis: FileAnalysis,
+	importedAnalyses: Map<string, FileAnalysis>,
+): UnresolvedImportDiagnostic[] {
+	const out: UnresolvedImportDiagnostic[] = [];
+	for (const imp of analysis.imports) {
+		if (importedAnalyses.has(imp.atPath ?? imp.namespaceUri) || importedAnalyses.has(imp.namespaceUri)) continue;
+		const location = imp.atPath ? `at '${imp.atPath}'` : `for namespace '${imp.namespaceUri}'`;
+		out.push({
+			message: `Module ${location} could not be resolved; its functions and variables are not checked`,
+			code: "xq-lsp:unresolved-import",
+			offset: imp.offset,
+			length: imp.prefix.length,
+		});
+	}
+	return out;
+}

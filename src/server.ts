@@ -35,6 +35,7 @@ import { findImportInsertPosition, findDeclareNsInsertPosition, computeRelativeP
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
 import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
 import { runDiagnostics, runHints } from "./diagnostics.ts";
+import { checkUnresolvedImports } from "./module-import-diagnostics.ts";
 import {
 	getRuntimeAnalyses,
 	getRuntimePredeclaredNamespaces,
@@ -327,6 +328,8 @@ function computeDiagnostics(doc: TextDocument) {
 	const errorDiagRaw = hasAst && ast !== null ? runDiagnostics(ast, doc.getText(), analysis, resolvedImported) : [];
 	const hintDiagRaw = hasAst && ast !== null ? runHints(ast, analysis) : [];
 
+	const unresolvedImportRaw = hasAst ? checkUnresolvedImports(analysis, resolvedImported) : [];
+
 	function toLsp(d: TypeDiagnostic, severity: DiagnosticSeverity) {
 		return {
 			severity,
@@ -345,7 +348,9 @@ function computeDiagnostics(doc: TextDocument) {
 	const errorDiags = errorDiagRaw.filter((d) => d.code !== "XQST0081").map((d) => toLsp(d, DiagnosticSeverity.Error));
 	const hintDiags = hintDiagRaw.map((d) => toLsp(d, DiagnosticSeverity.Hint));
 
-	return [...parseDiags, ...nsDiags, ...errorDiags, ...hintDiags];
+	const unresolvedImportDiags = unresolvedImportRaw.map((d) => toLsp(d, DiagnosticSeverity.Warning));
+
+	return [...parseDiags, ...nsDiags, ...errorDiags, ...unresolvedImportDiags, ...hintDiags];
 }
 
 documents.onDidChangeContent((change) => {

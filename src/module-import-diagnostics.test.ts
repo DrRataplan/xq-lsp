@@ -1,7 +1,7 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { analyzeWithAst } from "./analyzer.ts";
-import { checkModuleImportTargets } from "./module-import-diagnostics.ts";
+import { checkModuleImportTargets, checkUnresolvedImports } from "./module-import-diagnostics.ts";
 import type { FileAnalysis } from "./types.ts";
 
 function importDiags(src: string, importedAnalyses: Map<string, FileAnalysis> = new Map()) {
@@ -81,5 +81,22 @@ describe("module-import-diagnostics: no error", () => {
 		const src = `import module namespace a = "http://example.com/a" at "./missing.xqm"; ()`;
 		const ds = importDiags(src);
 		assert.equal(ds.length, 0);
+	});
+});
+
+describe("module-import-diagnostics: unresolved imports warn", () => {
+	test("warns at the import prefix when the module is not loaded", () => {
+		const src = `import module namespace a = "http://example.com/a" at "./missing.xqm"; ()`;
+		const { analysis } = analyzeWithAst(src, "file:///main.xq");
+		const ds = checkUnresolvedImports(analysis, new Map());
+		assert.equal(ds.length, 1);
+		assert.equal(ds[0].offset, src.indexOf("a ="));
+	});
+
+	test("silent when resolved", () => {
+		const src = `import module namespace a = "http://example.com/a" at "./a.xqm"; ()`;
+		const { analysis } = analyzeWithAst(src, "file:///main.xq");
+		const lib = analyzeWithAst(`module namespace a = "http://example.com/a"; declare variable $a:x := 1;`, "file:///a.xqm").analysis;
+		assert.equal(checkUnresolvedImports(analysis, new Map([["http://example.com/a", lib]])).length, 0);
 	});
 });
