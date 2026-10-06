@@ -194,3 +194,40 @@ array:for-each(function ($cfg as map(*)) {
 		});
 	});
 });
+
+describe("variable-diagnostics: unresolved imports stay silent", () => {
+	test("variable from an import without a resolvable module is not flagged", () => {
+		const ds = undeclaredVarDiags(
+			`import module namespace errors = "http://e-editiones.org/roaster/errors";\n$errors:NOT_FOUND`,
+		);
+		assert.deepEqual(ds, []);
+	});
+
+	test("unresolved import with a missing 'at' path is not flagged", () => {
+		const ds = undeclaredVarDiags(
+			`import module namespace pm = "http://example.org/pm" at "../pm-config.xql";\n$pm:web-transform`,
+		);
+		assert.deepEqual(ds, []);
+	});
+
+	test("unknown variable in the main module is still flagged next to an unresolved import", () => {
+		const ds = undeclaredVarDiags(
+			`import module namespace errors = "http://e-editiones.org/roaster/errors";\n$ghost`,
+		);
+		assert.ok(ds.some((d) => d.message.includes("ghost")));
+	});
+
+	test("resolved import still flags an unknown variable", () => {
+		const lib = analyzeWithAst(
+			`module namespace lib = "http://example.org/lib"; declare variable $lib:known := 1;`,
+			"file:///lib.xq",
+		).analysis;
+		const imported = new Map([["http://example.org/lib", lib]]);
+		const ds = undeclaredVarDiags(
+			`import module namespace lib = "http://example.org/lib" at "lib.xq";\n($lib:known, $lib:missing)`,
+			imported,
+		);
+		assert.equal(ds.length, 1);
+		assert.ok(ds[0].message.includes("lib:missing"));
+	});
+});
