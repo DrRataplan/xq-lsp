@@ -226,6 +226,7 @@ describe("undeclared prefixes inside string literals", () => {
 		const src = `xs:QName("p:l")`;
 		const ds = diags(src);
 		assert.equal(ds.length, 1);
+		assert.equal(ds[0].code, "FONS0004");
 		assert.equal(ds[0].prefix, "p");
 		assert.equal(src.slice(ds[0].offset, ds[0].offset + ds[0].length), "p");
 	});

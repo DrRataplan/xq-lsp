@@ -16,7 +16,7 @@ export type NamespaceUsageKind = "function" | "variable" | "element";
 
 export interface NamespaceDiagnostic {
 	message: string;
-	code: "XQST0081";
+	code: "XQST0081" | "FONS0004";
 	offset: number; // offset of the prefix start in source
 	length: number; // length of the prefix (not including the colon)
 	prefix: string;
@@ -197,7 +197,7 @@ export function findUndeclaredPrefixUsages(
 		if (!resolvePrefix(use.prefix, analysis).startsWith("urn:xq-lsp:undeclared:")) continue;
 		out.push({
 			message: `Namespace prefix '${use.prefix}' is not declared`,
-			code: "XQST0081",
+			code: "FONS0004",
 			offset: use.offset,
 			length: use.prefix.length,
 			prefix: use.prefix,
