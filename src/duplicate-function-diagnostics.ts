@@ -12,6 +12,9 @@ export interface DuplicateFunctionDiagnostic extends TypeDiagnostic {
  * Walk the AST and report every function declaration whose expanded QName and
  * arity (parameter count) collide with another declaration — either another
  * declaration in this file, or one already provided by an imported module.
+ * Declarations from sibling files (other files sharing this module's own namespace,
+ * keyed by that namespace in `importedAnalyses`) are ignored: they are a heuristic and
+ * may be alternatives of which only one is ever installed.
  * Per XQST0034, return type, parameter types, and parameter names are
  * irrelevant to the clash: only the expanded QName and arity matter.
  *
@@ -25,8 +28,10 @@ export function checkDuplicateFunctions(
 	importedAnalyses: Map<string, FileAnalysis>,
 ): DuplicateFunctionDiagnostic[] {
 	const importedKeys = new Set<string>();
-	for (const imported of importedAnalyses.values())
+	for (const [key, imported] of importedAnalyses) {
+		if (analysis.moduleNamespaceUri && key === analysis.moduleNamespaceUri) continue;
 		for (const f of imported.functions) importedKeys.add(`${qnameKey(f.qname)}#${f.arity}`);
+	}
 
 	const groups = new Map<string, Array<{ nameNode: Node; displayName: string; arity: number }>>();
 	for (const annotated of findAll(ast, "AnnotatedDecl")) {

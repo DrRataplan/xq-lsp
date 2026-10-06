@@ -63,3 +63,40 @@ test("returns null when the namespace has no other contributing files", () => {
 	const b = analyzeWithAst(SRC_B, URI_B).analysis;
 	assert.equal(siblingModuleAnalysis(b, URI_B), null);
 });
+
+// Alternative implementations of one namespace (e.g. jinks profiles): only one is ever installed.
+const SRC_ALT_A = `module namespace ex = '${NS}';
+declare function ex:meta($x as xs:string, $y as xs:string) as xs:string { $x };
+declare function ex:other($a as xs:string) as xs:string { $a };`;
+const SRC_ALT_B = `module namespace ex = '${NS}';
+declare function ex:meta($a as xs:string, $b as xs:string) as xs:string { $a };
+declare function ex:other($a as xs:string, $b as xs:string) as xs:string { $a };
+declare function ex:caller() as xs:string { ex:meta("x", "y") || ex:other("x", "y") };`;
+
+function altSiblings(): FileAnalysis {
+	const a = analyzeWithAst(SRC_ALT_A, URI_A).analysis;
+	const b = analyzeWithAst(SRC_ALT_B, URI_B).analysis;
+	const merged = { ...a, functions: [...a.functions, ...b.functions], moduleVariables: [] };
+	const siblings = siblingModuleAnalysis(merged, URI_B);
+	assert.ok(siblings);
+	return siblings;
+}
+
+test("a function also declared in a sibling file is not reported as XQST0034", () => {
+	const diags = diagnose(SRC_ALT_B, URI_B, new Map([[NS, altSiblings()]]));
+	assert.deepEqual(
+		diags.filter((d) => d.code === "XQST0034"),
+		[],
+	);
+});
+
+test("a call resolves against the file's own declaration, not a sibling with another arity", () => {
+	const diags = diagnose(SRC_ALT_B, URI_B, new Map([[NS, altSiblings()]]));
+	assert.deepEqual(diags, []);
+});
+
+test("duplicates within the file itself are still reported next to siblings", () => {
+	const src = `${SRC_ALT_B}\ndeclare function ex:meta($c as xs:string, $d as xs:string) as xs:string { $c };`;
+	const diags = diagnose(src, URI_B, new Map([[NS, altSiblings()]]));
+	assert.equal(diags.filter((d) => d.code === "XQST0034").length, 2, JSON.stringify(diags));
+});
