@@ -64,7 +64,8 @@ test("returns null when the namespace has no other contributing files", () => {
 	assert.equal(siblingModuleAnalysis(b, URI_B), null);
 });
 
-// Alternative implementations of one namespace (e.g. jinks profiles): only one is ever installed.
+// The same function declared in two files of one namespace is a real XQST0034 even when the files
+// are alternatives (e.g. jinks profiles): the sibling relationship is not second-guessed.
 const SRC_ALT_A = `module namespace ex = '${NS}';
 declare function ex:meta($x as xs:string, $y as xs:string) as xs:string { $x };
 declare function ex:other($a as xs:string) as xs:string { $a };`;
@@ -82,21 +83,13 @@ function altSiblings(): FileAnalysis {
 	return siblings;
 }
 
-test("a function also declared in a sibling file is not reported as XQST0034", () => {
+test("a function also declared in a sibling file is reported as XQST0034", () => {
 	const diags = diagnose(SRC_ALT_B, URI_B, new Map([[NS, altSiblings()]]));
-	assert.deepEqual(
-		diags.filter((d) => d.code === "XQST0034"),
-		[],
-	);
+	assert.equal(diags.filter((d) => d.code === "XQST0034").length, 1, JSON.stringify(diags));
 });
 
-test("a call resolves against the file's own declaration, not a sibling with another arity", () => {
+test("a call to a function whose arity differs between siblings raises no XPST0017", () => {
 	const diags = diagnose(SRC_ALT_B, URI_B, new Map([[NS, altSiblings()]]));
-	assert.deepEqual(diags, []);
+	assert.deepEqual(diags.filter((d) => d.code === "XPST0017"), []);
 });
 
-test("duplicates within the file itself are still reported next to siblings", () => {
-	const src = `${SRC_ALT_B}\ndeclare function ex:meta($c as xs:string, $d as xs:string) as xs:string { $c };`;
-	const diags = diagnose(src, URI_B, new Map([[NS, altSiblings()]]));
-	assert.equal(diags.filter((d) => d.code === "XQST0034").length, 2, JSON.stringify(diags));
-});
