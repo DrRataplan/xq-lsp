@@ -1,14 +1,1 @@
-[
-  {
-    "testCase": "K2-ComputeConAttr-42",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
-  },
-  {
-    "testCase": "K2-ComputeConAttr-43",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
-  }
-]
+[]

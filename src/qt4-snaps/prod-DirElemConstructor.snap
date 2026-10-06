@@ -16,41 +16,5 @@
     "outcome": "false-negative",
     "expectedCode": "XQST0118",
     "got": []
-  },
-  {
-    "testCase": "K2-DirectConElem-35",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
-  },
-  {
-    "testCase": "K2-DirectConElem-36",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
-  },
-  {
-    "testCase": "K2-DirectConElem-37",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
-  },
-  {
-    "testCase": "K2-DirectConElem-39",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
-  },
-  {
-    "testCase": "K2-DirectConElem-40",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
-  },
-  {
-    "testCase": "K2-DirectConElem-41",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
   }
 ]

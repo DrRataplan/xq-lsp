@@ -162,30 +162,6 @@
     "got": []
   },
   {
-    "testCase": "XQST0070_1",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
-  },
-  {
-    "testCase": "XQST0070_2",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
-  },
-  {
-    "testCase": "XQST0070_3",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
-  },
-  {
-    "testCase": "XQST0070_4",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
-  },
-  {
     "testCase": "XQST0071_1",
     "outcome": "false-negative",
     "expectedCode": "XQST0071",

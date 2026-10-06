@@ -1,7 +1,7 @@
 import type { Node } from "xq-parser";
 import type { TypeDiagnostic, FileAnalysis } from "./types.ts";
 import { qnameKey } from "./types.ts";
-import { findAll } from "./analyzer.ts";
+import { findAll, directChildOf, firstTerminalValue, parseEQName, decodeCharRefs } from "./analyzer.ts";
 import {
 	asVersionDecl,
 	asOptionDecl,
@@ -64,6 +64,78 @@ const PROLOG_SERIALIZATION_PARAMS = new Set([
 	"undeclare-prefixes",
 	"version",
 ]);
+
+const XML_NS = "http://www.w3.org/XML/1998/namespace";
+const XMLNS_NS = "http://www.w3.org/2000/xmlns/";
+
+/** Why binding `prefix` (null for a default namespace) to `uri` is forbidden (XQST0070), or null if it is allowed. */
+function reservedBindingProblem(prefix: string | null, uri: string): string | null {
+	if (prefix === "xmlns") return "The prefix 'xmlns' cannot be declared";
+	if (prefix === "xml" && uri !== XML_NS) return `The prefix 'xml' can only be bound to '${XML_NS}'`;
+	if (uri === XML_NS && prefix !== "xml") return `The namespace '${XML_NS}' can only be bound to the prefix 'xml'`;
+	if (uri === XMLNS_NS) return `The namespace '${XMLNS_NS}' cannot be bound`;
+	return null;
+}
+
+function literalValue(node: Node | undefined): string | null {
+	const raw = node ? firstTerminalValue(node) : null;
+	return raw === null ? null : decodeCharRefs(raw.replace(/^["']|["']$/g, ""));
+}
+
+type TerminalNode = Node & { value: string };
+
+function collectTerminals(node: Node, out: TerminalNode[] = []): TerminalNode[] {
+	const children = (node as { children?: Node[] }).children;
+	if (children) for (const child of children) collectTerminals(child, out);
+	else if ((node as { value?: string }).value !== undefined) out.push(node as TerminalNode);
+	return out;
+}
+
+/** Report reserved namespace prefix/URI bindings (XQST0070). */
+function checkReservedNamespaces(ast: Node): TypeDiagnostic[] {
+	const out: TypeDiagnostic[] = [];
+	const check = (node: Node, prefix: string | null, uri: string | null) => {
+		const problem = uri === null ? null : reservedBindingProblem(prefix, uri);
+		if (problem) out.push(diagnostic(node, "XQST0070", problem));
+	};
+
+	// XQuery 4.0: the prolog may not declare the `xml` prefix at all, even bound to its own namespace.
+	for (const node of findAll(ast, "NamespaceDecl")) {
+		const ncname = directChildOf(node, "NCName");
+		if (ncname && firstTerminalValue(ncname) === "xml" && literalValue(directChildOf(node, "URILiteral")) === XML_NS)
+			out.push(diagnostic(node, "XQST0070", "The prefix 'xml' cannot be declared"));
+	}
+	for (const type of ["NamespaceDecl", "ModuleImport", "SchemaImport"]) {
+		for (const node of findAll(ast, type)) {
+			const ncname = directChildOf(directChildOf(node, "SchemaPrefix") ?? node, "NCName");
+			const prefix = ncname ? firstTerminalValue(ncname) : null;
+			if (prefix) check(node, prefix, literalValue(directChildOf(node, "URILiteral")));
+		}
+	}
+	for (const node of findAll(ast, "DefaultNamespaceDecl"))
+		check(node, null, literalValue(directChildOf(node, "URILiteral")));
+
+	for (const list of findAll(ast, "DirAttributeList")) {
+		const children = (list as { children: Node[] }).children;
+		children.forEach((child, i) => {
+			const name = child.type === "QName" ? firstTerminalValue(child) : null;
+			if (name !== "xmlns" && !name?.startsWith("xmlns:")) return;
+			const valueNode = children.slice(i + 1).find((c) => c.type === "DirAttributeValue");
+			if (!valueNode) return;
+			const uri = collectTerminals(valueNode)
+				.filter((t) => t.value !== '"' && t.value !== "'")
+				.map((t) => t.value)
+				.join("");
+			check(child, name === "xmlns" ? null : name.slice(6), uri);
+		});
+	}
+
+	for (const terminal of collectTerminals(ast))
+		if (terminal.value.startsWith("Q{") && parseEQName(terminal.value).uri === XMLNS_NS)
+			out.push(diagnostic(terminal, "XQST0070", `The namespace '${XMLNS_NS}' cannot be used`));
+
+	return out;
+}
 
 const SUPPORTED_XQUERY_VERSIONS = new Set(["1.0", "3.0", "3.1", "4.0"]);
 
@@ -133,5 +205,6 @@ export function checkDuplicatePrologDecls(ast: Node, analysis: FileAnalysis): Ty
 		for (const { nameNode, qname } of repeats(params ?? [], (p) => qnameKey(p.qname)))
 			out.push(diagnostic(nameNode, "XQST0039", `Parameter '$${qname.localName}' is declared more than once`));
 
+	out.push(...checkReservedNamespaces(ast));
 	return out;
 }

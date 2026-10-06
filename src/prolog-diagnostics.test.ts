@@ -58,3 +58,28 @@ describe("prolog-diagnostics: valid prologs not flagged", () => {
 	];
 	for (const [label, src] of cases) test(label, () => assert.deepEqual(codes(src), []));
 });
+
+describe("prolog-diagnostics: reserved namespaces (XQST0070)", () => {
+	const bad: Array<[string, string]> = [
+		["xmlns prefix declared", `declare namespace xmlns = "http://x"; 1`],
+		["xml prefix bound to other URI", `declare namespace xml = "http://x"; 1`],
+		["XML namespace bound to other prefix", `declare namespace p = "http://www.w3.org/XML/1998/namespace"; 1`],
+		["xmlns namespace bound to a prefix", `declare namespace p = "http://www.w3.org/2000/xmlns/"; 1`],
+		["default element namespace is the XML namespace", `declare default element namespace "http://www.w3.org/XML/1998/namespace"; <a/>`],
+		["default function namespace is the xmlns namespace", `declare default function namespace "http://www.w3.org/2000/xmlns/"; 1`],
+		["xmlns namespace in an EQName", `/Q{ http://www.w3.org/2000/xmlns/}a`],
+		["direct constructor xmlns:xml", `<a xmlns:xml="http://x"/>`],
+		["direct constructor default namespace is the XML namespace", `<a xmlns="http://www.w3.org/XML/1998/namespace"/>`],
+	];
+	for (const [label, src] of bad) test(label, () => assert.deepEqual(codes(src), ["XQST0070"]));
+
+	test("reserved namespace via a character reference", () =>
+		assert.deepEqual(codes(`declare default element namespace "http&#x3a;//www.w3.org/2000/xmlns/"; <a/>`), ["XQST0070"]));
+	test("schema import prefix", () => assert.deepEqual(codes(`import schema namespace xml = "http://x"; 1`), ["XQST0070"]));
+	test("prolog may not declare xml even with its own namespace", () =>
+		assert.deepEqual(codes(`declare namespace xml = "http://www.w3.org/XML/1998/namespace"; 1`), ["XQST0070"]));
+
+	test("binding xml to the XML namespace on a direct constructor is allowed", () => {
+		assert.deepEqual(codes(`<a xmlns:xml="http://www.w3.org/XML/1998/namespace"/>`), []);
+	});
+});

@@ -1,8 +1,1 @@
-[
-  {
-    "testCase": "eqname-910",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
-  }
-]
+[]

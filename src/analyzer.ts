@@ -213,7 +213,7 @@ const PREDEFINED_ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">"
  * parser's terminal value is the raw, un-decoded source slice, so this decoding
  * has to happen here rather than being assumed already done.
  */
-function decodeCharRefs(text: string): string {
+export function decodeCharRefs(text: string): string {
 	return text.replace(/&(#x[0-9a-fA-F]+|#[0-9]+|[a-zA-Z]+);/g, (match, ref: string) => {
 		if (ref[0] === "#") {
 			const codePoint = ref[1] === "x" ? parseInt(ref.slice(2), 16) : parseInt(ref.slice(1), 10);

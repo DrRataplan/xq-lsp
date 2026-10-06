@@ -36,12 +36,6 @@
     "got": []
   },
   {
-    "testCase": "modules-16",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0070",
-    "got": []
-  },
-  {
     "testCase": "modules-17",
     "outcome": "false-negative",
     "expectedCode": "XQST0048",
