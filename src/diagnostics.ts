@@ -16,6 +16,7 @@ import { checkDuplicatePrologDecls } from "./prolog-diagnostics.ts";
 import { checkModuleImportTargets } from "./module-import-diagnostics.ts";
 import { checkUnused } from "./unused-diagnostics.ts";
 import { checkBracedUriWhitespace } from "./braced-uri-diagnostics.ts";
+import { checkRedundantXmlns } from "./redundant-xmlns-diagnostics.ts";
 
 /**
  * Run all error-level diagnostics (XQuery static/dynamic error codes).
@@ -47,5 +48,5 @@ export function runDiagnostics(
  * Produces xq-lsp:* codes — kept separate to avoid false-positives in QT4 tests.
  */
 export function runHints(ast: Node, analysis: FileAnalysis): TypeDiagnostic[] {
-	return [...checkUnused(ast, analysis), ...checkBracedUriWhitespace(ast)];
+	return [...checkUnused(ast, analysis), ...checkBracedUriWhitespace(ast), ...checkRedundantXmlns(ast)];
 }
