@@ -1,4 +1,4 @@
-import type { Node } from "xq-parser";
+import type { Node, NonTerminal } from "xq-parser";
 import type { QName, FileAnalysis } from "./types.ts";
 import {
 	isTerminal,
@@ -177,12 +177,59 @@ export function asNamespaceDecl(node: Node): { prefix: string } | null {
 	return prefix === null ? null : { prefix };
 }
 
-/** Which default namespace a `declare default element|function namespace` DefaultNamespaceDecl sets. */
-export function asDefaultNamespaceDecl(node: Node): { kind: "element" | "function" } | null {
+/** Which default namespace a `declare default element|function namespace` DefaultNamespaceDecl sets, and its URI. */
+export function asDefaultNamespaceDecl(node: Node): { kind: "element" | "function"; uri: string } | null {
 	if (node.type !== "DefaultNamespaceDecl") return null;
-	if (directChildOf(node, "'element'")) return { kind: "element" };
-	if (directChildOf(node, "'function'")) return { kind: "function" };
+	const kind = directChildOf(node, "'element'") ? "element" : directChildOf(node, "'function'") ? "function" : null;
+	const literal = findFirstStringLiteral(node);
+	return kind && literal ? { kind, uri: literal.slice(1, -1) } : null;
+}
+
+export interface XmlnsAttrShape {
+	/** Declared prefix; "" for the default namespace (`xmlns="..."`). */
+	prefix: string;
+	/** Namespace URI; null when the value is not plain characters (e.g. contains entity refs). */
+	uri: string | null;
+	nameNode: Node;
+	valueNode: Node;
+}
+
+/** The `xmlns` / `xmlns:p` attributes of a direct element constructor. */
+export function asDirElemXmlnsAttrs(node: Node): XmlnsAttrShape[] | null {
+	if (node.type !== "DirElemConstructor") return null;
+	const attrList = directChildOf(node, "DirAttributeList");
+	if (!attrList || isTerminal(attrList)) return null;
+	const out: XmlnsAttrShape[] = [];
+	const attrs = (attrList as NonTerminal).children;
+	attrs.forEach((nameNode, i) => {
+		if (nameNode.type !== "QName") return;
+		const name = firstTerminalValue(nameNode);
+		if (name !== "xmlns" && !name?.startsWith("xmlns:")) return;
+		const valueNode = attrs.slice(i + 1).find((c) => c.type === "DirAttributeValue");
+		if (valueNode) out.push({ prefix: name === "xmlns" ? "" : name.slice(6), uri: plainAttrText(valueNode), nameNode, valueNode });
+	});
+	return out;
+}
+
+function findFirstStringLiteral(node: Node): string | null {
+	if (isTerminal(node)) return node.type === "StringLiteral" ? node.value : null;
+	for (const c of (node as NonTerminal).children) {
+		const found = findFirstStringLiteral(c);
+		if (found) return found;
+	}
 	return null;
+}
+
+/** Text of a DirAttributeValue made only of plain characters; null otherwise. */
+function plainAttrText(value: Node): string | null {
+	let text = "";
+	for (const c of (value as NonTerminal).children) {
+		if (isTerminal(c)) continue; // opening/closing quote
+		const inner = (c as NonTerminal).children;
+		if (inner.length !== 1 || !isTerminal(inner[0]) || !inner[0].type.endsWith("AttrContentChar")) return null;
+		text += inner[0].value;
+	}
+	return text;
 }
 
 export interface DecimalFormatDeclShape {

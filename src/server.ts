@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { redundantXmlnsRemovalRange } from "./redundant-xmlns-diagnostics.ts";
 import {
 	createConnection,
 	TextDocuments,
@@ -679,6 +680,18 @@ connection.onCodeAction((params) => {
 				},
 			});
 		}
+	}
+
+	for (const diag of params.context.diagnostics) {
+		if (diag.code !== "xq-lsp:redundant-xmlns") continue;
+		const offset = doc.offsetAt(diag.range.start);
+		const { start, end } = redundantXmlnsRemovalRange(text, { offset, length: doc.offsetAt(diag.range.end) - offset });
+		actions.push({
+			title: "Remove redundant namespace declaration",
+			kind: CodeActionKind.QuickFix,
+			diagnostics: [diag],
+			edit: { changes: { [doc.uri]: [{ range: { start: doc.positionAt(start), end: doc.positionAt(end) }, newText: "" }] } },
+		});
 	}
 
 	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
