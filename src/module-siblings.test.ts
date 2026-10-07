@@ -63,3 +63,33 @@ test("returns null when the namespace has no other contributing files", () => {
 	const b = analyzeWithAst(SRC_B, URI_B).analysis;
 	assert.equal(siblingModuleAnalysis(b, URI_B), null);
 });
+
+// The same function declared in two files of one namespace is a real XQST0034 even when the files
+// are alternatives (e.g. jinks profiles): the sibling relationship is not second-guessed.
+const SRC_ALT_A = `module namespace ex = '${NS}';
+declare function ex:meta($x as xs:string, $y as xs:string) as xs:string { $x };
+declare function ex:other($a as xs:string) as xs:string { $a };`;
+const SRC_ALT_B = `module namespace ex = '${NS}';
+declare function ex:meta($a as xs:string, $b as xs:string) as xs:string { $a };
+declare function ex:other($a as xs:string, $b as xs:string) as xs:string { $a };
+declare function ex:caller() as xs:string { ex:meta("x", "y") || ex:other("x", "y") };`;
+
+function altSiblings(): FileAnalysis {
+	const a = analyzeWithAst(SRC_ALT_A, URI_A).analysis;
+	const b = analyzeWithAst(SRC_ALT_B, URI_B).analysis;
+	const merged = { ...a, functions: [...a.functions, ...b.functions], moduleVariables: [] };
+	const siblings = siblingModuleAnalysis(merged, URI_B);
+	assert.ok(siblings);
+	return siblings;
+}
+
+test("a function also declared in a sibling file is reported as XQST0034", () => {
+	const diags = diagnose(SRC_ALT_B, URI_B, new Map([[NS, altSiblings()]]));
+	assert.equal(diags.filter((d) => d.code === "XQST0034").length, 1, JSON.stringify(diags));
+});
+
+test("a call to a function whose arity differs between siblings raises no XPST0017", () => {
+	const diags = diagnose(SRC_ALT_B, URI_B, new Map([[NS, altSiblings()]]));
+	assert.deepEqual(diags.filter((d) => d.code === "XPST0017"), []);
+});
+
