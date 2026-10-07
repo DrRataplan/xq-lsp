@@ -2,7 +2,7 @@ module namespace ft = "http://exist-db.org/xquery/lucene";
 
 (:~
  : Returns the value of a binary field attached to a particular node obtained
- : via a full text search. Accepts an additional parameter to name the target
+ : via a full text search.Accepts an additional parameter to name the target
  : type into which the field value should be cast. This is mainly relevant for
  : fields having a different type than xs:string. As lucene does not record
  : type information, numbers or dates would be returned as strings by default.
@@ -41,7 +41,7 @@ declare function ft:facets($nodes as node()*, $dimension as xs:string, $count as
  : @param $nodes A sequence of nodes for which facet counts should be returned. If the nodes in the sequence resulted from different Lucene queries, their facet counts will be merged. If no node in the the sequence has facets attached or the sequence is empty, an empty map is returned.
  : @param $dimension The facet dimension. This should correspond to a dimension defined in the index configuration
  : @param $count The number of facet labels to be returned. Facets with more occurrences in the result will be returned first.
- : @param $paths For hierarchical facets, specify a sequence of paths leading to the position in the hierarchy you would like to get facet counts for.
+ : @param $paths For hierarchical facets, specify a sequence of paths leading to the position in the hierarchy youwould like to get facet counts for.
  : @return A map having the facet label as key and the facet count as value
  :)
 declare function ft:facets(
@@ -53,10 +53,10 @@ declare function ft:facets(
 
 (:~
  : Returns the value of a field attached to a particular node obtained via a
- : full text search. The $type parameter allows you to name the target type
- : into which the field value should be cast. This is mainly relevant for
- : fields having a different type than xs:string. As lucene does not record
- : type information, numbers or dates would be returned as strings by default.
+ : full text search.The $type parameter allows you to name the target type into
+ : which the field value should be cast. This is mainly relevant for fields
+ : having a different type than xs:string. As lucene does not record type
+ : information, numbers or dates would be returned as strings by default.
  : @param $node the context node to check for attached fields
  : @param $field name of the field
  : @return Sequence corresponding to the values of the field attached, cast to the desired target type
@@ -65,10 +65,10 @@ declare function ft:field($node as node(), $field as xs:string) as item()* exter
 
 (:~
  : Returns the value of a field attached to a particular node obtained via a
- : full text search. The $type parameter allows you to name the target type
- : into which the field value should be cast. This is mainly relevant for
- : fields having a different type than xs:string. As lucene does not record
- : type information, numbers or dates would be returned as strings by default.
+ : full text search.The $type parameter allows you to name the target type into
+ : which the field value should be cast. This is mainly relevant for fields
+ : having a different type than xs:string. As lucene does not record type
+ : information, numbers or dates would be returned as strings by default.
  : @param $node the context node to check for attached fields
  : @param $field name of the field
  : @param $type intended target type to cast the field value to. Empty sequence returns raw (untyped) values as the 2-arg form. Casting may fail with a dynamic error.
@@ -78,7 +78,7 @@ declare function ft:field($node as node(), $field as xs:string, $type as xs:stri
 
 (:~
  : Retrieve the stored content of a field.
- : @deprecated Use an index definition with nested fields and ft:field instead
+ : @deprecated Use an index definition with nested fields and ft:field instead This function could be removed in the next major version release!
  : @param $path URI paths of documents or collections in database. Collection URIs should end on a '/'.
  : @param $field query string
  : @return All documents that are match by the query
@@ -108,7 +108,7 @@ declare function ft:highlight-field-matches($nodes as node()*, $field as xs:stri
  : Index an arbitrary chunk of (non-XML) data with Lucene. Syntax is inspired
  : by Solr.
  : @param $documentPath URI path of document in database.
- : @param $solrExression XML syntax expected by Solr's add expression. Element should be called 'doc', e.g. <doc> <field name="field1">data1</field> <field name="field2" boost="value">data2</field> </doc>
+ : @param $solrExression XML syntax expected by Solr's add expression. Element should be called 'doc', e.g.&lt;doc> &lt;field name="field1">data1&lt;/field> &lt;field name="field2" boost="value">data2&lt;/field> &lt;/doc>
  :)
 declare function ft:index($documentPath as xs:string, $solrExression as node()) as empty-sequence() external;
 
@@ -116,21 +116,17 @@ declare function ft:index($documentPath as xs:string, $solrExression as node()) 
  : Index an arbitrary chunk of (non-XML) data with Lucene. Syntax is inspired
  : by Solr.
  : @param $documentPath URI path of document in database.
- : @param $solrExression XML syntax expected by Solr's add expression. Element should be called 'doc', e.g. <doc> <field name="field1">data1</field> <field name="field2" boost="value">data2</field> </doc>
+ : @param $solrExression XML syntax expected by Solr's add expression. Element should be called 'doc', e.g.&lt;doc> &lt;field name="field1">data1&lt;/field> &lt;field name="field2" boost="value">data2&lt;/field> &lt;/doc>
  : @param $close If true, close the Lucene document. Subsequent calls to ft:index will thus add to a new Lucene document. If false, the document remains open and is not flushed to disk. Call the ft:close function to explicitely close and flush the current document.
  :)
-declare function ft:index(
-	$documentPath as xs:string,
-	$solrExression as node(),
-	$close as xs:boolean
-) as empty-sequence() external;
+declare function ft:index($documentPath as xs:string, $solrExression as node(), $close as xs:boolean) as empty-sequence() external;
 
 (:~
  : Similar to the util:index-keys functions, but returns index entries for a
  : field associated with a lucene index.
  : @param $field The name of the field
  : @param $start-value Only keys starting with the given prefix are reported.
- : @param $function-reference A function reference. It can be an arbitrary user-defined function, but it should take exactly 2 arguments:
+ : @param $function-reference A function reference. It can be an arbitrary user-defined function, but it should take exactly 2 arguments: 1) the current index key as found in the range index as an atomic value, 2) a sequence containing three int values: a) the overall frequency of the key within the node set, b) the number of distinct documents in the node set the key occurs in, c) the current position of the key in the whole list of keys returned.
  : @param $max-number-returned The maximum number of keys to return
  : @return the results of the eval of the $function-reference
  :)
@@ -174,7 +170,7 @@ declare function ft:query($nodes as node()*, $query as item()?) as node()* exter
  : for complete documentation.
  : @param $nodes The node set to search using a Lucene full text index which is defined on those nodes
  : @param $query The query to search for, provided either as a string or text in Lucene's default query syntax or as an XML fragment to bypass Lucene's default query parser
- : @param $options An XML fragment or XDM Map containing options to be passed to Lucene's query parser. The following options are supported (a description can be found in the docs): <options> <default-operator>and|or</default-operator> <phrase-slop>number</phrase-slop> <leading-wildcard>yes|no</leading-wildcard> <filter-rewrite>yes|no</filter-rewrite> <lowercase-expanded-terms>yes|no</lowercase-expanded-terms> </options>
+ : @param $options An XML fragment or XDM Map containing options to be passed to Lucene's query parser. The following options are supported (a description can be found in the docs): &lt;options> &lt;default-operator>and|or&lt;/default-operator> &lt;phrase-slop>number&lt;/phrase-slop> &lt;leading-wildcard>yes|no&lt;/leading-wildcard> &lt;filter-rewrite>yes|no&lt;/filter-rewrite> &lt;lowercase-expanded-terms>yes|no&lt;/lowercase-expanded-terms> &lt;/options>
  : @return all nodes from the input node set matching the query. match highlighting information will be available for all returned nodes. Lucene's match score can be retrieved via the ft:score function.
  :)
 declare function ft:query($nodes as node()*, $query as item()?, $options as item()?) as node()* external;
@@ -193,7 +189,7 @@ declare function ft:query-field($field as xs:string*, $query as item()) as node(
  : configuration.
  : @param $field The lucene field name.
  : @param $query The query to search for, provided either as a string or text in Lucene's default query syntax or as an XML fragment to bypass Lucene's default query parser
- : @param $options An XML fragment or XDM Map containing options to be passed to Lucene's query parser. The following options are supported (a description can be found in the docs): <options> <default-operator>and|or</default-operator> <phrase-slop>number</phrase-slop> <leading-wildcard>yes|no</leading-wildcard> <filter-rewrite>yes|no</filter-rewrite> </options>
+ : @param $options An XML fragment or XDM Map containing options to be passed to Lucene's query parser. The following options are supported (a description can be found in the docs): &lt;options> &lt;default-operator>and|or&lt;/default-operator> &lt;phrase-slop>number&lt;/phrase-slop> &lt;leading-wildcard>yes|no&lt;/leading-wildcard> &lt;filter-rewrite>yes|no&lt;/filter-rewrite> &lt;/options>
  : @return all nodes from the input node set matching the query. match highlighting information will be available for all returned nodes. Lucene's match score can be retrieved via the ft:score function.
  :)
 declare function ft:query-field($field as xs:string*, $query as item(), $options as item()?) as node()* external;
@@ -231,11 +227,11 @@ declare function ft:query-field-vector(
 ) as node()* external;
 
 (:~
- : KNN vector search. Returns k nearest nodes. Vector field is resolved from
- : index config.
+ : KNN vector search. Returns the k nodes nearest to the query vector. Vector
+ : field is resolved from index config.
  : @param $nodes The node set to search (e.g. collection(...)//article). Document set and qnames are derived from this.
  : @param $vector Query vector as XQuery array of numbers, e.g. [1.0, 0.0, 0.0, 0.0].
- : @return Nodes matching the vector query, ordered by similarity.
+ : @return Nodes matching the vector query. The returned sequence follows XQuery node-sequence semantics; to rank by similarity, sort explicitly with ft:score, e.g. 'for $h in ft:query-vector(...) order by ft:score($h) descending return $h'.
  :)
 declare function ft:query-vector($nodes as node()*, $vector as array(*)) as node()* external;
 
@@ -244,7 +240,7 @@ declare function ft:query-vector($nodes as node()*, $vector as array(*)) as node
  : @param $nodes The node set to search (e.g. collection(...)//article). Document set and qnames are derived from this.
  : @param $vector Query vector as XQuery array of numbers, e.g. [1.0, 0.0, 0.0, 0.0].
  : @param $k Number of nearest neighbours to return (default 10).
- : @return Nodes matching the vector query, ordered by similarity.
+ : @return Nodes matching the vector query. The returned sequence follows XQuery node-sequence semantics; to rank by similarity, sort explicitly with ft:score, e.g. 'for $h in ft:query-vector(...) order by ft:score($h) descending return $h'.
  :)
 declare function ft:query-vector($nodes as node()*, $vector as array(*), $k as xs:integer?) as node()* external;
 
@@ -254,7 +250,7 @@ declare function ft:query-vector($nodes as node()*, $vector as array(*), $k as x
  : @param $vector Query vector as XQuery array of numbers, e.g. [1.0, 0.0, 0.0, 0.0].
  : @param $k Number of nearest neighbours to return (default 10).
  : @param $options Optional map with filter-query, filter, facets.
- : @return Nodes matching the vector query, ordered by similarity.
+ : @return Nodes matching the vector query. The returned sequence follows XQuery node-sequence semantics; to rank by similarity, sort explicitly with ft:score, e.g. 'for $h in ft:query-vector(...) order by ft:score($h) descending return $h'.
  :)
 declare function ft:query-vector(
 	$nodes as node()*,
@@ -288,13 +284,6 @@ declare function ft:score($node as node()) as xs:float* external;
 
 (:~
  : Search for (non-XML) data with lucene
- : @param $query query string
- : @return All documents that are match by the query
- :)
-declare function ft:search($query as xs:string) as node() external;
-
-(:~
- : Search for (non-XML) data with lucene
  : @param $path URI paths of documents or collections in database. Collection URIs should end on a '/'.
  : @param $query query string
  : @return All documents that are match by the query
@@ -315,6 +304,7 @@ declare function ft:search($path as xs:string*, $query as xs:string, $fields as 
  : @param $path URI paths of documents or collections in database. Collection URIs should end on a '/'.
  : @param $query query string
  : @param $fields Fields to return in search results
+ : @param $options An XML fragment containing options to be passed to Lucene's query parser. The following options are supported (a description can be found in the docs): &lt;options> &lt;default-operator>and|or&lt;/default-operator> &lt;phrase-slop>number&lt;/phrase-slop> &lt;leading-wildcard>yes|no&lt;/leading-wildcard> &lt;filter-rewrite>yes|no&lt;/filter-rewrite> &lt;/options>
  : @return All documents that are match by the query
  :)
 declare function ft:search(

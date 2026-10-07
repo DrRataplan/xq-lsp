@@ -16,8 +16,9 @@ declare function util:absolute-resource-id($node-or-path as item()) as xs:intege
  : Converts the number $number from base $base to xs:integer.
  : @param $number The number to convert
  : @param $base The base of $number
+ : @return the xs:integer representation of $number in base $base
  :)
-declare function util:base-to-integer($number as item(), $base as xs:integer) as item()* external;
+declare function util:base-to-integer($number as item(), $base as xs:integer) as xs:integer external;
 
 (:~
  : Decode the given Base64 encoded string back to clear text
@@ -35,7 +36,7 @@ declare function util:base64-encode($string as xs:string?) as xs:string? externa
 
 (:~
  : Encodes the given string as Base64
- : @deprecated This function is deprecated. The output does not need to be trimmed, please use util:base64-encode#1 instead.
+ : @deprecated This function is deprecated. The output does not need to be trimmed, please use util:base64-encode#1 instead. This function could be removed in the next major version release!
  : @param $string The string to be Base64 encoded
  : @param $trim Trim trailing newlines?
  : @return the Base64 encoded output
@@ -45,6 +46,7 @@ declare function util:base64-encode($string as xs:string?, $trim as xs:boolean) 
 (:~
  : Encodes the given string as Base64, url-safe. No padding and use - and _
  : instead of + and / (see RFC 4648 §5).
+ : @param $string The string to be Base64 encoded (url-safe)
  : @return the Base64, url-safe encoded output without padding
  :)
 declare function util:base64-encode-url-safe($string as xs:string?) as xs:string? external;
@@ -69,13 +71,10 @@ declare function util:binary-doc-available($binary-resource as xs:string?) as xs
  : Gets the digest of the content of the resource identified by
  : $binary-resource.
  : @param $binary-resource The path to the binary resource
- : @param $algorithm The name of the algorithm to use for calculating the digest. Supports:
+ : @param $algorithm The name of the algorithm to use for calculating the digest. Supports: MD2, MD4, MD5, SHA-1, SHA-256, SHA-512, RIPEMD-160, RIPEMD-256, BLAKE2B-160, BLAKE2B-256, BLAKE2B-512
  : @return the digest of the content of the Binary Resource
  :)
-declare function util:binary-doc-content-digest(
-	$binary-resource as xs:string?,
-	$algorithm as xs:string
-) as xs:hexBinary? external;
+declare function util:binary-doc-content-digest($binary-resource as xs:string?, $algorithm as xs:string) as xs:hexBinary? external;
 
 (:~
  : Returns the contents of a binary resource as an xs:string value. The binary
@@ -94,10 +93,7 @@ declare function util:binary-to-string($binary-resource as xs:base64Binary?) as 
  : @param $encoding The encoding type. i.e. 'UTF-8'
  : @return the string containing the encoded binary resource
  :)
-declare function util:binary-to-string(
-	$binary-resource as xs:base64Binary?,
-	$encoding as xs:string
-) as xs:string? external;
+declare function util:binary-to-string($binary-resource as xs:base64Binary?, $encoding as xs:string) as xs:string? external;
 
 (:~
  : Invokes a first-class function reference created by util:function. The
@@ -147,10 +143,10 @@ declare function util:compile($expression as xs:string, $module-load-path as xs:
 (:~
  : Compiles the XQuery expression given in parameter $expression. Returns an
  : XML fragment which describes any errors found. If the query could be
- : compiled successfully, a fragment <info result="pass"/> is returned.
- : Otherwise, an error description is returned as follows: <info
- : result="fail"><error code="errcode" line="line" column="column">error
- : description</error></info>.
+ : compiled successfully, a fragment &lt;info result="pass"/> is returned.
+ : Otherwise, an error description is returned as follows: &lt;info
+ : result="fail">&lt;error code="errcode" line="line" column="column">error
+ : description&lt;/error>&lt;/info>.
  : @param $expression The XPath/XQuery expression.
  : @param $module-load-path The module load path. Imports will be resolved relative to this. Use xmldb:exist:///db if your modules are stored in db.
  : @return the results of the expression
@@ -190,7 +186,7 @@ declare function util:deep-copy($item as item()?) as item()? external;
 (:~
  : Describes a built-in function. Returns an element describing the function
  : signature.
- : @deprecated Use inspect:inspect-function#1 instead!
+ : @deprecated Use inspect:inspect-function#1 instead! This function could be removed in the next major version release!
  : @param $function-name The name of the function to get the signature of
  : @return the signature of the function
  :)
@@ -237,60 +233,69 @@ declare function util:document-name($node-or-path as item()) as xs:string? exter
  :)
 declare function util:enable-profiling($verbosity as xs:int) as empty-sequence() external;
 
-declare function util:eval($expression as item()) as item()* external;
-
 (:~
- : @param $cache-flag The flag for whether the compiled query should be cached. The cached query will be globally available within the db instance.
+ : Dynamically evaluates an XPath/XQuery expression.
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @return the results of the evaluated XPath/XQuery expression
  :)
-declare function util:eval($expression as item(), $cache-flag as xs:boolean) as item()* external;
+declare function util:eval($expression as item()) as node()* external;
 
 (:~
- : @param $cache-flag The flag for whether the compiled query should be cached. The cached query will be globally available within the db instance.
+ : Dynamically evaluates an XPath/XQuery expression.
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @param $cache-flag The flag for whether the compiled query should be cached. The cached querywill be globally available within the db instance.
+ : @return the results of the evaluated XPath/XQuery expression
+ :)
+declare function util:eval($expression as item(), $cache-flag as xs:boolean) as node()* external;
+
+(:~
+ : Dynamically evaluates an XPath/XQuery expression.
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @param $cache-flag The flag for whether the compiled query should be cached. The cached querywill be globally available within the db instance.
  : @param $external-variable External variables to be bound for the query that is being evaluated. Should be alternating variable QName and value.
+ : @return the results of the evaluated XPath/XQuery expression
  :)
-declare function util:eval(
-	$expression as item(),
-	$cache-flag as xs:boolean,
-	$external-variable as xs:anyType*
-) as item()* external;
+declare function util:eval($expression as item(), $cache-flag as xs:boolean, $external-variable as xs:anyType*) as node()* external;
 
 (:~
- : @param $cache-flag The flag for whether the compiled query should be cached. The cached query will be globally available within the db instance.
+ : Dynamically evaluates an XPath/XQuery expression.
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @param $cache-flag The flag for whether the compiled query should be cached. The cached querywill be globally available within the db instance.
  : @param $external-variable External variables to be bound for the query that is being evaluated. Should be alternating variable QName and value.
  : @param $pass Passes on the original error info (line and column number). By default, this option is false
+ : @return the results of the evaluated XPath/XQuery expression
  :)
 declare function util:eval(
 	$expression as item(),
 	$cache-flag as xs:boolean,
 	$external-variable as xs:anyType*,
 	$pass as xs:boolean
-) as item()* external;
+) as node()* external;
 
 (:~
  : Dynamically evaluates an XPath/XQuery expression and serializes the results
- : @param $default-serialization-params The default parameters for serialization, these may be overridden by any settings within the XQuery Prolog of the $expression.
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @param $default-serialization-params The default parameters for serialization, these maybe overridden by any settings within the XQuery Prolog of the $expression.
+ : @return the results of the evaluated XPath/XQuery expression
  :)
-declare function util:eval-and-serialize(
-	$expression as item(),
-	$default-serialization-params as item()?
-) as item()* external;
+declare function util:eval-and-serialize($expression as item(), $default-serialization-params as item()?) as item()* external;
 
 (:~
  : Dynamically evaluates an XPath/XQuery expression and serializes the results
- : @param $default-serialization-params The default parameters for serialization, these may be overridden by any settings within the XQuery Prolog of the $expression.
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @param $default-serialization-params The default parameters for serialization, these maybe overridden by any settings within the XQuery Prolog of the $expression.
  : @param $starting-loc the starting location within the results to return the values from
+ : @return the results of the evaluated XPath/XQuery expression
  :)
-declare function util:eval-and-serialize(
-	$expression as item(),
-	$default-serialization-params as item()?,
-	$starting-loc as xs:double?
-) as item()* external;
+declare function util:eval-and-serialize($expression as item(), $default-serialization-params as item()?, $starting-loc as xs:double?) as item()* external;
 
 (:~
  : Dynamically evaluates an XPath/XQuery expression and serializes the results
- : @param $default-serialization-params The default parameters for serialization, these may be overridden by any settings within the XQuery Prolog of the $expression.
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @param $default-serialization-params The default parameters for serialization, these maybe overridden by any settings within the XQuery Prolog of the $expression.
  : @param $starting-loc the starting location within the results to return the values from
  : @param $length the number of items from $starting-loc to return the values of
+ : @return the results of the evaluated XPath/XQuery expression
  :)
 declare function util:eval-and-serialize(
 	$expression as item(),
@@ -301,10 +306,12 @@ declare function util:eval-and-serialize(
 
 (:~
  : Dynamically evaluates an XPath/XQuery expression and serializes the results
- : @param $default-serialization-params The default parameters for serialization, these may be overridden by any settings within the XQuery Prolog of the $expression.
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @param $default-serialization-params The default parameters for serialization, these maybe overridden by any settings within the XQuery Prolog of the $expression.
  : @param $starting-loc the starting location within the results to return the values from
  : @param $length the number of items from $starting-loc to return the values of
  : @param $pass Passes on the original error info (line and column number). By default, this option is false
+ : @return the results of the evaluated XPath/XQuery expression
  :)
 declare function util:eval-and-serialize(
 	$expression as item(),
@@ -315,24 +322,29 @@ declare function util:eval-and-serialize(
 ) as item()* external;
 
 (:~
+ : Dynamically evaluates an XPath/XQuery expression.
  : @param $inline-context The inline context
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @return the results of the evaluated XPath/XQuery expression
  :)
 declare function util:eval-inline($inline-context as item()?, $expression as item()) as item()* external;
 
 (:~
+ : Dynamically evaluates an XPath/XQuery expression.
  : @param $inline-context The inline context
- : @param $cache-flag The flag for whether the compiled query should be cached. The cached query will be globally available within the db instance.
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @param $cache-flag The flag for whether the compiled query should be cached. The cached querywill be globally available within the db instance.
+ : @return the results of the evaluated XPath/XQuery expression
  :)
-declare function util:eval-inline(
-	$inline-context as item()?,
-	$expression as item(),
-	$cache-flag as xs:boolean
-) as item()* external;
+declare function util:eval-inline($inline-context as item()?, $expression as item(), $cache-flag as xs:boolean) as item()* external;
 
 (:~
+ : Dynamically evaluates an XPath/XQuery expression.
  : @param $inline-context The inline context
- : @param $cache-flag The flag for whether the compiled query should be cached. The cached query will be globally available within the db instance.
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @param $cache-flag The flag for whether the compiled query should be cached. The cached querywill be globally available within the db instance.
  : @param $pass Passes on the original error info (line and column number). By default, this option is false
+ : @return the results of the evaluated XPath/XQuery expression
  :)
 declare function util:eval-inline(
 	$inline-context as item()?,
@@ -342,29 +354,37 @@ declare function util:eval-inline(
 ) as item()* external;
 
 (:~
- : @param $cache-flag The flag for whether the compiled query should be cached. The cached query will be globally available within the db instance.
+ : Dynamically evaluates an XPath/XQuery expression.
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @param $context The query inherits the context described by the XML fragment in this parameter. It should have the format: &lt;static-context> &lt;output-size-limit value="-1"/> &lt;unbind-namespace uri="http://exist.sourceforge.net/NS/exist"/> &lt;current-dateTime value="dateTime"/> &lt;implicit-timezone value="duration"/> &lt;variable name="qname">variable value&lt;/variable> &lt;default-context>explicitly provide default context here&lt;/default-context> &lt;mapModule namespace="uri" uri="uri_to_module"/> &lt;/static-context>.
+ : @param $cache-flag The flag for whether the compiled query should be cached. The cached querywill be globally available within the db instance.
+ : @return the results of the evaluated XPath/XQuery expression
  :)
-declare function util:eval-with-context(
-	$expression as item(),
-	$context as node()?,
-	$cache-flag as xs:boolean
-) as item()* external;
+declare function util:eval-with-context($expression as item(), $context as node()?, $cache-flag as xs:boolean) as node()* external;
 
 (:~
- : @param $cache-flag The flag for whether the compiled query should be cached. The cached query will be globally available within the db instance.
+ : Dynamically evaluates an XPath/XQuery expression.
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @param $context The query inherits the context described by the XML fragment in this parameter. It should have the format: &lt;static-context> &lt;output-size-limit value="-1"/> &lt;unbind-namespace uri="http://exist.sourceforge.net/NS/exist"/> &lt;current-dateTime value="dateTime"/> &lt;implicit-timezone value="duration"/> &lt;variable name="qname">variable value&lt;/variable> &lt;default-context>explicitly provide default context here&lt;/default-context> &lt;mapModule namespace="uri" uri="uri_to_module"/> &lt;/static-context>.
+ : @param $cache-flag The flag for whether the compiled query should be cached. The cached querywill be globally available within the db instance.
  : @param $eval-context-item the context item against which the expression will be evaluated
+ : @return the results of the evaluated XPath/XQuery expression
  :)
 declare function util:eval-with-context(
 	$expression as item(),
 	$context as node()?,
 	$cache-flag as xs:boolean,
 	$eval-context-item as item()?
-) as item()* external;
+) as node()* external;
 
 (:~
- : @param $cache-flag The flag for whether the compiled query should be cached. The cached query will be globally available within the db instance.
+ : Dynamically evaluates an XPath/XQuery expression.
+ : @param $expression The expression to be evaluated. If it is of type xs:string, the function tries to execute this string as the query. If the first argument is of type xs:anyURI, the function will try to load the query from the resource to which the URI resolves. If the URI has no scheme, it is assumed that the query is stored in the db and the URI is interpreted as a database path. This is the same as calling util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). The query inherits the current execution context, i.e. all namespace declarations and variable declarations are visible from within the inner expression. The function returns an empty sequence if a whitespace string is passed.
+ : @param $context The query inherits the context described by the XML fragment in this parameter. It should have the format: &lt;static-context> &lt;output-size-limit value="-1"/> &lt;unbind-namespace uri="http://exist.sourceforge.net/NS/exist"/> &lt;current-dateTime value="dateTime"/> &lt;implicit-timezone value="duration"/> &lt;variable name="qname">variable value&lt;/variable> &lt;default-context>explicitly provide default context here&lt;/default-context> &lt;mapModule namespace="uri" uri="uri_to_module"/> &lt;/static-context>.
+ : @param $cache-flag The flag for whether the compiled query should be cached. The cached querywill be globally available within the db instance.
  : @param $eval-context-item the context item against which the expression will be evaluated
  : @param $pass Passes on the original error info (line and column number). By default, this option is false
+ : @return the results of the evaluated XPath/XQuery expression
  :)
 declare function util:eval-with-context(
 	$expression as item(),
@@ -372,20 +392,23 @@ declare function util:eval-with-context(
 	$cache-flag as xs:boolean,
 	$eval-context-item as item()?,
 	$pass as xs:boolean
-) as item()* external;
+) as node()* external;
 
 (:~
  : Puts an exclusive lock on the owner documents of all nodes in the first
  : argument $nodes. Then evaluates the expressions in the second argument
  : $expression and releases the acquired locks after their completion.
  : @param $nodes The nodes whose owning documents will have exclusive locks set.
+ : @param $expression The expression(s) that are to be evaluated before the acquired locks are released.
+ : @return the results of the evaluated expression(s)
  :)
 declare function util:exclusive-lock($nodes as node()*, $expression as item()*) as item()* external;
 
 (:~
  : Creates an in-memory copy of the passed node set, using the specified
  : serialization options. By default, full-text match terms will be tagged with
- : &lt;exist:match&gt; and XIncludes will be expanded.
+ : &amp;lt;exist:match&amp;gt; and XIncludes will be expanded.
+ : @param $node The node(s) to create in-memory copies of.
  : @return the results
  :)
 declare function util:expand($node as node()*) as node()* external;
@@ -393,9 +416,10 @@ declare function util:expand($node as node()*) as node()* external;
 (:~
  : Creates an in-memory copy of the passed node set, using the specified
  : serialization options. By default, full-text match terms will be tagged with
- : &lt;exist:match&gt; and XIncludes will be expanded. Serialization parameters
- : can be set in the second argument, which accepts the same parameters as the
- : exist:serialize option.
+ : &amp;lt;exist:match&amp;gt; and XIncludes will be expanded. Serialization
+ : parameters can be set in the second argument, which accepts the same
+ : parameters as the exist:serialize option.
+ : @param $node The node(s) to create in-memory copies of.
  : @param $serialization-parameters The serialization parameters
  : @return the results
  :)
@@ -406,22 +430,23 @@ declare function util:expand($node as node()*, $serialization-parameters as xs:s
  : util:call. This allows for higher-order functions to be implemented in
  : XQuery. A higher-order function is a function that takes another function as
  : argument. The first argument represents the name of the function, which
- : should be a valid QName. The second argument is the arity (number of
+ : should bea valid QName. The second argument is the arity (number of
  : parameters) of the function. If no function can be found that matches the
  : name and arity, an error is thrown. Please note: the arguments to this
  : function have to be literals or need to be resolvable at compile time at
  : least.
  : @param $name The name of the function
  : @param $arity The arity of the function
+ : @return the reference to the XQuery function
  :)
-declare function util:function($name as xs:QName, $arity as xs:integer) as item()* external;
+declare function util:function($name as xs:QName, $arity as xs:integer) as function(*) external;
 
 (:~
  : Serializes an XML fragment or a sequence of nodes between two elements
  : (normally milestone elements). This function works only on documents which
- : are stored in the database itself. The $beginning-node represents the first
+ : are stored in the database itself.The $beginning-node represents the first
  : node/milestone element, $ending-node, the second one. The results will be
- : inclusive of $beginning-node and exclusive of the $ending-node. The third
+ : inclusive of $beginning-node and exclusive of the $ending-node.The third
  : argument, $make-fragment, is a boolean value for the path completion. If it
  : is set to true() the result sequence is wrapped into a parent element node.
  : The fourth argument display-root-namespace (only used when $make-fragment is
@@ -445,7 +470,7 @@ declare function util:get-fragment-between(
 
 (:~
  : Returns a short description of the module identified by the namespace URI.
- : @deprecated Use inspect:inspect-module-uri#1 instead!
+ : @deprecated Use inspect:inspect-module-uri#1 instead! This function could be removed in the next major version release!
  : @param $namespace-uri The namespace URI of the module
  : @return the description of the active function module identified by the namespace URI
  :)
@@ -461,7 +486,7 @@ declare function util:get-module-info() as element() external;
 (:~
  : Returns an XML fragment providing additional information about the module
  : identified by the namespace URI.
- : @deprecated Use inspect:inspect-module-uri#1 instead!
+ : @deprecated Use inspect:inspect-module-uri#1 instead! This function could be removed in the next major version release!
  : @param $namespace-uri The namespace URI of the module
  : @return the description of the active function module identified by the namespace URI
  :)
@@ -494,61 +519,63 @@ declare function util:get-sequence-type($sequence-type as xs:anyType*) as xs:str
  : Calculates a hashcode from a string based on a specified algorithm.
  : @param $message The string to generate the hashcode from
  : @param $algorithm The algorithm used to generate the hashcode
+ : @return the hashcode
  :)
-declare function util:hash($message as item(), $algorithm as xs:string) as item()* external;
+declare function util:hash($message as item(), $algorithm as xs:string) as xs:string external;
 
 (:~
  : Calculates a hashcode from a string based on a specified algorithm.
  : @param $message The string to generate the hashcode from
  : @param $algorithm The algorithm used to generate the hashcode
  : @param $base64flag The flag that specifies whether to return the result as Base64 encoded
+ : @return the hashcode
  :)
-declare function util:hash($message as item(), $algorithm as xs:string, $base64flag as xs:boolean) as item()* external;
+declare function util:hash($message as item(), $algorithm as xs:string, $base64flag as xs:boolean) as xs:string external;
 
 (:~
  : Dynamically imports an XQuery module into the current context. The
  : parameters have the same meaning as in an 'import module ...' expression in
  : the query prolog.
- : @deprecated Use fn:load-module#2 instead!
+ : @deprecated Use fn:load-module#2 instead! This function could be removed in the next major version release!
  : @param $module-uri The namespace URI of the module
  : @param $prefix The prefix to be assigned to the namespace
  : @param $location The location of the module
  :)
-declare function util:import-module(
-	$module-uri as xs:anyURI,
-	$prefix as xs:string,
-	$location as xs:anyURI*
-) as empty-sequence() external;
+declare function util:import-module($module-uri as xs:anyURI, $prefix as xs:string, $location as xs:anyURI*) as empty-sequence() external;
 
 (:~
  : Return the number of documents for an indexed value.
  : @param $nodes The nodes whose content is indexed
  : @param $value The indexed value to search for
+ : @return the number of documents for the indexed value
  :)
-declare function util:index-key-documents($nodes as node()*, $value as xs:anyAtomicType) as item()* external;
+declare function util:index-key-documents($nodes as node()*, $value as xs:anyAtomicType) as xs:integer? external;
 
 (:~
  : Return the number of documents for an indexed value.
  : @param $nodes The nodes whose content is indexed
  : @param $value The indexed value to search for
  : @param $index The index in which the search is made
+ : @return the number of documents for the indexed value
  :)
-declare function util:index-key-documents($nodes as node()*, $value as xs:anyAtomicType, $index as xs:string) as item()* external;
+declare function util:index-key-documents($nodes as node()*, $value as xs:anyAtomicType, $index as xs:string) as xs:integer? external;
 
 (:~
  : Return the number of occurrences for an indexed value.
  : @param $nodes The nodes whose content is indexed
  : @param $value The indexed value to search for
+ : @return the number of occurrences for the indexed value
  :)
-declare function util:index-key-occurrences($nodes as node()*, $value as xs:anyAtomicType) as item()* external;
+declare function util:index-key-occurrences($nodes as node()*, $value as xs:anyAtomicType) as xs:integer? external;
 
 (:~
  : Return the number of occurrences for an indexed value.
  : @param $nodes The nodes whose content is indexed
  : @param $value The indexed value to search for
  : @param $index The index in which the search is made
+ : @return the number of occurrences for the indexed value
  :)
-declare function util:index-key-occurrences($nodes as node()*, $value as xs:anyAtomicType, $index as xs:string) as item()* external;
+declare function util:index-key-occurrences($nodes as node()*, $value as xs:anyAtomicType, $index as xs:string) as xs:integer? external;
 
 (:~
  : Can be used to query existing range indexes defined on a set of nodes. All
@@ -557,7 +584,7 @@ declare function util:index-key-occurrences($nodes as node()*, $value as xs:anyA
  : indexes defined by QName.
  : @param $node-set The node set
  : @param $start-value Only index keys of the same type but being greater than $start-value will be reported for non-string types. For string types, only keys starting with the given prefix are reported.
- : @param $function-reference The function reference as created by the util:function function. It can be an arbitrary user-defined function, but it should take exactly 2 arguments:
+ : @param $function-reference The function reference as created by the util:function function. It can be an arbitrary user-defined function, but it should take exactly 2 arguments: 1) the current index key as found in the range index as an atomic value, 2) a sequence containing three int values: a) the overall frequency of the key within the node set, b) the number of distinct documents in the node set the key occurs in, c) the current position of the key in the whole list of keys returned.
  : @param $max-number-returned The maximum number of returned keys
  : @return the results of the eval of the $function-reference
  :)
@@ -575,7 +602,7 @@ declare function util:index-keys(
  : indexes defined by QName.
  : @param $node-set The node set
  : @param $start-value Only index keys of the same type but being greater than $start-value will be reported for non-string types. For string types, only keys starting with the given prefix are reported.
- : @param $function-reference The function reference as created by the util:function function. It can be an arbitrary user-defined function, but it should take exactly 2 arguments:
+ : @param $function-reference The function reference as created by the util:function function. It can be an arbitrary user-defined function, but it should take exactly 2 arguments: 1) the current index key as found in the range index as an atomic value, 2) a sequence containing three int values: a) the overall frequency of the key within the node set, b) the number of distinct documents in the node set the key occurs in, c) the current position of the key in the whole list of keys returned.
  : @param $max-number-returned The maximum number of returned keys
  : @param $index The index in which the search is made
  : @return the results of the eval of the $function-reference
@@ -595,7 +622,7 @@ declare function util:index-keys(
  : indexes defined by QName.
  : @param $qname The node set
  : @param $start-value Only index keys of the same type but being greater than $start-value will be reported for non-string types. For string types, only keys starting with the given prefix are reported.
- : @param $function-reference The function reference as created by the util:function function. It can be an arbitrary user-defined function, but it should take exactly 2 arguments:
+ : @param $function-reference The function reference as created by the util:function function. It can be an arbitrary user-defined function, but it should take exactly 2 arguments: 1) the current index key as found in the range index as an atomic value, 2) a sequence containing three int values: a) the overall frequency of the key within the node set, b) the number of distinct documents in the node set the key occurs in, c) the current position of the key in the whole list of keys returned.
  : @param $max-number-returned The maximum number of returned keys
  : @param $index The index in which the search is made
  : @return the results of the eval of the $function-reference
@@ -635,8 +662,9 @@ declare function util:int-to-octal($int as xs:int) as xs:string external;
  : Bases 2, 8, and 16 are supported.
  : @param $number The number to convert
  : @param $base The base of $number
+ : @return the xs:string representation of $number in base $base
  :)
-declare function util:integer-to-base($number as xs:integer, $base as xs:integer) as item()* external;
+declare function util:integer-to-base($number as xs:integer, $base as xs:integer) as xs:string external;
 
 (:~
  : Checks if the resource identified by $binary-resource is a binary resource.
@@ -668,41 +696,9 @@ declare function util:is-module-registered($namespace-uri as xs:string) as xs:bo
 declare function util:line-number() as xs:integer external;
 
 (:~
- : Logs a message to the current logger (log4j). The $priority argument
- : specifies the log level, e.g. 'DEBUG', 'INFO', 'WARN', 'ERROR'.
- : @param $priority The log level priority string (e.g. 'INFO', 'WARN', 'ERROR')
- : @param $message The message to log
- :)
-declare function util:log($priority as xs:string, $message as item()*) as empty-sequence() external;
-
-(:~
- : Logs a message to a named logger.
- : @param $priority The log level: 'error', 'warn', 'debug', 'info', 'trace'
- : @param $logger-name The name of the logger, e.g. 'my.app.log'
- : @param $message The message to log
- :)
-declare function util:log-app(
-	$priority as xs:string,
-	$logger-name as xs:string,
-	$message as item()*
-) as empty-sequence() external;
-
-(:~
- : Logs the message to System.err.
- : @param $message The message to log
- :)
-declare function util:log-system-err($message as item()*) as empty-sequence() external;
-
-(:~
- : Logs the message to System.out.
- : @param $message The message to log
- :)
-declare function util:log-system-out($message as item()*) as empty-sequence() external;
-
-(:~
  : Returns a sequence of function items for each function in the current
  : module.
- : @deprecated Use inspect:module-functions#0 instead.
+ : @deprecated Use inspect:module-functions#0 instead. This function could be removed in the next major version release!
  : @return sequence of function references
  :)
 declare function util:list-functions() as function(*)* external;
@@ -710,7 +706,7 @@ declare function util:list-functions() as function(*)* external;
 (:~
  : Returns a sequence of function items for each function in the specified
  : module.
- : @deprecated Use inspect:module-functions-by-uri#1 instead.
+ : @deprecated Use inspect:module-functions-by-uri#1 instead. This function could be removed in the next major version release!
  : @param $namespace-uri The namespace URI of the function module
  : @return sequence of function references
  :)
@@ -800,8 +796,9 @@ declare function util:octal-to-int($octal as xs:string) as xs:int external;
  : it well-formed. An empty sequence is returned if the argument is an empty
  : string or sequence.
  : @param $to-be-parsed The string to be parsed
+ : @return the XML fragment parsed from the string
  :)
-declare function util:parse-html($to-be-parsed as xs:string?) as item()* external;
+declare function util:parse-html($to-be-parsed as xs:string?) as document-node()? external;
 
 (:~
  : Can be used to query existing qname indexes defined on a set of nodes.
@@ -818,11 +815,7 @@ declare function util:qname-index-lookup($qname as xs:QName, $comparison-value a
  : @param $element-or-attribute true() to lookup an element, false to lookup an attribute
  : @return The result
  :)
-declare function util:qname-index-lookup(
-	$qname as xs:QName,
-	$comparison-value as xs:anyAtomicType,
-	$element-or-attribute as xs:boolean
-) as node()* external;
+declare function util:qname-index-lookup($qname as xs:QName, $comparison-value as xs:anyAtomicType, $element-or-attribute as xs:boolean) as node()* external;
 
 (:~
  : Returns a random number between 0.0 and 1.0
@@ -845,8 +838,12 @@ declare function util:random($max as xs:integer) as xs:integer external;
 declare function util:random-ulong() as xs:unsignedLong external;
 
 (:~
- : Returns a sequence containing the QNames of all functions currently known to
- : the system, including functions in imported and built-in modules.
+ : Returns a sequence containing the QNames of all functions currently visible
+ : in the query context, including functions declared in the main module,
+ : functions from modules imported by the current query (XQuery library modules
+ : and Java modules), functions from eXist's built-in modules, and functions
+ : from Java modules in installed EXPath packages that have not yet been loaded
+ : into the context.
  : @return the sequence of function names
  :)
 declare function util:registered-functions() as xs:string+ external;
@@ -868,11 +865,20 @@ declare function util:registered-functions($namespace-uri as xs:string) as xs:st
 declare function util:registered-modules() as xs:string+ external;
 
 (:~
+ : Returns a sequence of maps, each containing information about a registered
+ : module. Each map has keys: 'uri' (namespace URI), 'prefix' (default prefix),
+ : and 'source' (one of 'built-in', 'package', or 'mapped').
+ : @return sequence of maps with keys 'uri', 'prefix', and 'source'
+ :)
+declare function util:registered-modules-info() as map(*)* external;
+
+(:~
  : Puts a shared lock on the owner documents of all nodes in the first argument
  : $nodes. Then evaluates the expressions in the second argument $expression
- : and releases the acquired locks after their completion.
+ : and releases the acquired locks aftertheir completion.
  : @param $nodes The nodes that the shared lock will be placed on their owning documents.
  : @param $expression The expression to be evaluated before the acquired locks are released.
+ : @return the results of the evaluation of the expression(s)
  :)
 declare function util:shared-lock($nodes as node()*, $expression as item()*) as item()* external;
 
@@ -893,16 +899,14 @@ declare function util:string-to-binary($encoded-string as xs:string?) as xs:base
  : @param $encoding the encoding type. i.e. 'UTF-8'
  : @return the binary resource
  :)
-declare function util:string-to-binary(
-	$encoded-string as xs:string?,
-	$encoding as xs:string
-) as xs:base64Binary? external;
+declare function util:string-to-binary($encoded-string as xs:string?, $encoding as xs:string) as xs:base64Binary? external;
 
 (:~
  : Returns the current xs:date (with timezone) as reported by the Java method
  : System.currentTimeMillis(). Contrary to fn:current-date, this function is
  : not stable, i.e. the returned xs:date will change during the evaluation time
  : of a query and can be used to measure time differences.
+ : @return the current xs:date (with timezone)
  :)
 declare function util:system-date() as xs:date external;
 
@@ -911,6 +915,7 @@ declare function util:system-date() as xs:date external;
  : method System.currentTimeMillis(). Contrary to fn:current-dateTime, this
  : function is not stable, i.e. the returned xs:dateTime will change during the
  : evaluation time of a query and can be used to measure time differences.
+ : @return the current xs:dateTime (with timezone)
  :)
 declare function util:system-dateTime() as xs:dateTime external;
 
@@ -928,6 +933,7 @@ declare function util:system-property($property-name as xs:string) as xs:string?
  : System.currentTimeMillis(). Contrary to fn:current-time, this function is
  : not stable, i.e. the returned xs:time will change during the evaluation time
  : of a query and can be used to measure time differences.
+ : @return the current xs:time (with timezone)
  :)
 declare function util:system-time() as xs:time external;
 
@@ -937,8 +943,9 @@ declare function util:system-time() as xs:time external;
  : becomes "/", i.e. does the oposite to escape-uri()
  : @param $escaped-string The escaped string to be un-escaped
  : @param $encoding The encoding scheme to use in the un-escaping of the string
+ : @return the un-escaped string
  :)
-declare function util:unescape-uri($escaped-string as xs:string, $encoding as xs:string) as item()* external;
+declare function util:unescape-uri($escaped-string as xs:string, $encoding as xs:string) as xs:string external;
 
 (:~
  : Remove relation between module namespace and source location. This function

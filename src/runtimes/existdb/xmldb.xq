@@ -3,21 +3,21 @@ module namespace xmldb = "http://exist-db.org/xquery/xmldb";
 (:~
  : Check if the user, $user-id, can authenticate against the database
  : collection $collection-uri. The function simply tries to read the collection
- : $collection-uri, using the credentials $user-id and $password. It returns
- : true if the authentication succeeds, false otherwise.
+ : $collection-uri, using the credentials $user-id and $password. Collection
+ : URIs can be specified either as a simple collection path or an XMLDB URI. It
+ : returns true if the authentication succeeds, false otherwise.
  : @param $collection-uri The collection URI
  : @param $user-id The user-id
  : @param $password The password
+ : @return true() on successful authentication, false() otherwise
  :)
-declare function xmldb:authenticate(
-	$collection-uri as xs:string,
-	$user-id as xs:string?,
-	$password as xs:string?
-) as xs:boolean external;
+declare function xmldb:authenticate($collection-uri as xs:string, $user-id as xs:string?, $password as xs:string?) as xs:boolean external;
 
 (:~
  : Removes the user lock on the resource $resource in the collection
  : $collection-uri. If no lock is in place, the empty sequence is returned.
+ : Collection URIs can be specified either as a simple collection path or an
+ : XMLDB URI.
  : @param $collection-uri The collection URI
  : @param $resource The resource
  : @return the user id of the previous lock owner, otherwise if not locked the empty sequence
@@ -26,8 +26,10 @@ declare function xmldb:clear-lock($collection-uri as xs:string, $resource as xs:
 
 (:~
  : Returns true() if the collection $collection-uri exists and is available,
- : otherwise false().
+ : otherwise false(). Collection URIs can be specified either as a simple
+ : collection path or an XMLDB URI.
  : @param $collection-uri The collection URI
+ : @return true() if the collection exists and is available, false() otherwise
  :)
 declare function xmldb:collection-available($collection-uri as xs:string) as xs:boolean external;
 
@@ -38,10 +40,7 @@ declare function xmldb:collection-available($collection-uri as xs:string) as xs:
  : @param $target-collection-uri The target URI
  : @return The path to the newly copied collection
  :)
-declare function xmldb:copy-collection(
-	$source-collection-uri as xs:string,
-	$target-collection-uri as xs:string
-) as xs:string external;
+declare function xmldb:copy-collection($source-collection-uri as xs:string, $target-collection-uri as xs:string) as xs:string external;
 
 (:~
  : Copy the collection $source-collection-uri to the collection
@@ -51,11 +50,7 @@ declare function xmldb:copy-collection(
  : @param $preserve Cause the copy process to preserve the following attributes of each source in the copy: modification time, file mode, user ID, and group ID, as allowed by permissions. Access Control Lists (ACLs) will also be preserved
  : @return The path to the newly copied collection
  :)
-declare function xmldb:copy-collection(
-	$source-collection-uri as xs:string,
-	$target-collection-uri as xs:string,
-	$preserve as xs:boolean
-) as xs:string external;
+declare function xmldb:copy-collection($source-collection-uri as xs:string, $target-collection-uri as xs:string, $preserve as xs:boolean) as xs:string external;
 
 (:~
  : Copy the resource $source-collection-uri/$source-resource-name to collection
@@ -94,20 +89,21 @@ declare function xmldb:copy-resource(
 ) as xs:string external;
 
 (:~
- : Create a new collection with name $new-collection as a child of
- : $target-collection-uri. Returns the path to the new collection if
- : successfully created, otherwise the empty sequence.
+ : Create a new collection $new-collection as a child of
+ : $target-collection-uri. $new-collection may be a path of several segments
+ : (for example 'a/b/c/d'); missing intermediate collections are created.
+ : Collection URIs can be specified either as a simple collection path or an
+ : XMLDB URI.Returns the path to the new collection if successfully created,
+ : otherwise the empty sequence.
  : @param $target-collection-uri The target collection URI
- : @param $new-collection The name of the new collection to create
+ : @param $new-collection The name or relative path of the new collection to create. Intermediate collections in a path are created as needed
  : @return the path to the new collection if successfully created, otherwise the empty sequence
  :)
-declare function xmldb:create-collection(
-	$target-collection-uri as xs:string,
-	$new-collection as xs:string
-) as xs:string? external;
+declare function xmldb:create-collection($target-collection-uri as xs:string, $new-collection as xs:string) as xs:string? external;
 
 (:~
- : Returns the creation date of the collection $collection-uri.
+ : Returns the creation date of the collection $collection-uri. Collection URIs
+ : can be specified either as a simple collection path or an XMLDB URI.
  : @param $collection-uri The collection URI
  : @return the creation date
  :)
@@ -115,6 +111,8 @@ declare function xmldb:created($collection-uri as xs:string) as xs:dateTime exte
 
 (:~
  : Returns the creation date of the resource $resource in $collection-uri.
+ : Collection URIs can be specified either as a simple collection path or an
+ : XMLDB URI.
  : @param $collection-uri The collection URI
  : @param $resource The resource
  : @return the creation date
@@ -163,7 +161,8 @@ declare function xmldb:defragment($nodes as node()+, $integer as xs:integer) as 
 (:~
  : Returns the user-id of the user that holds a write lock on the resource
  : $resource in the collection $collection-uri. If no lock is in place, the
- : empty sequence is returned.
+ : empty sequence is returned. Collection URIs can be specified either as a
+ : simple collection path or an XMLDB URI.
  : @param $collection-uri The collection URI
  : @param $resource The resource
  : @return the user id of the lock owner, otherwise if not locked the empty sequence
@@ -209,7 +208,8 @@ declare function xmldb:find-last-modified-until($node-set as node()*, $until as 
 
 (:~
  : Returns the names of the child collections in the collection
- : $collection-uri.
+ : $collection-uri. Collection URIs can be specified either as a simple
+ : collection path or an XMLDB URI.
  : @param $collection-uri The collection URI
  : @return the sequence of child collection names
  :)
@@ -217,6 +217,8 @@ declare function xmldb:get-child-collections($collection-uri as xs:string) as xs
 
 (:~
  : Returns the names of the child resources in collection $collection-uri.
+ : Collection URIs can be specified either as a simple collection path or an
+ : XMLDB URI.
  : @param $collection-uri The collection URI
  : @return the sequence of resource names
  :)
@@ -224,7 +226,8 @@ declare function xmldb:get-child-resources($collection-uri as item()) as xs:stri
 
 (:~
  : Returns the MIME type if available of the resource $resource-uri, otherwise
- : the empty sequence.
+ : the empty sequence. Resource URIs can be specified either as a simple
+ : collection path, an XMLDB URI or any URI.
  : @param $resource-uri The resource URI
  : @return the mime-type if available, otherwise the empty sequence
  :)
@@ -232,7 +235,8 @@ declare function xmldb:get-mime-type($resource-uri as xs:string) as xs:string? e
 
 (:~
  : Returns the last-modification date of resource $resource in collection
- : $collection-uri.
+ : $collection-uri. Collection URIs can be specified either as a simple
+ : collection path or an XMLDB URI.
  : @param $collection-uri The collection URI
  : @param $resource The resource
  : @return the last modification date
@@ -241,31 +245,32 @@ declare function xmldb:last-modified($collection-uri as item(), $resource as xs:
 
 (:~
  : Login the user, $user-id, and set it as the owner of the currently executing
- : XQuery. It returns true if the authentication succeeds, false otherwise. If
- : called from a HTTP context the login is cached for the lifetime of the HTTP
- : session and may be used for any XQuery run in that session. If an HTTP
- : session does not already exist, none will be created.
+ : XQuery. Collection URIs can be specified either as a simple collection path
+ : or an XMLDB URI. It returns true if the authentication succeeds, false
+ : otherwise. If called from a HTTP context the login is cached for the
+ : lifetime of the HTTP session and may be used for any XQuery run in that
+ : session. If an HTTP session does not already exist, none will be created.
  : @param $collection-uri The collection URI
  : @param $user-id The user-id
  : @param $password The password
+ : @return true() on successful authentication and owner elevation, false() otherwise
  :)
-declare function xmldb:login(
-	$collection-uri as xs:string,
-	$user-id as xs:string?,
-	$password as xs:string?
-) as xs:boolean external;
+declare function xmldb:login($collection-uri as xs:string, $user-id as xs:string?, $password as xs:string?) as xs:boolean external;
 
 (:~
  : Login the user, $user-id, and set it as the owner of the currently executing
- : XQuery. It returns true() if the authentication succeeds, false() otherwise.
- : If called from a HTTP context the login is cached for the lifetime of the
- : HTTP session and may be used for any XQuery run in that session.
- : $create-session specifies whether to create an HTTP session on successful
- : authentication or not. If $create-session is false() or the empty sequence
- : no session will be created if one does not already exist.
+ : XQuery. Collection URIs can be specified either as a simple collection path
+ : or an XMLDB URI. It returns true() if the authentication succeeds, false()
+ : otherwise. If called from a HTTP context the login is cached for the
+ : lifetime of the HTTP session and may be used for any XQueryrun in that
+ : session. $create-session specifies whether to create an HTTP session on
+ : successful authentication or not. If $create-session is false() or the empty
+ : sequence no session will be created if one does not already exist.
  : @param $collection-uri The collection URI
  : @param $user-id The user-id
  : @param $password The password
+ : @param $create-session whether to create the session or not on successful authentication, default false()
+ : @return true() on successful authentication and owner elevation, false() otherwise
  :)
 declare function xmldb:login(
 	$collection-uri as xs:string,
@@ -284,7 +289,8 @@ declare function xmldb:match-collection($regexp as xs:string) as xs:string* exte
 
 (:~
  : Moves the collection $source-collection-uri into the collection
- : $target-collection-uri.
+ : $target-collection-uri. Collection URIs can be specified either as a simple
+ : collection path or an XMLDB URI.
  : @param $source-collection-uri The source collection URI
  : @param $target-collection-uri The target collection URI
  :)
@@ -292,7 +298,8 @@ declare function xmldb:move($source-collection-uri as xs:string, $target-collect
 
 (:~
  : Moves the resource $resource from the collection $source-collection-uri into
- : collection $target-collection-uri.
+ : collection $target-collection-uri. Collection URIs can be specified either
+ : as a simple collection path or an XMLDB URI.
  : @param $source-collection-uri The source collection URI
  : @param $target-collection-uri The target collection URI
  : @param $resource The resource
@@ -305,43 +312,57 @@ declare function xmldb:move($source-collection-uri as xs:string, $target-collect
  : one that executes the XQuery.
  : @param $driver The DB driver
  : @param $create-db The flag to create the db if it does not exist
+ : @return true() if successfully registered, false() otherwise
  :)
 declare function xmldb:register-database($driver as xs:string, $create-db as xs:boolean) as xs:boolean external;
 
 (:~
- : Reindex collection $collection-uri.
+ : Reindex collection $collection-uri. Collection URIs can be specified either
+ : as a simple collection path or an XMLDB URI. The XQuery owner must have
+ : appropriate privileges to do this, e.g. having DBA role.
  : @param $collection-uri The collection URI
+ : @return true() if successfully reindexed, false() otherwise
  :)
 declare function xmldb:reindex($collection-uri as xs:string) as xs:boolean external;
 
 (:~
  : Reindex: if $arg2 is "all", "fulltext", or "vector", reindex collection with
  : that scope; otherwise reindex document $arg2 from $collection-uri.
+ : Collection URIs can be specified either as a simple collection path or an
+ : XMLDB URI. Resource URIs can be specified either as a simple collection
+ : path, an XMLDB URI or any URI. The XQuery owner must have appropriate
+ : privileges to do this, e.g. having DBA role.
  : @param $collection-uri The collection URI
  : @param $doc-uri-or-mode Document name, or mode: "all", "fulltext", "vector"
+ : @return true() if successfully reindexed, false() otherwise
  :)
 declare function xmldb:reindex($collection-uri as xs:string, $doc-uri-or-mode as xs:string) as xs:boolean external;
 
 (:~
- : Reindex document $doc-uri from $collection-uri with scope $mode.
+ : Reindex document $doc-uri from $collection-uri with scope $mode. Collection
+ : URIs can be specified either as a simple collection path or an XMLDB URI.
+ : Resource URIs can be specified either as a simple collection path, an XMLDB
+ : URI or any URI. The XQuery owner must have appropriate privileges to do
+ : this, e.g. having DBA role.
  : @param $collection-uri The collection URI
  : @param $doc-uri The document URI
  : @param $mode Reindex scope: "all", "fulltext", or "vector"
+ : @return true() if successfully reindexed, false() otherwise
  :)
-declare function xmldb:reindex(
-	$collection-uri as xs:string,
-	$doc-uri as xs:string,
-	$mode as xs:string
-) as xs:boolean external;
+declare function xmldb:reindex($collection-uri as xs:string, $doc-uri as xs:string, $mode as xs:string) as xs:boolean external;
 
 (:~
  : Removes the collection $collection-uri and its contents from the database.
+ : Collection URIs can be specified either as a simple collection path or an
+ : XMLDB URI.
  : @param $collection-uri The collection URI
  :)
 declare function xmldb:remove($collection-uri as xs:string) as empty-sequence() external;
 
 (:~
  : Removes the resource $resource from the collection $collection-uri.
+ : Collection URIs can be specified either as a simple collection path or an
+ : XMLDB URI.
  : @param $collection-uri The collection URI
  : @param $resource The resource
  :)
@@ -349,30 +370,26 @@ declare function xmldb:remove($collection-uri as xs:string, $resource as xs:stri
 
 (:~
  : Renames the collection $source-collection-uri with new name
- : $new-collection-name.
+ : $new-collection-name. Collection URIs can be specified either as a simple
+ : collection path or an XMLDB URI.
  : @param $source-collection-uri The source collection URI
  : @param $new-collection-name The new collection name
  :)
-declare function xmldb:rename(
-	$source-collection-uri as xs:string,
-	$new-collection-name as xs:string
-) as empty-sequence() external;
+declare function xmldb:rename($source-collection-uri as xs:string, $new-collection-name as xs:string) as empty-sequence() external;
 
 (:~
  : Renames the resource $resource in collection $collection-uri with new name
- : $new-resource-name.
+ : $new-resource-name. Collection URIs can be specified either as a simple
+ : collection path or an XMLDB URI.
  : @param $collection-uri The collection URI
  : @param $resource The resource
  : @param $new-resource-name The new resource name
  :)
-declare function xmldb:rename(
-	$collection-uri as xs:string,
-	$resource as xs:string,
-	$new-resource-name as xs:string
-) as empty-sequence() external;
+declare function xmldb:rename($collection-uri as xs:string, $resource as xs:string, $new-resource-name as xs:string) as empty-sequence() external;
 
 (:~
- : Set the MIME type of the resource $resource-uri.
+ : Set the MIME type of the resource $resource-uri.Resource URIs can be
+ : specified either as a simple collection path, an XMLDB URI or any URI.
  : @param $resource-uri The resource URI
  : @param $mime-type The new mime-type, use empty sequence to set default value.
  :)
@@ -383,7 +400,8 @@ declare function xmldb:set-mime-type($resource-uri as xs:anyURI, $mime-type as x
  : collection $collection-uri. The estimation is based on the number of pages
  : occupied by the resource. If the document is serialized back to a string,
  : its size may be different, since parts of the structural information are
- : stored in compressed form.
+ : stored in compressed form. Collection URIs can be specified either as a
+ : simple collection path or an XMLDB URI.
  : @param $collection-uri The collection URI
  : @param $resource The resource
  : @return the size of the pages, occupied by the resource, in bytes
@@ -392,8 +410,9 @@ declare function xmldb:size($collection-uri as xs:string, $resource as xs:string
 
 (:~
  : Stores a new resource into the database. The resource is stored in the
- : collection $collection-uri with the name $resource-name. The contents
- : $contents, is either a node, an xs:string, a Java file object or an
+ : collection $collection-uri with the name $resource-name. Collection URIs can
+ : be specified either as a simple collection path or an XMLDB URI. The
+ : contents $contents, is either a node, an xs:string, a Java file object or an
  : xs:anyURI. A node will be serialized to SAX. It becomes the root node of the
  : new document. If $contents is of type xs:anyURI, the resource is loaded from
  : that URI. Returns the path to the new document if successfully stored,
@@ -401,17 +420,15 @@ declare function xmldb:size($collection-uri as xs:string, $resource as xs:string
  : @param $collection-uri The collection URI
  : @param $resource-name The resource name
  : @param $contents The contents
+ : @return the path to new resource if sucessfully stored, otherwise the emtpty sequence
  :)
-declare function xmldb:store(
-	$collection-uri as xs:string,
-	$resource-name as xs:string?,
-	$contents as item()
-) as item()* external;
+declare function xmldb:store($collection-uri as xs:string, $resource-name as xs:string?, $contents as item()) as xs:string? external;
 
 (:~
  : Stores a new resource into the database. The resource is stored in the
- : collection $collection-uri with the name $resource-name. The contents
- : $contents, is either a node, an xs:string, a Java file object or an
+ : collection $collection-uri with the name $resource-name. Collection URIs can
+ : be specified either as a simple collection path or an XMLDB URI. The
+ : contents $contents, is either a node, an xs:string, a Java file object or an
  : xs:anyURI. A node will be serialized to SAX. It becomes the root node of the
  : new document. If $contents is of type xs:anyURI, the resource is loaded from
  : that URI. Returns the path to the new document if successfully stored,
@@ -420,18 +437,20 @@ declare function xmldb:store(
  : @param $resource-name The resource name
  : @param $contents The contents
  : @param $mime-type The mime type
+ : @return the path to new resource if sucessfully stored, otherwise the emtpty sequence
  :)
 declare function xmldb:store(
 	$collection-uri as xs:string,
 	$resource-name as xs:string?,
 	$contents as item(),
 	$mime-type as xs:string
-) as item()* external;
+) as xs:string? external;
 
 (:~
  : Stores a new resource into the database. The resource is stored in the
- : collection $collection-uri with the name $resource-name. The contents
- : $contents, is either a node, an xs:string, a Java file object or an
+ : collection $collection-uri with the name $resource-name. Collection URIs can
+ : be specified either as a simple collection path or an XMLDB URI. The
+ : contents $contents, is either a node, an xs:string, a Java file object or an
  : xs:anyURI. A node will be serialized to SAX. It becomes the root node of the
  : new document. If $contents is of type xs:anyURI, the resource is loaded from
  : that URI. Returns the path to the new document if successfully stored,
@@ -439,33 +458,107 @@ declare function xmldb:store(
  : @param $collection-uri The collection URI
  : @param $resource-name The resource name
  : @param $contents The contents
+ : @return the path to new resource if sucessfully stored, otherwise the emtpty sequence
  :)
-declare function xmldb:store-as-binary(
-	$collection-uri as xs:string,
-	$resource-name as xs:string?,
-	$contents as item()
-) as item()* external;
+declare function xmldb:store-as-binary($collection-uri as xs:string, $resource-name as xs:string?, $contents as item()) as xs:string? external;
 
-declare function xmldb:store-files-from-pattern() as item()* external;
+(:~
+ : Stores new resources into the database. Resources are read from the server's
+ : file system, using file patterns. The function returns a sequence of all
+ : document paths added to the db. These can be directly passed to fn:doc() to
+ : retrieve the document(s).
+ : @param $collection-uri The collection-uri where resources should be stored. Collection URIs can be specified either as a simple collection path or an XMLDB URI.
+ : @param $directory The directory in the file system from where the files are read.
+ : @param $pattern The file matching pattern. Based on code from Apache's Ant, thus following the same conventions. For example: *.xml matches any file ending with .xml in the current directory, **/*.xml matches files in any directory below the current one
+ : @return the sequence of document paths
+ :)
+declare function xmldb:store-files-from-pattern($collection-uri as xs:string, $directory as xs:string, $pattern as xs:string+) as xs:string* external;
+
+(:~
+ : Stores new resources into the database. Resources are read from the server's
+ : file system, using file patterns. The function returns a sequence of all
+ : document paths added to the db. These can be directly passed to fn:doc() to
+ : retrieve the document(s).
+ : @param $collection-uri The collection-uri where resources should be stored. Collection URIs can be specified either as a simple collection path or an XMLDB URI.
+ : @param $directory The directory in the file system from where the files are read.
+ : @param $pattern The file matching pattern. Based on code from Apache's Ant, thus following the same conventions. For example: *.xml matches any file ending with .xml in the current directory, **/*.xml matches files in any directory below the current one
+ : @param $mime-type If the mime-type is something other than 'text/xml' or 'application/xml', the resource will be stored as a binary resource.
+ : @return the sequence of document paths
+ :)
+declare function xmldb:store-files-from-pattern(
+	$collection-uri as xs:string,
+	$directory as xs:string,
+	$pattern as xs:string+,
+	$mime-type as xs:string?
+) as xs:string* external;
+
+(:~
+ : Stores new resources into the database. Resources are read from the server's
+ : file system, using file patterns. The function returns a sequence of all
+ : document paths added to the db. These can be directly passed to fn:doc() to
+ : retrieve the document(s).
+ : @param $collection-uri The collection-uri where resources should be stored. Collection URIs can be specified either as a simple collection path or an XMLDB URI.
+ : @param $directory The directory in the file system from where the files are read.
+ : @param $pattern The file matching pattern. Based on code from Apache's Ant, thus following the same conventions. For example: *.xml matches any file ending with .xml in the current directory, **/*.xml matches files in any directory below the current one
+ : @param $mime-type If the mime-type is something other than 'text/xml' or 'application/xml', the resource will be stored as a binary resource.
+ : @param $preserve-structure If preserve-structure is true(), the filesystem directory structure will be mirrored in the collection. Otherwise all the matching resources, including the ones in sub-directories, will be stored in the collection given in the first argument flatly.
+ : @return the sequence of document paths
+ :)
+declare function xmldb:store-files-from-pattern(
+	$collection-uri as xs:string,
+	$directory as xs:string,
+	$pattern as xs:string+,
+	$mime-type as xs:string?,
+	$preserve-structure as xs:boolean
+) as xs:string* external;
+
+(:~
+ : Stores new resources into the database. Resources are read from the server's
+ : file system, using file patterns. The function returns a sequence of all
+ : document paths added to the db. These can be directly passed to fn:doc() to
+ : retrieve the document(s).
+ : @param $collection-uri The collection-uri where resources should be stored. Collection URIs can be specified either as a simple collection path or an XMLDB URI.
+ : @param $directory The directory in the file system from where the files are read.
+ : @param $pattern The file matching pattern. Based on code from Apache's Ant, thus following the same conventions. For example: *.xml matches any file ending with .xml in the current directory, **/*.xml matches files in any directory below the current one
+ : @param $mime-type If the mime-type is something other than 'text/xml' or 'application/xml', the resource will be stored as a binary resource.
+ : @param $preserve-structure If preserve-structure is true(), the filesystem directory structure will be mirrored in the collection. Otherwise all the matching resources, including the ones in sub-directories, will be stored in the collection given in the first argument flatly.
+ : @param $exclude A sequence of file patterns to exclude
+ : @return the sequence of document paths
+ :)
+declare function xmldb:store-files-from-pattern(
+	$collection-uri as xs:string,
+	$directory as xs:string,
+	$pattern as xs:string+,
+	$mime-type as xs:string?,
+	$preserve-structure as xs:boolean,
+	$exclude as xs:string*
+) as xs:string* external;
 
 (:~
  : Sets the modification time of a resource to the current system time. If not
  : resource does not exist it is not created.
+ : @param $collection-uri The collection URI
+ : @param $resource The name of the resource in the collection
+ : @return true if the modification time was updated, false otherwise.
  :)
-declare function xmldb:touch() as item()* external;
+declare function xmldb:touch($collection-uri as xs:string, $resource as xs:string) as xs:boolean external;
 
 (:~
  : Sets the modification time of a resource. If not resource does not exist it
  : is not created.
+ : @param $collection-uri The collection URI
+ : @param $resource The name of the resource in the collection
  : @param $modification-time The modification time to set on the resource
+ : @return true if the modification time was updated, false otherwise.
  :)
-declare function xmldb:touch($modification-time as xs:dateTime) as item()* external;
+declare function xmldb:touch($collection-uri as xs:string, $resource as xs:string, $modification-time as xs:dateTime) as xs:boolean external;
 
 (:~
  : Processes an XUpdate request, $modifications, against a collection
- : $collection-uri. The modifications are passed in a document conforming to
- : the XUpdate specification.
- : http://rx4rdf.liminalzone.org/xupdate-wd.html#N1a32e0 The function returns
+ : $collection-uri. Collection URIs can be specified either as a simple
+ : collection path or an XMLDB URI.The modifications are passed in a document
+ : conforming to the XUpdate specification.
+ : http://rx4rdf.liminalzone.org/xupdate-wd.html#N1a32e0The function returns
  : the number of modifications caused by the XUpdate.
  : @param $collection-uri The collection URI
  : @param $modifications The XUpdate modifications to be processed

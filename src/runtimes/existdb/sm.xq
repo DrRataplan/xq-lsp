@@ -4,6 +4,7 @@ module namespace sm = "http://exist-db.org/xquery/securitymanager";
  : Adds a Group ACE to the ACL of a resource or collection.
  : @param $path The path to the resource or collection whose ACL you wish to add the ACE to.
  : @param $group-name The name of the group to create an ACE for.
+ : @param $allowed true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode
  : @param $mode The mode to set on the ACE e.g. 'rwx'
  :)
 declare function sm:add-group-ace(
@@ -16,12 +17,15 @@ declare function sm:add-group-ace(
 (:~
  : Adds a manager to a groups managers. Can only be called by a group manager
  : or DBA.
+ : @param $group The name of the group to which you wish to add a manager(s).
+ : @param $manager The user(s) to add to the group managers.
  :)
 declare function sm:add-group-manager($group as xs:string, $manager as xs:string+) as empty-sequence() external;
 
 (:~
  : Adds a user to a group. Can only be called by a group manager or DBA.
  : @param $group The name of the group whoose membership you wish to modify.
+ : @param $member The user(s) to add to the group membership.
  :)
 declare function sm:add-group-member($group as xs:string, $member as xs:string+) as empty-sequence() external;
 
@@ -29,6 +33,7 @@ declare function sm:add-group-member($group as xs:string, $member as xs:string+)
  : Adds a User ACE to the ACL of a resource or collection.
  : @param $path The path to the resource or collection whose ACL you wish to add the ACE to.
  : @param $user-name The name of the user to create an ACE for.
+ : @param $allowed true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode
  : @param $mode The mode to set on the ACE e.g. 'rwx'
  :)
 declare function sm:add-user-ace(
@@ -73,11 +78,7 @@ declare function sm:clear-acl($path as xs:anyURI) as empty-sequence() external;
  : @param $password The User's password.
  : @param $groups Any supplementary groups of which the user should be a member.
  :)
-declare function sm:create-account(
-	$username as xs:string,
-	$password as xs:string,
-	$groups as xs:string*
-) as empty-sequence() external;
+declare function sm:create-account($username as xs:string, $password as xs:string, $groups as xs:string*) as empty-sequence() external;
 
 (:~
  : Creates a User Account.
@@ -149,11 +150,7 @@ declare function sm:create-group($group-name as xs:string, $description as xs:st
  : @param $managers The usernames of users that will be a manager of this group.
  : @param $description A description of the group.
  :)
-declare function sm:create-group(
-	$group-name as xs:string,
-	$managers as xs:string+,
-	$description as xs:string
-) as empty-sequence() external;
+declare function sm:create-group($group-name as xs:string, $managers as xs:string+, $description as xs:string) as empty-sequence() external;
 
 (:~
  : Finds groups whoose group name starts with a matching string
@@ -297,7 +294,7 @@ declare function sm:has-access($path as xs:anyURI, $mode as xs:string) as xs:boo
  : real and effective accounts are different, then both the real and effective
  : account details are returned, otherwise only the real account details are
  : returned.
- : @return Example output when an XQuery is running setUid <id xmlns="http://exist-db.org/xquery/securitymanager"><real><username>guest</username><groups><group>guest</group></groups></real><effective><username>admin</username><groups><group>dba</group></groups></effective></id>.
+ : @return Example output when an XQuery is running setUid &lt;id xmlns="http://exist-db.org/xquery/securitymanager">&lt;real>&lt;username>guest&lt;/username>&lt;groups>&lt;group>guest&lt;/group>&lt;/groups>&lt;/real>&lt;effective>&lt;username>admin&lt;/username>&lt;groups>&lt;group>dba&lt;/group>&lt;/groups>&lt;/effective>&lt;/id>.
  :)
 declare function sm:id() as document-node() external;
 
@@ -306,6 +303,7 @@ declare function sm:id() as document-node() external;
  : @param $path The path to the resource or collection whose ACL you wish to add the ACE to.
  : @param $index The index in the ACL to insert the ACE before, subsequent entries will be renumbered
  : @param $group-name The name of the group to create an ACE for.
+ : @param $allowed true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode
  : @param $mode The mode to set on the ACE e.g. 'rwx'
  :)
 declare function sm:insert-group-ace(
@@ -321,6 +319,7 @@ declare function sm:insert-group-ace(
  : @param $path The path to the resource or collection whose ACL you wish to add the ACE to.
  : @param $index The index in the ACL to insert the ACE before, subsequent entries will be renumbered
  : @param $user-name The name of the user to create an ACE for.
+ : @param $allowed true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode
  : @param $mode The mode to set on the ACE e.g. 'rwx'
  :)
 declare function sm:insert-user-ace(
@@ -341,6 +340,7 @@ declare function sm:is-account-enabled($username as xs:string) as xs:boolean ext
 
 (:~
  : Returns the true() if current account is authenticated, false() otherwise.
+ : @return true() if user from the xquery context is authenticated, false() otherwise
  :)
 declare function sm:is-authenticated() as xs:boolean external;
 
@@ -354,6 +354,7 @@ declare function sm:is-dba($username as xs:string) as xs:boolean external;
 (:~
  : Returns the true() if current account is authenticated by an external realm,
  : false() otherwise.
+ : @return true() if user from the xquery context is authenticated, false() otherwise
  :)
 declare function sm:is-externally-authenticated() as xs:boolean external;
 
@@ -380,6 +381,7 @@ declare function sm:mode-to-octal($mode as xs:string) as xs:string external;
  : Modified an ACE of an ACL of a resource or collection.
  : @param $path The path to the resource or collection whose ACL you wish to modify the ACE of.
  : @param $index The index of the ACE in the ACL to modify
+ : @param $allowed true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode
  : @param $mode The mode to set on the ACE e.g. 'rwx'
  :)
 declare function sm:modify-ace(
@@ -407,6 +409,7 @@ declare function sm:passwd($username as xs:string, $password as xs:string) as em
  : password. The use-case for this function is migrating a user from one eXist
  : instance to another.
  : @param $username The User's username.
+ : @param $password-digest The encoded digest of the User's new password (assumes eXist's default digest algorithm).
  :)
 declare function sm:passwd-hash($username as xs:string, $password-digest as xs:string) as empty-sequence() external;
 
@@ -433,12 +436,15 @@ declare function sm:remove-group($group-name as xs:string) as empty-sequence() e
 (:~
  : Removes a manager from a groups managers. Can only be called by a group
  : manager of DBA.
+ : @param $group The name of the group from which you wish to remove a manager(s)
+ : @param $manager The user(s) to remove from the group managers.
  :)
 declare function sm:remove-group-manager($group as xs:string, $manager as xs:string+) as empty-sequence() external;
 
 (:~
  : Removes a user from a group. Can only be called by a group manager of DBA.
  : @param $group The name of the group whoose membership you wish to modify.
+ : @param $member The user(s) to remove from the group membership.
  :)
 declare function sm:remove-group-member($group as xs:string, $member as xs:string+) as empty-sequence() external;
 
@@ -456,11 +462,7 @@ declare function sm:set-account-enabled($username as xs:string, $enabled as xs:b
  : @param $attribute The metadata attribute key.
  : @param $value The metadata value,
  :)
-declare function sm:set-account-metadata(
-	$username as xs:string,
-	$attribute as xs:anyURI,
-	$value as xs:string
-) as empty-sequence() external;
+declare function sm:set-account-metadata($username as xs:string, $attribute as xs:anyURI, $value as xs:string) as empty-sequence() external;
 
 (:~
  : Sets a metadata attribute value for a group
@@ -468,11 +470,7 @@ declare function sm:set-account-metadata(
  : @param $attribute The metadata attribute key.
  : @param $value The metadata value,
  :)
-declare function sm:set-group-metadata(
-	$group-name as xs:string,
-	$attribute as xs:anyURI,
-	$value as xs:string
-) as empty-sequence() external;
+declare function sm:set-group-metadata($group-name as xs:string, $attribute as xs:anyURI, $value as xs:string) as empty-sequence() external;
 
 (:~
  : Sets the umask of a Users Account.

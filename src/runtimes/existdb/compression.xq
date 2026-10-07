@@ -83,13 +83,36 @@ declare function compression:no-filter($path as xs:string, $data-type as xs:stri
  : @param $param One or more parameters.
  : @return Always true, so that no entries are filtered. Parameters are ignored.
  :)
-declare function compression:no-filter(
-	$path as xs:string,
-	$data-type as xs:string,
-	$param as item()*
-) as xs:boolean external;
+declare function compression:no-filter($path as xs:string, $data-type as xs:string, $param as item()*) as xs:boolean external;
 
-declare function compression:tar() as xs:base64Binary* external;
+(:~
+ : Tars nodes, resources and collections.
+ : @param $sources The sequence of URI's and/or Entrys. If an URI points to a collection then the collection, its resources and sub-collections are zipped recursively. If URI points to file (available only to the DBA role.) then file or directory are zipped. An Entry takes the format &lt;entry name="filename.ext" type="collection|uri|binary|xml|text" method="deflate|store">data&lt;/entry>. The method attribute is only effective for the compression:zip function.
+ : @param $use-collection-hierarchy Indicates whether the Collection hierarchy (if any) should be preserved in the zip file.
+ :)
+declare function compression:tar($sources as xs:anyType+, $use-collection-hierarchy as xs:boolean) as xs:base64Binary* external;
+
+(:~
+ : Tars nodes, resources and collections.
+ : @param $sources The sequence of URI's and/or Entrys. If an URI points to a collection then the collection, its resources and sub-collections are zipped recursively. If URI points to file (available only to the DBA role.) then file or directory are zipped. An Entry takes the format &lt;entry name="filename.ext" type="collection|uri|binary|xml|text" method="deflate|store">data&lt;/entry>. The method attribute is only effective for the compression:zip function.
+ : @param $use-collection-hierarchy Indicates whether the Collection hierarchy (if any) should be preserved in the zip file.
+ : @param $strip-prefix This prefix is stripped from the Entrys name
+ :)
+declare function compression:tar($sources as xs:anyType+, $use-collection-hierarchy as xs:boolean, $strip-prefix as xs:string) as xs:base64Binary* external;
+
+(:~
+ : Tars nodes, resources and collections.
+ : @param $sources The sequence of URI's and/or Entrys. If an URI points to a collection then the collection, its resources and sub-collections are zipped recursively. If URI points to file (available only to the DBA role.) then file or directory are zipped. An Entry takes the format &lt;entry name="filename.ext" type="collection|uri|binary|xml|text" method="deflate|store">data&lt;/entry>. The method attribute is only effective for the compression:zip function.
+ : @param $use-collection-hierarchy Indicates whether the Collection hierarchy (if any) should be preserved in the zip file.
+ : @param $strip-prefix This prefix is stripped from the Entrys name
+ : @param $encoding This encoding to be used for filenames inside the compressed file
+ :)
+declare function compression:tar(
+	$sources as xs:anyType+,
+	$use-collection-hierarchy as xs:boolean,
+	$strip-prefix as xs:string,
+	$encoding as xs:string
+) as xs:base64Binary* external;
 
 (:~
  : UnGZip's data
@@ -104,11 +127,7 @@ declare function compression:ungzip($gzip-data as xs:base64Binary) as xs:base64B
  : @param $entry-filter A user defined function for filtering resources from the tar file. The function takes 2 parameters e.g. user:untar-entry-filter($path as xs:string, $data-type as xs:string) as xs:boolean. $data-type may be 'resource' or 'folder'. If the return type is true() it indicates the entry should be processed and passed to the entry-data function, else the resource is skipped. If you wish to extract all resources you can use the provided compression:no-filter#2 function.
  : @param $entry-data A user defined function for storing an extracted resource from the tar file. The function takes 3 parameters e.g. user:untar-entry-data($path as xs:string, $data-type as xs:string, $data as item()?). Or a user defined function which returns a db path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. user:entry-path($path as xs:string, $data-type as xs:string, $param as item()*) as xs:anyURI. $data-type may be 'resource' or 'folder'. Functions for storing the entries to a folder on the filesystem or a collection in the database provided by compression:fs-store-entry3($dest) and compression:db-store-entry3($dest).
  :)
-declare function compression:untar(
-	$tar-data as xs:base64Binary,
-	$entry-filter as function(*),
-	$entry-data as function(*)
-) as item()* external;
+declare function compression:untar($tar-data as xs:base64Binary, $entry-filter as function(*), $entry-data as function(*)) as item()* external;
 
 (:~
  : UnTar all the resources/folders from the provided data by calling user
@@ -116,7 +135,7 @@ declare function compression:untar(
  : @param $tar-data The tar file data
  : @param $entry-filter A user defined function for filtering resources from the tar file. The function takes 3 parameters e.g. user:untar-entry-filter($path as xs:string, $data-type as xs:string, $param as item()*) as xs:boolean. $data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters, for example a list of extracted files. If the return type is true() it indicates the entry should be processed and passed to the entry-data function, else the resource is skipped. If you wish to extract all resources you can use the provided compression:no-filter#3 function.
  : @param $entry-filter-param A sequence with an additional parameters for filtering function.
- : @param $entry-data A user defined function for storing an extracted resource from the tar file. The function takes 4 parameters e.g. user:untar-entry-data($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*). Or a user defined function which returns a db path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. user:entry-path($path as xs:string, $data-type as xs:string, $param as item()*) as xs:anyURI. $data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters Functions for storing the entries to a folder on the filesystem or a collection in the database provided by compression:fs-store-entry4($dest) and compression:db-store-entry4($dest).
+ : @param $entry-data A user defined function for storing an extracted resource from the tar file. The function takes 4 parameters e.g. user:untar-entry-data($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*). Or a user defined function which returns a db path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. user:entry-path($path as xs:string, $data-type as xs:string, $param as item()*) as xs:anyURI. $data-type may be 'resource' or 'folder'. $param is a sequence with any additional parametersFunctions for storing the entries to a folder on the filesystem or a collection in the database provided by compression:fs-store-entry4($dest) and compression:db-store-entry4($dest).
  : @param $entry-data-param A sequence with an additional parameters for storing function.
  :)
 declare function compression:untar(
@@ -133,7 +152,7 @@ declare function compression:untar(
  : @param $tar-data The tar file data
  : @param $entry-filter A user defined function for filtering resources from the tar file. The function takes 3 parameters e.g. user:untar-entry-filter($path as xs:string, $data-type as xs:string, $param as item()*) as xs:boolean. $data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters, for example a list of extracted files. If the return type is true() it indicates the entry should be processed and passed to the entry-data function, else the resource is skipped. If you wish to extract all resources you can use the provided compression:no-filter#3 function.
  : @param $entry-filter-param A sequence with an additional parameters for filtering function.
- : @param $entry-data A user defined function for storing an extracted resource from the tar file. The function takes 4 parameters e.g. user:untar-entry-data($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*). Or a user defined function which returns a db path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. user:entry-path($path as xs:string, $data-type as xs:string, $param as item()*) as xs:anyURI. $data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters Functions for storing the entries to a folder on the filesystem or a collection in the database provided by compression:fs-store-entry4($dest) and compression:db-store-entry4($dest).
+ : @param $entry-data A user defined function for storing an extracted resource from the tar file. The function takes 4 parameters e.g. user:untar-entry-data($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*). Or a user defined function which returns a db path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. user:entry-path($path as xs:string, $data-type as xs:string, $param as item()*) as xs:anyURI. $data-type may be 'resource' or 'folder'. $param is a sequence with any additional parametersFunctions for storing the entries to a folder on the filesystem or a collection in the database provided by compression:fs-store-entry4($dest) and compression:db-store-entry4($dest).
  : @param $entry-data-param A sequence with an additional parameters for storing function.
  : @param $encoding The encoding to be used during uncompressing eg: UTF8 or Cp437 from https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html
  :)
@@ -153,11 +172,7 @@ declare function compression:untar(
  : @param $entry-filter A user defined function for filtering resources from the zip file. The function takes 2 parameters e.g. user:unzip-entry-filter($path as xs:string, $data-type as xs:string) as xs:boolean. $data-type may be 'resource' or 'folder'. If the return type is true() it indicates the entry should be processed and passed to the $entry-data function, else the resource is skipped. If you wish to extract all resources you can use the provided compression:no-filter#2 function.
  : @param $entry-data A user defined function for storing an extracted resource from the zip file. The function takes 3 parameters e.g. user:unzip-entry-data($path as xs:string, $data-type as xs:string, $data as item()?). Or a user defined function which returns a db path for storing an extracted resource from the zip file. The function takes 3 parameters e.g. user:entry-path($path as xs:string, $data-type as xs:string, $param as item()*) as xs:anyURI. $data-type may be 'resource' or 'folder'. Functions for storing the entries to a folder on the filesystem or a collection in the database provided by compression:fs-store-entry3($dest) and compression:db-store-entry3($dest).
  :)
-declare function compression:unzip(
-	$zip-data as xs:base64Binary,
-	$entry-filter as function(*),
-	$entry-data as function(*)
-) as item()* external;
+declare function compression:unzip($zip-data as xs:base64Binary, $entry-filter as function(*), $entry-data as function(*)) as item()* external;
 
 (:~
  : UnZip all the resources/folders from the provided data by calling user
@@ -195,4 +210,31 @@ declare function compression:unzip(
 	$encoding as xs:string
 ) as item()* external;
 
-declare function compression:zip() as xs:base64Binary* external;
+(:~
+ : Zips nodes, resources and collections.
+ : @param $sources The sequence of URI's and/or Entrys. If an URI points to a collection then the collection, its resources and sub-collections are zipped recursively. If URI points to file (available only to the DBA role.) then file or directory are zipped. An Entry takes the format &lt;entry name="filename.ext" type="collection|uri|binary|xml|text" method="deflate|store">data&lt;/entry>. The method attribute is only effective for the compression:zip function.
+ : @param $use-collection-hierarchy Indicates whether the Collection hierarchy (if any) should be preserved in the zip file.
+ :)
+declare function compression:zip($sources as xs:anyType+, $use-collection-hierarchy as xs:boolean) as xs:base64Binary* external;
+
+(:~
+ : Zips nodes, resources and collections.
+ : @param $sources The sequence of URI's and/or Entrys. If an URI points to a collection then the collection, its resources and sub-collections are zipped recursively. If URI points to file (available only to the DBA role.) then file or directory are zipped. An Entry takes the format &lt;entry name="filename.ext" type="collection|uri|binary|xml|text" method="deflate|store">data&lt;/entry>. The method attribute is only effective for the compression:zip function.
+ : @param $use-collection-hierarchy Indicates whether the Collection hierarchy (if any) should be preserved in the zip file.
+ : @param $strip-prefix This prefix is stripped from the Entrys name
+ :)
+declare function compression:zip($sources as xs:anyType+, $use-collection-hierarchy as xs:boolean, $strip-prefix as xs:string) as xs:base64Binary* external;
+
+(:~
+ : Zips nodes, resources and collections.
+ : @param $sources The sequence of URI's and/or Entrys. If an URI points to a collection then the collection, its resources and sub-collections are zipped recursively. If URI points to file (available only to the DBA role.) then file or directory are zipped. An Entry takes the format &lt;entry name="filename.ext" type="collection|uri|binary|xml|text" method="deflate|store">data&lt;/entry>. The method attribute is only effective for the compression:zip function.
+ : @param $use-collection-hierarchy Indicates whether the Collection hierarchy (if any) should be preserved in the zip file.
+ : @param $strip-prefix This prefix is stripped from the Entrys name
+ : @param $encoding This encoding to be used for filenames inside the compressed file
+ :)
+declare function compression:zip(
+	$sources as xs:anyType+,
+	$use-collection-hierarchy as xs:boolean,
+	$strip-prefix as xs:string,
+	$encoding as xs:string
+) as xs:base64Binary* external;

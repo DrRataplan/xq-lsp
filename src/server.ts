@@ -40,6 +40,7 @@ import {
 	getRuntimeAnalyses,
 	getRuntimePredeclaredNamespaces,
 	withPredeclaredNs,
+	withDeclaredBuiltinModules,
 	getRuntimePredeclaredVariables,
 	withPredeclaredVariables,
 } from "./runtimes.ts";
@@ -233,7 +234,7 @@ function resolveContext(
 	const { byNamespace: globAnalyses, lib } = getGlobAnalyses(currentUri);
 	const predeclaredNs = getRuntimePredeclaredNamespaces(lib);
 	const predeclaredVars = getRuntimePredeclaredVariables(lib, currentUri);
-	const analysis = withPredeclaredVariables(withPredeclaredNs(rawAnalysis, predeclaredNs), predeclaredVars);
+	const withPredeclared = withPredeclaredVariables(withPredeclaredNs(rawAnalysis, predeclaredNs), predeclaredVars);
 
 	const runtimeByNamespace = new Map<string, FileAnalysis>();
 	for (const runtimeAnalysis of getRuntimeAnalyses(lib)) {
@@ -244,6 +245,12 @@ function resolveContext(
 				existing ? mergeAnalyses(existing, runtimeAnalysis) : runtimeAnalysis,
 			);
 		}
+	}
+	const analysis = withDeclaredBuiltinModules(withPredeclared, new Set(runtimeByNamespace.keys()));
+	// Their functions are callable by namespace URI alone (see withDeclaredBuiltinModules).
+	for (const nd of analysis.namespaceDecls) {
+		const runtimeAnalysis = nd.offset === -1 ? runtimeByNamespace.get(nd.namespaceUri) : undefined;
+		if (runtimeAnalysis && !result.has(nd.namespaceUri)) result.set(nd.namespaceUri, runtimeAnalysis);
 	}
 	for (const imp of rawAnalysis.imports) {
 		let imported: FileAnalysis | undefined;

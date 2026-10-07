@@ -37,6 +37,21 @@ const EXISTDB_PREDECLARED_NAMESPACES: Record<string, string> = {
 	xmldiff: "http://exist-db.org/xquery/xmldiff",
 	contentextraction: "http://exist-db.org/xquery/contentextraction",
 	counter: "http://exist-db.org/xquery/counter",
+	console: "http://exist-db.org/xquery/console",
+	zip: "http://expath.org/ns/zip",
+	http: "http://expath.org/ns/http-client",
+	req: "http://exquery.org/ns/request",
+	rest: "http://exquery.org/ns/restxq",
+	exrest: "http://exquery.org/ns/restxq/exist",
+	sql: "http://exist-db.org/xquery/sql",
+	jndi: "http://exist-db.org/xquery/jndi",
+	xslfo: "http://exist-db.org/xquery/xslfo",
+	xqdm: "http://exist-db.org/xquery/xqdoc",
+	ws: "http://exist-db.org/xquery/websocket",
+	simpleql: "http://exist-db.org/xquery/simple-ql",
+	plogin: "http://exist-db.org/xquery/persistentlogin",
+	backups: "http://exist-db.org/xquery/backups",
+	cqlparser: "http://exist-db.org/xquery/cqlparser",
 	exist: "http://exist.sourceforge.net/NS/exist",
 	xdt: "http://www.w3.org/2003/05/xpath-datatypes",
 	err: "http://www.w3.org/2005/xqt-errors",
@@ -73,6 +88,23 @@ export function withPredeclaredNs(analysis: FileAnalysis, predeclaredNs: Namespa
 		...(analysis.modulePrefix ? [analysis.modulePrefix] : []),
 	]);
 	const toAdd = predeclaredNs.filter((nd) => !known.has(nd.prefix));
+	if (toAdd.length === 0) return analysis;
+	return { ...analysis, namespaceDecls: [...analysis.namespaceDecls, ...toAdd] };
+}
+
+/**
+ * eXist-db resolves its built-in modules by namespace URI, so a plain
+ * `declare namespace repo = "http://exist-db.org/xquery/repo"` (no `import
+ * module`) is enough to call their functions. Mark every such declaration
+ * whose URI is one of `builtinModuleUris` as implicitly available, the same
+ * way a predeclared namespace is (offset -1), so the function-call checker
+ * looks the functions up instead of reporting them undeclared.
+ */
+export function withDeclaredBuiltinModules(analysis: FileAnalysis, builtinModuleUris: ReadonlySet<string>): FileAnalysis {
+	const alreadyAvailable = new Set(analysis.namespaceDecls.filter((nd) => nd.offset === -1).map((nd) => nd.namespaceUri));
+	const toAdd = analysis.namespaceDecls
+		.filter((nd) => nd.offset >= 0 && builtinModuleUris.has(nd.namespaceUri) && !alreadyAvailable.has(nd.namespaceUri))
+		.map((nd) => ({ ...nd, offset: -1 }));
 	if (toAdd.length === 0) return analysis;
 	return { ...analysis, namespaceDecls: [...analysis.namespaceDecls, ...toAdd] };
 }
