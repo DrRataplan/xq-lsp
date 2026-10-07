@@ -91,9 +91,9 @@ declare function request:get-method() as xs:string external;
 (:~
  : Returns the HTTP request parameter identified by $name. If the parameter
  : could not be found, the default value is returned instead. Note: this
- : function will not try to expand predefined entities like &amp; or &lt;, so a
- : &amp; passed through a parameter will indeed be treated as an &amp;
- : character.
+ : function will not try to expand predefined entities like &amp;amp; or
+ : &amp;lt;, so a &amp;amp; passed through a parameter will indeed be treated
+ : as an &amp;amp; character.
  : @param $name The parameter name
  : @param $default-value The default value if the parameter does not exist
  : @return a sequence of parameter values
@@ -103,19 +103,15 @@ declare function request:get-parameter($name as xs:string, $default-value as ite
 (:~
  : Returns the HTTP request parameter identified by $name. If the parameter
  : could not be found, the default value is returned instead. Note: this
- : function will not try to expand predefined entities like &amp; or &lt;, so a
- : &amp; passed through a parameter will indeed be treated as an &amp;
- : character.
+ : function will not try to expand predefined entities like &amp;amp; or
+ : &amp;lt;, so a &amp;amp; passed through a parameter will indeed be treated
+ : as an &amp;amp; character.
  : @param $name The parameter name
  : @param $default-value The default value if the parameter does not exist
  : @param $failonerror The fail on error flag. If the value is set to false, then the function will not fail if there is no request in scope.
  : @return a sequence of parameter values
  :)
-declare function request:get-parameter(
-	$name as xs:string,
-	$default-value as item()*,
-	$failonerror as xs:boolean*
-) as xs:string* external;
+declare function request:get-parameter($name as xs:string, $default-value as item()*, $failonerror as xs:boolean*) as xs:string* external;
 
 (:~
  : Returns a sequence containing the names of all parameters passed in the
@@ -181,6 +177,10 @@ declare function request:get-server-name() as xs:string external;
 declare function request:get-server-port() as xs:integer external;
 
 (:~
+ : Returns the servlet path of the current request, i.e. the portion of the
+ : request URI that points to the servlet which is handling the request. For
+ : example an xquery GET or POST to /some/path/myfile.xq/extra/path will return
+ : /some/path/myfile.xq when myfile.xq is executed.
  : @return the servlet path of the current request
  :)
 declare function request:get-servlet-path() as xs:string external;
@@ -193,6 +193,18 @@ declare function request:get-servlet-path() as xs:string external;
  : @return the base64 encoded data from the uploaded file
  :)
 declare function request:get-uploaded-file-data($upload-param-name as xs:string) as xs:base64Binary* external;
+
+(:~
+ : Retrieve the part headers of each uploaded file submitted under a parameter
+ : name in a multi-part request. Returns one map (header name to header value)
+ : per uploaded file, in submission order and aligned with
+ : request:get-uploaded-file-name. Header names are keyed as submitted. Returns
+ : the empty sequence if the request is not a multi-part request or the
+ : parameter name does not point to a file part.
+ : @param $upload-param-name The parameter name
+ : @return one map of header name to header value per uploaded file
+ :)
+declare function request:get-uploaded-file-headers($upload-param-name as xs:string) as map(*)* external;
 
 (:~
  : Retrieve the file name of an uploaded file from a multi-part request. This
@@ -235,20 +247,25 @@ declare function request:get-url() as xs:string external;
 declare function request:is-multipart-content() as xs:boolean external;
 
 (:~
- : Stores a value in the current request using the supplied attribute name.
- : @param $name The attribute name
- : @param $value The attribute value
- :)
-declare function request:set-attribute($name as xs:string, $value as item()*) as empty-sequence() external;
- : Returns the empty sequence if no item of $available is acceptable; the
- : caller should then respond with 406 Not Acceptable.
+ : Selects the best media type to return for the current request by matching
+ : the media types the server can produce ($available) against the HTTP Accept
+ : header of the request. Quality values (q=) and the */* and type/* wildcards
+ : are honored, per RFC 7231. A missing or empty Accept header means no
+ : preference, in which case the first item of $available is returned. Returns
+ : the empty sequence if no item of $available is acceptable; the caller should
+ : then respond with 406 Not Acceptable.
  : @param $available The media types the server can produce, in order of preference.
  : @return the best matching media type, or the empty sequence if none is acceptable
  :)
 declare function request:negotiate-content-type($available as xs:string*) as xs:string? external;
 
 (:~
- : Returns $default if no item of $available is acceptable.
+ : Selects the best media type to return for the current request by matching
+ : the media types the server can produce ($available) against the HTTP Accept
+ : header of the request. Quality values (q=) and the */* and type/* wildcards
+ : are honored, per RFC 7231. A missing or empty Accept header means no
+ : preference, in which case the first item of $available is returned. Returns
+ : $default if no item of $available is acceptable.
  : @param $available The media types the server can produce, in order of preference.
  : @param $default The media type to fall back to when no item of $available is acceptable.
  : @return the best matching media type, or $default if none is acceptable
@@ -256,3 +273,19 @@ declare function request:negotiate-content-type($available as xs:string*) as xs:
 declare function request:negotiate-content-type($available as xs:string*, $default as xs:string?) as xs:string? external;
 
 (:~
+ : Parses the HTTP Accept header of the current request into a sequence of
+ : maps, one per media range, ordered by descending quality and then descending
+ : specificity. Each map has keys 'type' (the media type as a string, e.g.
+ : 'text/html'), 'quality' (the q value as an xs:double, defaulting to 1.0),
+ : and 'parameters' (a map(xs:string, xs:string) of any other media-range
+ : parameters). Returns the empty sequence if the request has no Accept header.
+ : @return one map per media range, highest preference first
+ :)
+declare function request:parse-accept-header() as map(*)* external;
+
+(:~
+ : Stores a value in the current request using the supplied attribute name.
+ : @param $name The attribute name
+ : @param $value The attribute value
+ :)
+declare function request:set-attribute($name as xs:string, $value as item()*) as empty-sequence() external;

@@ -19,6 +19,7 @@ declare function counter:create($counter-name as item(), $init-value as xs:long)
 (:~
  : Destroy the counter named $counter-name.
  : @param $counter-name Name of the counter.
+ : @return boolean value true() if removal as successful, otherwise return value false().
  :)
 declare function counter:destroy($counter-name as item()) as xs:boolean? external;
 

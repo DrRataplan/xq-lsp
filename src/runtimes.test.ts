@@ -10,11 +10,14 @@ import {
 	getRuntimeAnalyses,
 	getRuntimePredeclaredNamespaces,
 	withPredeclaredNs,
+	withDeclaredBuiltinModules,
 	getRuntimePredeclaredVariables,
 	withPredeclaredVariables,
 } from "./runtimes.ts";
 import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
 import { checkUndeclaredVariables } from "./variable-diagnostics.ts";
+import { getBuiltins } from "./builtins.ts";
+import { checkFunctionCalls } from "./functioncall-diagnostics.ts";
 
 const runtimesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "runtimes");
 
@@ -222,6 +225,14 @@ describe("runtime defs: predeclared namespaces", () => {
 		}
 	});
 
+	test("existdb: EXPath/EXQuery and extension modules verified predeclared on eXist 7", () => {
+		const predeclaredPrefixes = new Set(getRuntimePredeclaredNamespaces(["existdb"]).map((nd) => nd.prefix));
+		for (const prefix of ["zip", "http", "req", "rest", "exrest", "sql", "jndi", "xslfo", "xqdm", "ws", "console"]) {
+			assert.ok(predeclaredPrefixes.has(prefix), `${prefix} should be in the existdb predeclared list`);
+		}
+		assert.deepEqual(diagsFor(`zip:entries(xs:anyURI("/db/a.zip"))`, ["existdb"]), []);
+	});
+
 	test("existdb: completions work for util: without explicit import", () => {
 		const src = `util:`;
 		const rawAnalysis = analyze(src, "file:///main.xq");
@@ -336,5 +347,43 @@ describe("runtime defs: predeclared install-script variables ($home/$dir/$target
 		const analysis = withPredeclaredVariables(rawAnalysis, predeclared);
 		const targets = analysis.moduleVariables.filter((v) => v.qname.localName === "target");
 		assert.equal(targets.length, 1, `expected exactly one $target, got ${targets.length}`);
+	});
+});
+
+describe("runtime defs: eXist-db built-in modules via declare namespace", () => {
+	const REPO_NS = "http://exist-db.org/xquery/repo";
+	const runtimeByNs = new Map(
+		getRuntimeAnalyses(["existdb"])
+			.filter((a) => a.moduleNamespaceUri)
+			.map((a) => [a.moduleNamespaceUri!, a] as const),
+	);
+	const imports = new Map([["builtin:fn", getBuiltins()], ...runtimeByNs]);
+
+	function check(query: string): string[] {
+		const { analysis: raw, ast } = analyzeWithAst(query, "test.xq");
+		const analysis = withDeclaredBuiltinModules(raw, new Set(runtimeByNs.keys()));
+		return checkFunctionCalls(ast!, analysis, imports).map((d) => d.message);
+	}
+
+	test("calling a built-in module's function after a plain declare namespace is not flagged", () => {
+		assert.deepEqual(check(`declare namespace repo = "${REPO_NS}"; repo:get-root()`), []);
+	});
+
+	test("arity and unknown-function errors are still reported for such a namespace", () => {
+		assert.deepEqual(check(`declare namespace repo = "${REPO_NS}"; repo:get-root(1)`), [
+			"repo:get-root expects 0 argument(s), got 1",
+		]);
+		assert.deepEqual(check(`declare namespace repo = "${REPO_NS}"; repo:nope()`), ["repo:nope is not declared"]);
+	});
+
+	test("a declare namespace for a non-built-in URI still exposes no functions", () => {
+		assert.deepEqual(check(`declare namespace x = "urn:other"; x:f()`), ["x:f is not declared"]);
+	});
+
+	test("compression:zip resolves with 2, 3 and 4 arguments", () => {
+		const q = (args: string) => `import module namespace compression = "http://exist-db.org/xquery/compression"; compression:zip(${args})`;
+		assert.deepEqual(check(q(`(), true()`)), []);
+		assert.deepEqual(check(q(`(), true(), "p"`)), []);
+		assert.deepEqual(check(q(`(), true(), "p", "UTF-8"`)), []);
 	});
 });

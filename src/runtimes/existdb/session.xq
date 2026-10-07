@@ -107,5 +107,6 @@ declare function session:set-current-user($user-name as xs:string, $password as 
  : keep this session open between client accesses. After this interval, the
  : servlet container will invalidate the session. A negative time indicates the
  : session should never timeout.
+ : @param $interval The maximum inactive interval (in seconds) before closing the session
  :)
 declare function session:set-max-inactive-interval($interval as xs:int) as empty-sequence() external;

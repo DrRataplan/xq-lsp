@@ -2,8 +2,9 @@ module namespace response = "http://exist-db.org/xquery/response";
 
 (:~
  : Returns whether a response object exists.
+ : @return true if the response object exists
  :)
-declare function response:exists() as item()* external;
+declare function response:exists() as xs:boolean external;
 
 (:~
  : Sends a HTTP redirect response (302) to the client.
@@ -23,6 +24,7 @@ declare function response:set-cookie($name as xs:string, $value as xs:string) as
  : @param $name The cookie name
  : @param $value The cookie value
  : @param $max-age The xs:duration of the cookie
+ : @param $secure-flag The flag for whether the cookie is to be secure (i.e., only transferred using HTTPS)
  :)
 declare function response:set-cookie(
 	$name as xs:string,
@@ -36,6 +38,7 @@ declare function response:set-cookie(
  : @param $name The cookie name
  : @param $value The cookie value
  : @param $max-age The xs:duration of the cookie
+ : @param $secure-flag The flag for whether the cookie is to be secure (i.e., only transferred using HTTPS)
  : @param $domain The cookie domain
  : @param $path The cookie path
  :)
@@ -79,9 +82,9 @@ declare function response:stream($content as item()*, $serialization-options as 
 
 (:~
  : Streams the binary data to the current servlet response output stream. The
- : ContentType HTTP header is set to the value given in $content-type. Note:
- : the servlet output stream will be closed afterwards and mime-type settings
- : in the prolog will not be passed.
+ : ContentType HTTP header is set to the value given in $content-type.Note: the
+ : servlet output stream will be closed afterwards and mime-type settings in
+ : the prolog will not be passed.
  : @param $binary-data The binary data to stream
  : @param $content-type The ContentType HTTP header value
  : @param $filename The filename. If provided, a Content-Disposition header is set for the filename in the HTTP Response
@@ -89,13 +92,25 @@ declare function response:stream($content as item()*, $serialization-options as 
 declare function response:stream-binary($binary-data as xs:base64Binary, $content-type as xs:string, $filename as xs:string?) as empty-sequence() external;
 
 (:~
+ : Streams a stored binary resource directly to the current servlet response
+ : output stream, copying from the database to the response without first
+ : materializing the whole resource in memory (unlike response:stream-binary,
+ : which takes a fully-loaded xs:base64Binary). Suited to large downloads. The
+ : ContentType HTTP header is set to the value given in $content-type. Note:
+ : the servlet output stream is closed afterwards.
  : @param $binary-resource-path The path to the stored binary resource, e.g. /db/path/to/image.png
  : @param $content-type The ContentType HTTP header value
  :)
 declare function response:stream-binary-resource($binary-resource-path as xs:string, $content-type as xs:string) as empty-sequence() external;
 
 (:~
- : A Content-Disposition header is set from $filename.
+ : Streams a stored binary resource directly to the current servlet response
+ : output stream, copying from the database to the response without first
+ : materializing the whole resource in memory (unlike response:stream-binary,
+ : which takes a fully-loaded xs:base64Binary). Suited to large downloads. The
+ : ContentType HTTP header is set to the value given in $content-type. Note:
+ : the servlet output stream is closed afterwards. A Content-Disposition header
+ : is set from $filename.
  : @param $binary-resource-path The path to the stored binary resource, e.g. /db/path/to/image.png
  : @param $content-type The ContentType HTTP header value
  : @param $filename The filename. If provided, a Content-Disposition header is set for the filename in the HTTP Response

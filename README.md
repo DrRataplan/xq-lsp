@@ -101,8 +101,7 @@ import module namespace util = "http://exist-db.org/xquery/util";
 util:uuid()
 ```
 
-Modules that require explicit import even in eXist-db (e.g. `datetime`,
-`httpclient`, `console`, `crypto`, `kwic`) still need a `import module
+Modules that require explicit import even in eXist-db (e.g. `console`, `kwic`) still need a `import module
 namespace` declaration; the server offers quick-fix code actions to insert it.
 
 ```xquery

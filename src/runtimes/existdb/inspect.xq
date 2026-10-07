@@ -13,30 +13,32 @@ declare function inspect:inspect-function($function as function(*)) as node() ex
  : XML fragment describing the module and the functions/variables contained in
  : it.
  : @param $location The location URI of the module to inspect
+ : @return An XML fragment describing the module and all functions contained in it.
  :)
-declare function inspect:inspect-module($location as xs:anyURI) as item()* external;
+declare function inspect:inspect-module($location as xs:anyURI) as element()? external;
 
 (:~
  : Returns an XML fragment describing the library module identified by the
  : given namespace URI and the functions/variables contained in it.
  : @param $uri The namespace URI of the module to inspect
+ : @return An XML fragment describing the module and all functions contained in it.
  :)
-declare function inspect:inspect-module-uri($uri as xs:anyURI) as item()* external;
+declare function inspect:inspect-module-uri($uri as xs:anyURI) as element()? external;
 
 (:~
- : Returns a sequence of function items pointing to each public function in the
- : module. If no $location is provided, then the current (calling) module is
+ : Returns a sequence of function items pointing to each publicfunction in the
+ : module. If no $location is provided, then thecurrent (calling) module is
  : inspected.
- : @return Sequence of function items containing all public functions in the module, or the empty sequence if the module is not known in the current context.
+ : @return Sequence of functionitems containing all public functions in the module, orthe empty sequence if the module is not known in thecurrent context.
  :)
 declare function inspect:module-functions() as function(*)* external;
 
 (:~
- : Returns a sequence of function items pointing to each public function in the
- : module. If no $location is provided, then the current (calling) module is
+ : Returns a sequence of function items pointing to each publicfunction in the
+ : module. If no $location is provided, then thecurrent (calling) module is
  : inspected.
  : @param $location The location URI of the module to be inspected.
- : @return Sequence of function items containing all public functions in the module, or the empty sequence if the module is not known in the current context.
+ : @return Sequence of functionitems containing all public functions in the module, orthe empty sequence if the module is not known in thecurrent context.
  :)
 declare function inspect:module-functions($location as xs:anyURI) as function(*)* external;
 

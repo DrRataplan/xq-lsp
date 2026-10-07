@@ -8,6 +8,13 @@ module namespace file = "http://exist-db.org/xquery/file";
 declare function file:delete($path as item()) as xs:boolean external;
 
 (:~
+ : List all files, including their file size and modification time, found in or
+ : below a directory, $directory. Files are located in the server's file
+ : system, using filename patterns, $pattern. File pattern matching is based on
+ : code from Apache's Ant, thus following the same conventions. For example:
+ : '*.xml' matches any file ending with .xml in the current directory, -
+ : '**/*.xml' matches files in any directory below the specified directory.
+ : This method is only available to the DBA role.
  : @param $path The base directory path or URI in the file system where the files are located.
  : @param $pattern The file name pattern
  : @return a node fragment that shows all matching filenames, including their file size and modification time, and the subdirectory they were found in
@@ -170,13 +177,11 @@ declare function file:serialize-binary($binarydata as xs:base64Binary, $path as 
 declare function file:serialize-binary($binarydata as xs:base64Binary, $path as item(), $append as xs:boolean) as xs:boolean external;
 
 (:~
- : Synchronize a collection with a directory hierarchy. This method is only
+ : Synchronize a collection with a directory hierarchy.This method is only
  : available to the DBA role.
  : @param $collection Absolute path to the collection to synchronize to disk.
  : @param $targetPath The path or URI to the target directory. Relative paths resolve against EXIST_HOME.
+ : @param $dateTimeOrOptionsMap Options as map(*). The available settings are:"prune": delete any file/dir that does not correspond to a doc/collection in the DB. "after": only resources modified after this date will be taken into account."excludes": files on the file system matching any of these patterns will be left untouched.(deprecated) If the third parameter is of type xs:dateTime, it is the same as setting the "after" option.
+ : @return A report (file:sync) which files and directories were updated (file:update) or deleted (file:delete).
  :)
-declare function file:sync(
-	$collection as xs:string,
-	$targetPath as item(),
-	$dateTimeOrOptionsMap as item()?
-) as document-node() external;
+declare function file:sync($collection as xs:string, $targetPath as item(), $dateTimeOrOptionsMap as item()?) as document-node() external;
