@@ -102,6 +102,21 @@ function extractEnvVariables(envEl: slimdom.Element): VarBinding[] {
 	return [...fromParams, ...fromSources];
 }
 
+// <source role="."> supplies the context item, so global variable initializers
+// may legitimately use it.
+function hasEnvContextItem(envEl: slimdom.Element): boolean {
+	return childEls(envEl, "source").some((n) => n.getAttribute("role") === ".");
+}
+
+function buildEnvContextItemSet(root: slimdom.Element): Set<string> {
+	const set = new Set<string>();
+	for (const envEl of childEls(root, "environment")) {
+		const name = envEl.getAttribute("name");
+		if (name && hasEnvContextItem(envEl)) set.add(name);
+	}
+	return set;
+}
+
 function buildEnvMap(root: slimdom.Element): EnvMap {
 	const map: EnvMap = new Map();
 	for (const envEl of childEls(root, "environment")) {
@@ -261,6 +276,7 @@ if (QT4_DIR) {
 	const catalogDoc = slimdom.parseXmlDocument(catalogXml);
 	const catalogEnvMap = buildEnvMap(catalogDoc.documentElement as slimdom.Element);
 	const catalogEnvVarMap = buildEnvVarMap(catalogDoc.documentElement as slimdom.Element);
+	const catalogEnvCtx = buildEnvContextItemSet(catalogDoc.documentElement as slimdom.Element);
 	const testSetFiles = Array.from(catalogDoc.getElementsByTagNameNS(NS, "test-set"))
 		.map((el) => (el as slimdom.Element).getAttribute("file"))
 		.filter((f): f is string => f !== null);
@@ -291,6 +307,7 @@ if (QT4_DIR) {
 		const slug = tsFile.replace(/[/\\]/g, "-").replace(/\.xml$/, "");
 		const tsEnvMap = buildEnvMap(root);
 		const tsEnvVarMap = buildEnvVarMap(root);
+		const tsEnvCtx = buildEnvContextItemSet(root);
 
 		for (const tc of childEls(root, "test-case")) {
 			const name = tc.getAttribute("name") ?? "";
@@ -327,14 +344,17 @@ if (QT4_DIR) {
 			const tcEnvEl = childEls(tc, "environment")[0];
 			let envNamespaces: NsBinding[] = [];
 			let envVariables: VarBinding[] = [];
+			let envContextItem = false;
 			if (tcEnvEl) {
 				const ref = tcEnvEl.getAttribute("ref");
 				if (ref) {
 					envNamespaces = tsEnvMap.get(ref) ?? catalogEnvMap.get(ref) ?? [];
 					envVariables = tsEnvVarMap.get(ref) ?? catalogEnvVarMap.get(ref) ?? [];
+					envContextItem = tsEnvCtx.has(ref) || catalogEnvCtx.has(ref);
 				} else {
 					envNamespaces = extractEnvNamespaces(tcEnvEl);
 					envVariables = extractEnvVariables(tcEnvEl);
+					envContextItem = hasEnvContextItem(tcEnvEl);
 				}
 			}
 
@@ -361,6 +381,7 @@ if (QT4_DIR) {
 				expectedCode,
 				envNamespaces,
 				envVariables,
+				envContextItem,
 				moduleCatalog,
 			});
 

@@ -18,22 +18,6 @@
     "got": []
   },
   {
-    "testCase": "K2-ExternalVariablesWithout-21",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPDY0002"
-    ]
-  },
-  {
-    "testCase": "K2-ExternalVariablesWithout-22",
-    "outcome": "false-positive",
-    "expectedCode": null,
-    "got": [
-      "XPDY0002"
-    ]
-  },
-  {
     "testCase": "K2-ExternalVariablesWith-1",
     "outcome": "false-negative",
     "expectedCode": "XQST0049",

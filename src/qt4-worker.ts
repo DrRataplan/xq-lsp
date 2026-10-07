@@ -13,6 +13,8 @@ export interface TestInput {
 	expectedCode: string | null;
 	envNamespaces: Array<{ prefix: string; uri: string }>;
 	envVariables: Array<{ prefix: string; localName: string }>;
+	// The environment supplies a context item (<source role=".">).
+	envContextItem: boolean;
 	// Catalog <module uri="..." file="..."/> entries: the test harness's own
 	// namespace-to-file association, used when a query imports a module
 	// without (or without a resolvable) "at" location hint. Keyed by the
@@ -36,6 +38,7 @@ function collectCodes(
 	envNamespaces: Array<{ prefix: string; uri: string }>,
 	envVariables: Array<{ prefix: string; localName: string }>,
 	moduleCatalog: Array<{ uri: string; text: string }>,
+	envContextItem: boolean,
 ): string[] {
 	try {
 		const { analysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq");
@@ -80,7 +83,7 @@ function collectCodes(
 		const codes: string[] = [];
 		if (parseError) codes.push("XPST0003");
 		if (ast) {
-			for (const d of runDiagnostics(ast, query, analysis, imports)) codes.push(d.code);
+			for (const d of runDiagnostics(ast, query, analysis, imports, { externalContextItem: envContextItem })) codes.push(d.code);
 		}
 		return [...new Set(codes)];
 	} catch {
@@ -90,7 +93,7 @@ function collectCodes(
 
 const batch = workerData as TestInput[];
 const results: TestOutput[] = batch.map((tc) => {
-	const got = collectCodes(tc.query, tc.envNamespaces, tc.envVariables, tc.moduleCatalog);
+	const got = collectCodes(tc.query, tc.envNamespaces, tc.envVariables, tc.moduleCatalog, tc.envContextItem);
 	const hasError = got.length > 0;
 	// A static analyzer may detect a dynamic error early: when the test expects a
 	// dynamic error (e.g. XPTY0004) and that is exactly what we reported, it's a pass.

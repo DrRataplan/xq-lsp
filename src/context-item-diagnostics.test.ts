@@ -180,3 +180,18 @@ describe("context-item-diagnostics: diagnostic positions", () => {
 		assert.equal(src.slice(d.offset, d.offset + d.length), ".", `expected '.'`);
 	});
 });
+
+describe("context-item-diagnostics: global variable focus", () => {
+	test("does not flag '.' in a variable initializer when a context item is declared", () => {
+		assert.deepEqual(ciDiags("declare variable $x := . + 5; declare context item := 17; $x"), []);
+	});
+
+	test("does not flag '.' in a variable initializer when the host supplies a context item", () => {
+		const { ast } = analyzeWithAst("declare variable $x := . + 5; $x", "file:///main.xq");
+		assert.deepEqual(checkContextItemUsage(ast!, { externalContextItem: true }), []);
+	});
+
+	test("still flags '.' in a function body when a context item is declared", () => {
+		assert.ok(hasError("declare context item := 1; declare function local:f() { . }; local:f()"));
+	});
+});
