@@ -2,14 +2,13 @@ import type { Node, NonTerminal } from "xq-parser";
 import { Location, DocumentHighlight, DocumentHighlightKind } from "vscode-languageserver/node.js";
 import type { FileAnalysis, QName } from "./types.ts";
 import { qnameKey } from "./types.ts";
-import { isTerminal, directChildOf, directChildrenOf, findAll, firstTerminalValue } from "./analyzer.ts";
+import { isTerminal, directChildOf, directChildrenOf, findAll } from "./analyzer.ts";
 import {
 	asFunctionCall,
 	asNamedFunctionRef,
 	asVarRef,
 	asVarName,
 	asVarDecl,
-	asFunctionDecl,
 	asFunctionDeclaration,
 	asBinding,
 	asCatchClause,
@@ -111,8 +110,7 @@ function walkVariables(node: Node, analysis: FileAnalysis, scope: ScopeStack, ou
 
 	switch (node.type) {
 		case "AnnotatedDecl": {
-			const fnDeclNode = directChildOf(node, "FunctionDecl");
-			const fn = fnDeclNode ? asFunctionDecl(fnDeclNode, analysis) : null;
+			const fn = asFunctionDeclaration(node, analysis);
 			if (fn) {
 				scope.push();
 				for (const p of fn.params) {
@@ -241,25 +239,22 @@ function walkFunctions(node: Node, analysis: FileAnalysis, out: FnOccurrence[]):
 	const { children } = node as NonTerminal;
 
 	if (node.type === "AnnotatedDecl") {
-		const fnDeclNode = directChildOf(node, "FunctionDecl");
-		const fn = fnDeclNode ? asFunctionDeclaration(node, analysis) : null;
+		const fn = asFunctionDeclaration(node, analysis);
 		if (fn) out.push({ qname: fn.qname, arity: fn.arity, start: fn.nameNode.start, end: fn.nameNode.end ?? fn.nameNode.start, isDeclaration: true });
 	} else if (node.type === "FunctionCall") {
 		const shape = asFunctionCall(node, analysis);
-		const fnEqname = directChildOf(node, "FunctionEQName");
-		if (shape && fnEqname)
+		if (shape)
 			out.push({
 				qname: shape.qname,
 				arity: shape.args.length,
-				start: fnEqname.start,
-				end: fnEqname.end ?? fnEqname.start,
+				start: shape.eqnameNode.start,
+				end: shape.eqnameNode.end ?? shape.eqnameNode.start,
 				isDeclaration: false,
 			});
 	} else if (node.type === "NamedFunctionRef") {
 		const ref = asNamedFunctionRef(node, analysis);
-		const eqname = directChildOf(node, "EQName");
-		if (ref && eqname)
-			out.push({ qname: ref.qname, arity: ref.arity, start: eqname.start, end: eqname.end ?? eqname.start, isDeclaration: false });
+		if (ref)
+			out.push({ qname: ref.qname, arity: ref.arity, start: ref.nameNode.start, end: ref.nameNode.end ?? ref.nameNode.start, isDeclaration: false });
 	}
 
 	for (const child of children) walkFunctions(child, analysis, out);

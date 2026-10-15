@@ -80,6 +80,7 @@ export function asFunctionCall(node: Node, analysis: FileAnalysis): FunctionCall
 export interface NamedFunctionRefShape {
 	qname: QName;
 	arity: number;
+	nameNode: Node;
 }
 
 export function asNamedFunctionRef(node: Node, analysis: FileAnalysis): NamedFunctionRefShape | null {
@@ -92,7 +93,7 @@ export function asNamedFunctionRef(node: Node, analysis: FileAnalysis): NamedFun
 	const namespaceUri = uri ?? resolvePrefix(prefix, analysis);
 	const arityNode = directChildOf(node, "IntegerLiteral");
 	const arity = arityNode ? parseInt(firstTerminalValue(arityNode) ?? "0", 10) : 0;
-	return { qname: { prefix, localName, namespaceUri }, arity };
+	return { qname: { prefix, localName, namespaceUri }, arity, nameNode: eqname };
 }
 
 // ── VarRef ────────────────────────────────────────────────────────────────────
@@ -317,17 +318,17 @@ export function asTransformExpr(node: Node, analysis: FileAnalysis): TransformEx
 
 // ── AnnotatedDecl wrappers ────────────────────────────────────────────────────
 
-/** QName, name node, arity, and annotation local-names for an AnnotatedDecl containing a FunctionDecl, or null. */
+/** QName, name node, arity, annotations, resolved params, and body for an AnnotatedDecl containing a FunctionDecl, or null. */
 export function asFunctionDeclaration(
 	node: Node,
 	analysis: FileAnalysis,
-): { qname: QName; nameNode: Node; arity: number; annotations: string[] } | null {
+): { qname: QName; nameNode: Node; arity: number; annotations: string[]; params: FunctionDeclShape["params"]; body: Node | null } | null {
 	if (node.type !== "AnnotatedDecl") return null;
 	const fnDeclNode = directChildOf(node, "FunctionDecl");
 	if (!fnDeclNode) return null;
 	const fn = asFunctionDecl(fnDeclNode, analysis);
 	if (!fn) return null;
-	return { qname: fn.qname, nameNode: fn.nameNode, arity: fn.params.length, annotations: annotationNames(node) };
+	return { qname: fn.qname, nameNode: fn.nameNode, arity: fn.params.length, annotations: annotationNames(node), params: fn.params, body: fn.body };
 }
 
 /** Resolved QName, name node, and annotation local-names for an AnnotatedDecl containing a VarDecl, or null. */

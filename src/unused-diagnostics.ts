@@ -2,14 +2,14 @@ import type { Node, NonTerminal } from "xq-parser";
 import type { FileAnalysis } from "./types.ts";
 import { qnameKey, formatQName } from "./types.ts";
 import { findDynamicPrefixUses } from "./namespace-diagnostics.ts";
-import { isTerminal, directChildOf, directChildrenOf, findAll, firstTerminalValue, parseEQName, resolvePrefix } from "./analyzer.ts";
+import { isTerminal, directChildOf, directChildrenOf, findAll, firstTerminalValue } from "./analyzer.ts";
 import {
 	asFunctionCall,
 	asNamedFunctionRef,
 	asVarRef,
 	asVarName,
-	asFunctionDecl,
 	asFunctionDeclaration,
+	asInlineFunctionExpr,
 	asVariableDeclaration,
 	asBinding,
 	asCatchClause,
@@ -60,8 +60,7 @@ function walk(
 
 	switch (node.type) {
 		case "AnnotatedDecl": {
-			const fnDeclNode = directChildOf(node, "FunctionDecl");
-			const fn = fnDeclNode ? asFunctionDecl(fnDeclNode, analysis) : null;
+			const fn = asFunctionDeclaration(node, analysis);
 			if (fn) {
 				scope.push();
 				for (const p of fn.params) scope.add(qnameKey(p.qname));
@@ -140,18 +139,13 @@ function walk(
 		}
 
 		case "InlineFunctionExpr": {
-			scope.push();
-			const paramList = directChildOf(node, "ParamList");
-			for (const param of paramList ? (paramList as NonTerminal).children.filter((c) => c.type === "Param") : []) {
-				const nameNode = directChildOf(param, "EQName");
-				const rawName = nameNode ? firstTerminalValue(nameNode) : null;
-				if (!rawName) continue;
-				const { prefix, localName, uri } = parseEQName(rawName);
-				scope.add(qnameKey({ prefix, localName, namespaceUri: uri ?? (prefix ? resolvePrefix(prefix, analysis) : "") }));
+			const fn = asInlineFunctionExpr(node, analysis);
+			if (fn) {
+				scope.push();
+				for (const p of fn.params) scope.add(qnameKey(p.qname));
+				if (fn.body) walk(fn.body, scope, analysis, usedFns, usedVars);
+				scope.pop();
 			}
-			const body = directChildOf(node, "FunctionBody");
-			if (body) walk(body, scope, analysis, usedFns, usedVars);
-			scope.pop();
 			return;
 		}
 

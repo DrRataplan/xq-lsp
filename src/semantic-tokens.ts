@@ -1,7 +1,7 @@
 import type { Node, NonTerminal } from "xq-parser";
 import type { FileAnalysis, QName } from "./types.ts";
-import { isTerminal, directChildOf, directChildrenOf, firstTerminalValue, BUILTIN_PREFIXES } from "./analyzer.ts";
-import { asFunctionCall, asNamedFunctionRef, asFunctionDecl, asVarDecl } from "./ast-nodes.ts";
+import { isTerminal, directChildOf, firstTerminalValue, BUILTIN_PREFIXES } from "./analyzer.ts";
+import { asFunctionCall, asNamedFunctionRef, asFunctionDeclaration, asInlineFunctionExpr, asVarDecl } from "./ast-nodes.ts";
 import { checkUnused } from "./unused-diagnostics.ts";
 
 // ── Legend ────────────────────────────────────────────────────────────────────
@@ -163,10 +163,9 @@ function walk(node: Node, analysis: FileAnalysis, builtinKeys: Set<string>, unus
 	switch (node.type) {
 		case "FunctionCall": {
 			const call = asFunctionCall(node, analysis);
-			const eqname = directChildOf(node, "FunctionEQName");
-			if (call && eqname) {
+			if (call) {
 				const mods: SemanticTokenModifier[] = builtinKeys.has(builtinKey(call.qname)) ? ["defaultLibrary"] : [];
-				pushNameTokens(eqname, "function", analysis, mods, out);
+				pushNameTokens(call.eqnameNode, "function", analysis, mods, out);
 			}
 			for (const c of children) walk(c, analysis, builtinKeys, unusedOffsets, out);
 			return;
@@ -174,10 +173,9 @@ function walk(node: Node, analysis: FileAnalysis, builtinKeys: Set<string>, unus
 
 		case "NamedFunctionRef": {
 			const ref = asNamedFunctionRef(node, analysis);
-			const eqname = directChildOf(node, "EQName");
-			if (ref && eqname) {
+			if (ref) {
 				const mods: SemanticTokenModifier[] = builtinKeys.has(builtinKey(ref.qname)) ? ["defaultLibrary"] : [];
-				pushNameTokens(eqname, "function", analysis, mods, out);
+				pushNameTokens(ref.nameNode, "function", analysis, mods, out);
 			}
 			return;
 		}
@@ -189,19 +187,12 @@ function walk(node: Node, analysis: FileAnalysis, builtinKeys: Set<string>, unus
 		}
 
 		case "AnnotatedDecl": {
-			const fnDeclNode = directChildOf(node, "FunctionDecl");
-			if (fnDeclNode) {
-				const fn = asFunctionDecl(fnDeclNode, analysis);
-				if (fn) {
-					const mods: SemanticTokenModifier[] = unusedOffsets.has(fn.nameNode.start) ? ["unused"] : [];
-					pushNameTokens(fn.nameNode, "function", analysis, mods, out);
-					const paramList = directChildOf(fnDeclNode, "ParamList");
-					for (const p of paramList ? directChildrenOf(paramList, "Param") : []) {
-						const peq = directChildOf(p, "EQName");
-						if (peq) pushNameTokens(peq, "parameter", analysis, [], out);
-					}
-					if (fn.body) walk(fn.body, analysis, builtinKeys, unusedOffsets, out);
-				}
+			const fn = asFunctionDeclaration(node, analysis);
+			if (fn) {
+				const mods: SemanticTokenModifier[] = unusedOffsets.has(fn.nameNode.start) ? ["unused"] : [];
+				pushNameTokens(fn.nameNode, "function", analysis, mods, out);
+				for (const p of fn.params) pushNameTokens(p.nameNode, "parameter", analysis, [], out);
+				if (fn.body) walk(fn.body, analysis, builtinKeys, unusedOffsets, out);
 				return;
 			}
 			const varDeclNode = directChildOf(node, "VarDecl");
@@ -227,13 +218,11 @@ function walk(node: Node, analysis: FileAnalysis, builtinKeys: Set<string>, unus
 		}
 
 		case "InlineFunctionExpr": {
-			const paramList = directChildOf(node, "ParamList");
-			for (const p of paramList ? directChildrenOf(paramList, "Param") : []) {
-				const peq = directChildOf(p, "EQName");
-				if (peq) pushNameTokens(peq, "parameter", analysis, [], out);
+			const fn = asInlineFunctionExpr(node, analysis);
+			if (fn) {
+				for (const p of fn.params) pushNameTokens(p.nameNode, "parameter", analysis, [], out);
+				if (fn.body) walk(fn.body, analysis, builtinKeys, unusedOffsets, out);
 			}
-			const body = directChildOf(node, "FunctionBody");
-			if (body) walk(body, analysis, builtinKeys, unusedOffsets, out);
 			return;
 		}
 
