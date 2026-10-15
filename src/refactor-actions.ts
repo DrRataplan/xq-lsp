@@ -1,8 +1,8 @@
 import type { Node, NonTerminal } from "xq-parser";
 import type { FileAnalysis, ImportInfo, QName } from "./types.ts";
 import { formatQName, qnameKey } from "./types.ts";
-import { isTerminal, directChildOf, directChildrenOf, findAll, firstTerminalValue, parseEQName, resolvePrefix } from "./analyzer.ts";
-import { asBinding, asVarRef, asVarName } from "./ast-nodes.ts";
+import { isTerminal, directChildOf, directChildrenOf, findAll } from "./analyzer.ts";
+import { asBinding, asVarRef, asVarName, asInlineFunctionExpr } from "./ast-nodes.ts";
 import { checkUnused } from "./unused-diagnostics.ts";
 
 export interface OffsetEdit {
@@ -287,18 +287,13 @@ function collectFreeVars(node: Node, scope: ScopeStack, analysis: FileAnalysis, 
 		}
 
 		case "InlineFunctionExpr": {
-			scope.push();
-			const paramList = directChildOf(node, "ParamList");
-			for (const param of paramList ? (paramList as NonTerminal).children.filter((c) => c.type === "Param") : []) {
-				const nameNode = directChildOf(param, "EQName");
-				const rawName = nameNode ? firstTerminalValue(nameNode) : null;
-				if (!rawName) continue;
-				const { prefix, localName, uri } = parseEQName(rawName);
-				scope.add(qnameKey({ prefix, localName, namespaceUri: uri ?? (prefix ? resolvePrefix(prefix, analysis) : "") }));
+			const fn = asInlineFunctionExpr(node, analysis);
+			if (fn) {
+				scope.push();
+				for (const p of fn.params) scope.add(qnameKey(p.qname));
+				if (fn.body) collectFreeVars(fn.body, scope, analysis, free);
+				scope.pop();
 			}
-			const body = directChildOf(node, "FunctionBody");
-			if (body) collectFreeVars(body, scope, analysis, free);
-			scope.pop();
 			return;
 		}
 
