@@ -1,0 +1,380 @@
+[
+  {
+    "testCase": "xml-to-json-070",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-001",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-002",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-003",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-004",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-005",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-006",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-007",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-008",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-009",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-010",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-011",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-012",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-013",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-014",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-015",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-016",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-017",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-C-018",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-001",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-002",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-003",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-004",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-005",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-006",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-007",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-008",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-009",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-010",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-011",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-012",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-013",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-101",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-102",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-103",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-104",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-201",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-202",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-203",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-204",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-205",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-206",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-301",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-302",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-303",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-401",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-403",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-404",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-405",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-406",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-407",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-501",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-502",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-503",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-504",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-505",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-506",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-507",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-508",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-509",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-510",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "xml-to-json-D-511",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

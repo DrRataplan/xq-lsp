@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "fn-prefix-from-qname-21",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-prefix-from-qname-23",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

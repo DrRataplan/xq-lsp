@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "duplicates-maps-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "duplicates-maps-3",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

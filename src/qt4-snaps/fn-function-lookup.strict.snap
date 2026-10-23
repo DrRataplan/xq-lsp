@@ -1,0 +1,26 @@
+[
+  {
+    "testCase": "fn-function-lookup-709",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-function-lookup-710",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-function-lookup-712",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-function-lookup-714",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

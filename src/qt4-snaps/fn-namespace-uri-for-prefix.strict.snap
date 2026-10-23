@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "K2-NamespaceURIForPrefixFunc-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-NamespaceURIForPrefixFunc-3",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

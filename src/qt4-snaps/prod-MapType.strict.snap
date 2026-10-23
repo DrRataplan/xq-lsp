@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "MapType-054",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "MapType-094",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

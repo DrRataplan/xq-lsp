@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "fn-string-25",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K-StringFunc-6",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

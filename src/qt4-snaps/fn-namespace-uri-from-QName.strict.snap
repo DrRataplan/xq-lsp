@@ -1,0 +1,20 @@
+[
+  {
+    "testCase": "NamespaceURIFromQNameFunc005",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "NamespaceURIFromQNameFunc010",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "NamespaceURIFromQNameFunc019",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

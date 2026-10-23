@@ -1,0 +1,44 @@
+[
+  {
+    "testCase": "ForExpr010",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "ForExpr011",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "ForExpr013",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "ForExpr015",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "ForExpr022",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "ForExpr023",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-ForExprWithout-6",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

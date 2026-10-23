@@ -1519,6 +1519,23 @@ export function walkModuleScopes(
 
 // ── Type checking ─────────────────────────────────────────────────────────────
 
+export interface TypeCheckOptions {
+	/**
+	 * Opt-in strict cardinality checking: warn when an argument's inferred cardinality
+	 * is not guaranteed to fit the parameter's occurrence indicator (a possible dynamic
+	 * XPTY0004, e.g. passing item()* where item() is expected).
+	 */
+	strictCardinality?: boolean;
+}
+
+// Strict-mode cardinality check: the argument type must be guaranteed to produce a
+// number of items within the parameter's occurrence indicator.
+function cardinalityAssignable(from: XQueryType, to: XQueryType): boolean {
+	const fc = cardOf(from);
+	const tc = cardOf(to);
+	return fc.min >= tc.min && fc.max <= tc.max;
+}
+
 // Check a single FunctionCall node against the known function signatures.
 function typeCheckCall(
 	callNode: Node,
@@ -1526,6 +1543,7 @@ function typeCheckCall(
 	analysis: FileAnalysis,
 	allFns: FunctionSymbol[],
 	errors: TypeDiagnostic[],
+	options: TypeCheckOptions,
 ): void {
 	const call = asFunctionCall(callNode, analysis);
 	if (!call) return;
@@ -1547,7 +1565,7 @@ function typeCheckCall(
 		if (inferredType.kind === "unknown") continue;
 		// XQuery function conversion rules (§3.1.5): nodes are atomized to atomic values,
 		// so a node argument where an atomic type is expected is not a static error.
-		if (inferredType.kind === "node" && declaredType.kind === "atomic") continue;
+		const atomizable = inferredType.kind === "node" && declaredType.kind === "atomic";
 		// Atomic-to-atomic: XQuery allows implicit conversions between atomic types at
 		// runtime (e.g. string→numeric coercion), so we don't raise XPTY0004 statically
 		// for these — they are dynamic errors, not static ones.
@@ -1555,11 +1573,19 @@ function typeCheckCall(
 		// literal where xs:numeric is expected with no applicable conversion), but that
 		// requires modeling which conversions are actually allowed per §3.1.5 without
 		// generating false positives for legitimate implicit coercions.
-		if (inferredType.kind === "atomic" && declaredType.kind === "atomic") continue;
-		if (!isAssignable(inferredType, declaredType)) {
+		const atomicToAtomic = inferredType.kind === "atomic" && declaredType.kind === "atomic";
+		if (!atomizable && !atomicToAtomic && !isAssignable(inferredType, declaredType)) {
 			errors.push({
 				message: `Argument ${i + 1} of ${formatQName(call.qname)}: expected ${param.type}, got ${formatType(inferredType)} [XPTY0004]`,
 				code: "XPTY0004",
+				offset: call.args[i].start,
+				length: (call.args[i].end ?? call.args[i].start + 1) - call.args[i].start,
+			});
+		} else if (options.strictCardinality && !cardinalityAssignable(inferredType, declaredType)) {
+			errors.push({
+				message: `Argument ${i + 1} of ${formatQName(call.qname)}: expected ${param.type}, got ${formatType(inferredType)} — cardinality mismatch, possible XPTY0004 [XPTY0004]`,
+				code: "XPTY0004",
+				severity: "warning",
 				offset: call.args[i].start,
 				length: (call.args[i].end ?? call.args[i].start + 1) - call.args[i].start,
 			});
@@ -1599,6 +1625,7 @@ export function checkTypes(
 	_text: string,
 	analysis: FileAnalysis,
 	importedAnalyses: Map<string, FileAnalysis>,
+	options: TypeCheckOptions = {},
 ): TypeDiagnostic[] {
 	const errors: TypeDiagnostic[] = [];
 	const declaredFns = allFunctionsFlat(analysis, importedAnalyses);
@@ -1610,7 +1637,7 @@ export function checkTypes(
 		allFns,
 		{
 			onNode: (node, scope) => {
-				if (node.type === "FunctionCall") typeCheckCall(node, scope, analysis, allFns, errors);
+				if (node.type === "FunctionCall") typeCheckCall(node, scope, analysis, allFns, errors, options);
 				else typeCheckArithmetic(node, scope, analysis, allFns, errors);
 			},
 		},

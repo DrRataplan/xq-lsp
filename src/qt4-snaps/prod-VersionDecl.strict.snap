@@ -1,0 +1,26 @@
+[
+  {
+    "testCase": "prolog-version-6-v3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "prolog-version-6-v31",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "prolog-version-7-v3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "prolog-version-7-v31",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

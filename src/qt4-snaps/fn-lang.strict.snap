@@ -1,0 +1,38 @@
+[
+  {
+    "testCase": "fn-lang1args-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-lang1args-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-lang1args-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-lang-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-NodeLangFunc-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-NodeLangFunc-2",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

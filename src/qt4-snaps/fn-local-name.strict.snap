@@ -1,0 +1,98 @@
+[
+  {
+    "testCase": "fn-local-name-11a",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-52",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-53",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-55",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-56",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-60",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-61",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-62",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-65",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-67",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-68",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-71",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-72",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-74",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-local-name-75",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-NodeLocalNameFunc-1",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

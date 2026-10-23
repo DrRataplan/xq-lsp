@@ -329,11 +329,17 @@ connection.onInitialize((params) => {
 function computeDiagnostics(doc: TextDocument) {
 	const { analysis: rawAnalysis, parseDiagnostics: parseDiags, hasAst, ast } = analyzeDocumentFull(doc);
 	const { analysis, imported: resolvedImported } = resolveContext(doc.uri, rawAnalysis);
+	const config = findConfig(doc.uri)?.config;
 
 	// Run all error-level diagnostics and hints via the central registry.
 	// findUndeclaredPrefixUsages returns [] when ast is null; runDiagnostics guards the rest.
 	const nsDiagRaw = findUndeclaredPrefixUsages(ast, analysis);
-	const errorDiagRaw = hasAst && ast !== null ? runDiagnostics(ast, doc.getText(), analysis, resolvedImported) : [];
+	const errorDiagRaw =
+		hasAst && ast !== null
+			? runDiagnostics(ast, doc.getText(), analysis, resolvedImported, {
+					strictCardinality: config?.strict.cardinality ?? false,
+				})
+			: [];
 	const hintDiagRaw = hasAst && ast !== null ? runHints(ast, analysis) : [];
 
 	const unresolvedImportRaw = hasAst ? checkUnresolvedImports(analysis, resolvedImported) : [];
@@ -353,7 +359,10 @@ function computeDiagnostics(doc: TextDocument) {
 		data: { prefix: nd.prefix, usageKind: nd.usageKind } as { prefix: string; usageKind: NamespaceUsageKind },
 	}));
 	// nsDiags already covers XQST0081 (with the code-action data field), so exclude those here.
-	const errorDiags = errorDiagRaw.filter((d) => d.code !== "XQST0081").map((d) => toLsp(d, DiagnosticSeverity.Error));
+	// Opt-in strict-mode diagnostics are flagged severity "warning" and surface as warnings.
+	const errorDiags = errorDiagRaw
+		.filter((d) => d.code !== "XQST0081")
+		.map((d) => toLsp(d, d.severity === "warning" ? DiagnosticSeverity.Warning : DiagnosticSeverity.Error));
 	const hintDiags = hintDiagRaw.map((d) => toLsp(d, DiagnosticSeverity.Hint));
 
 	const unresolvedImportDiags = unresolvedImportRaw.map((d) => toLsp(d, DiagnosticSeverity.Warning));

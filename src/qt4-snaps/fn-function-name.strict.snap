@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "fn-function-name-009",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-function-name-024",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

@@ -1,0 +1,80 @@
+[
+  {
+    "testCase": "fn-in-scope-prefixes-17",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-in-scope-prefixes-21",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-in-scope-prefixes-22",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-in-scope-prefixes-24",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-in-scope-prefixes-25",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-in-scope-prefixes-26",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-in-scope-prefixes-27",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-in-scope-prefixes-28",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-in-scope-prefixes-29",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-in-scope-prefixes-30",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-InScopePrefixesFunc-9",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-InScopePrefixesFunc-13",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-InScopePrefixesFunc-15",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

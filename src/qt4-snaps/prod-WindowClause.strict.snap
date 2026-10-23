@@ -1,0 +1,146 @@
+[
+  {
+    "testCase": "WindowingUseCase06",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase06S",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase07",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase08",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase08S",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase09",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase09S",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase10",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase10S",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase11",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase12",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase12S",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase13",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase15",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase15S",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase16",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase16S",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase17",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase17S",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase18",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WindowingUseCase18S",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "TumblingWindowExpr560",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "SlidingWindowExpr561",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "SlidingWindowExpr562",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

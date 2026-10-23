@@ -81,6 +81,24 @@ Multiple libs use an XPath sequence:
 map {"glob": "src/**/*.xq", "lib": ("fonto", "other")}
 ```
 
+### Strict mode
+
+The type checker only reports certain static errors by default. Opt in to
+stricter checking — e.g. warnings (XPTY0004) when an argument's cardinality may
+not fit the parameter's occurrence indicator, such as passing `item()*` where
+`item()` is expected:
+
+```xquery
+map {
+	"glob": "src/**/*.xq",
+	"strict": map {
+		"cardinality": true()
+	}
+}
+```
+
+See the [main README](../../README.md#strict-mode) for details.
+
 ## Formatting
 
 XQuery formatting is provided by [prettier-plugin-xquery](https://github.com/prettier/prettier-plugin-xquery), bundled directly in the extension. No separate install is required.

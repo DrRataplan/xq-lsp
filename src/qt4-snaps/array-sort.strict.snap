@@ -1,0 +1,20 @@
+[
+  {
+    "testCase": "array-sort-022",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "array-sort-023",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "array-sort-024",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

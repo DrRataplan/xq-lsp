@@ -1,0 +1,32 @@
+[
+  {
+    "testCase": "WhereExpr022",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WhereExpr024",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WhereExpr025",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "WhereExpr027",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "cbcl-left-outer-join-004",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

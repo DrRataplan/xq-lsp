@@ -1,0 +1,56 @@
+[
+  {
+    "testCase": "path002",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "path004",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "path006",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "path008",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "path009",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "path010",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "path014",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "path018",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "path019",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

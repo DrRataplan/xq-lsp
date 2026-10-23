@@ -1,0 +1,20 @@
+[
+  {
+    "testCase": "FunctionCall-055",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "cbcl-promotion-006",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "function-call-promotion-405",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

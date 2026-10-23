@@ -1,0 +1,20 @@
+[
+  {
+    "testCase": "currencysvg",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "raytracer",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "RexParser",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

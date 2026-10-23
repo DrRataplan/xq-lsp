@@ -1,0 +1,32 @@
+[
+  {
+    "testCase": "orderBy66",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "orderBy67",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-OrderbyExprWithout-43",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-OrderbyExprWithout-48",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-OrderbyExprWithout-49",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

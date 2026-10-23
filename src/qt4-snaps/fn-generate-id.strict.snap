@@ -1,0 +1,38 @@
+[
+  {
+    "testCase": "generate-id-001",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "generate-id-014",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "generate-id-015",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "generate-id-016",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "generate-id-017",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "generate-id-905",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

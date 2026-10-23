@@ -1,0 +1,32 @@
+[
+  {
+    "testCase": "fn-document-uri-13",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-document-uri-14",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-document-uri-36",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-document-uri-37",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DocumentURIFunc-7",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

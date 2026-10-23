@@ -1,0 +1,74 @@
+[
+  {
+    "testCase": "id-insert-expr-081",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-insert-expr-082",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-insert-expr-083",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-insert-expr-084",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-insert-expr-085",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-insert-expr-086",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-insert-expr-081-no-inherit",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-insert-expr-082-no-inherit",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-insert-expr-083-no-inherit",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-insert-expr-084-no-inherit",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-insert-expr-085-no-inherit",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-insert-expr-086-no-inherit",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]
