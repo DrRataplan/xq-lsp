@@ -9,6 +9,7 @@ import type { TextDocument } from "vscode-languageserver-textdocument";
 import type { FileAnalysis } from "./types.ts";
 import { formatQName } from "./types.ts";
 import { resolvePrefix, parseEQName } from "./analyzer.ts";
+import { formatType, variableTypeAtOffset } from "./typechecker.ts";
 import {
 	wordAt,
 	allFunctions,
@@ -47,9 +48,17 @@ export function getHover(
 			...[...imported.values()].flatMap((a) => a.moduleVariables),
 		];
 		const v = allVars.find((v) => v.qname.namespaceUri === varNsUri && v.qname.localName === varLocalName);
-		if (v) {
-			const parts = [`\`$${formatQName(v.qname)}\``];
-			if (v.doc) parts.push(v.doc);
+		// The type checker's scope walk is the primary signal: it sees the declared or
+		// inferred type at this exact reference (narrowed by enclosing conditions) and
+		// also covers function parameters, which are not in the symbol tables above.
+		const inferred = current.ast ? variableTypeAtOffset(current.ast, current, imported, start, end) : undefined;
+		if (v || inferred) {
+			const name = v ? formatQName(v.qname) : word;
+			// Fall back to the declared type string on the regex-fallback path where no
+			// AST is available, or when the type checker has no opinion.
+			const typeText = inferred && inferred.kind !== "unknown" ? formatType(inferred) : v?.type;
+			const parts = [typeText ? "```xquery\n$" + name + " as " + typeText + "\n```" : `\`$${name}\``];
+			if (v?.doc) parts.push(v.doc);
 			return {
 				contents: { kind: MarkupKind.Markdown, value: parts.join("\n\n") },
 				range: rangeFromOffset(doc, start - 1, end),

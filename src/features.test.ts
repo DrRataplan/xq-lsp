@@ -138,13 +138,70 @@ $local:max-retries`;
 		assert.ok(value?.includes("maximum number of retries"), `doc missing, got: ${value}`);
 	});
 
-	test("hovering an undocumented variable shows only the name", () => {
+	test("hovering an undocumented variable shows its inferred type", () => {
 		const src = `declare variable $local:x := 1; $local:x`;
 		const value = (() => {
 			const hover = getHover(makeDoc(src), src.lastIndexOf("$local:x") + 1, analyze(src, "file:///test.xq"), new Map());
 			return typeof hover?.contents === "object" && "value" in hover.contents ? hover.contents.value : "";
 		})();
-		assert.equal(value, "`$local:x`");
+		assert.ok(value?.includes("$local:x as xs:integer"), `type missing, got: ${value}`);
+	});
+});
+
+describe("hover: variable types", () => {
+	function hoverValue(src: string, marker: string) {
+		const hover = getHover(makeDoc(src), src.lastIndexOf(marker) + 1, analyze(src, "file:///test.xq"), new Map());
+		if (!hover) return null;
+		return typeof hover.contents === "object" && "value" in hover.contents ? hover.contents.value : "";
+	}
+
+	test("declared type of a module variable is shown", () => {
+		const value = hoverValue(`declare variable $local:x as xs:string := "a"; $local:x`, "$local:x");
+		assert.ok(value?.includes("$local:x as xs:string"), `type missing, got: ${value}`);
+	});
+
+	test("declared type with occurrence is shown", () => {
+		const value = hoverValue(`declare variable $local:seq as item()* := (); $local:seq`, "$local:seq");
+		assert.ok(value?.includes("$local:seq as item()*"), `type missing, got: ${value}`);
+	});
+
+	test("inferred type of a let binding is shown at the reference", () => {
+		const value = hoverValue(`let $s := "a" return $s`, "$s");
+		assert.ok(value?.includes("$s as xs:string"), `type missing, got: ${value}`);
+	});
+
+	test("item type of a for binding is shown", () => {
+		const value = hoverValue(`for $i in (1, 2, 3) return $i`, "$i");
+		assert.ok(value?.includes("$i as xs:integer"), `type missing, got: ${value}`);
+	});
+
+	test("declared type of a function parameter is shown in the body", () => {
+		const value = hoverValue(`declare function local:f($x as node()) { $x }; 1`, "$x");
+		assert.ok(value?.includes("$x as node()"), `type missing, got: ${value}`);
+	});
+
+	test("narrowed type is shown inside the guarded branch", () => {
+		const value = hoverValue(
+			`declare function local:g($seq as item()*) { if (exists($seq)) then $seq else () }; 1`,
+			"$seq",
+		);
+		assert.ok(value?.includes("$seq as item()+"), `narrowed type missing, got: ${value}`);
+	});
+
+	test("untyped external variable falls back to the bare name", () => {
+		const value = hoverValue(`declare variable $v external; $v`, "$v");
+		assert.equal(value, "`$v`");
+	});
+
+	test("type and doc comment are shown together", () => {
+		const src = `(:~
+ : The maximum number of retries allowed.
+ :)
+declare variable $local:max-retries := 3;
+$local:max-retries`;
+		const value = hoverValue(src, "$local:max-retries");
+		assert.ok(value?.includes("$local:max-retries as xs:integer"), `type missing, got: ${value}`);
+		assert.ok(value?.includes("maximum number of retries"), `doc missing, got: ${value}`);
 	});
 });
 
