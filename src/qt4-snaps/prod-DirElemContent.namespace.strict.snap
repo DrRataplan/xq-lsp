@@ -1,0 +1,50 @@
+[
+  {
+    "testCase": "K2-DirectConElemNamespace-41",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemNamespace-53",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-ConInScopeNamespace-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "Constr-inscope-23",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "Constr-inscope-24",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "Constr-inscope-25",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "Constr-inscope-26",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "Constr-inscope-27",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

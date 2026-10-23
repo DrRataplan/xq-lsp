@@ -1,0 +1,122 @@
+[
+  {
+    "testCase": "copynamespace-4",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-5",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-6",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-7",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-8",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-9",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-10",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-11",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-12",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-14",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-15",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-16",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-17",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-18",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-19",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-20",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-21",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copynamespace-22",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copy-namespaces-decl-001",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "copy-namespaces-decl-002",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

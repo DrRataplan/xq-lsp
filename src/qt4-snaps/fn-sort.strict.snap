@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "fn-sort-spec-5",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-sort-spec-6",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

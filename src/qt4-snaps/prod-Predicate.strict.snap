@@ -1,0 +1,44 @@
+[
+  {
+    "testCase": "filterexpressionhc1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "filterexpressionhc4",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "predicates-33",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "predicates-34",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "predicates-35",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "predicates-36",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-Predicates-9",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

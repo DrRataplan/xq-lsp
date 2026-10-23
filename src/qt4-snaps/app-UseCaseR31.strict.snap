@@ -1,0 +1,20 @@
+[
+  {
+    "testCase": "UseCaseR31-023",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "UseCaseR31-030",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "UseCaseR31-033",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

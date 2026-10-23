@@ -1,0 +1,104 @@
+[
+  {
+    "testCase": "fn-base-uri-29",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-base-uri-30",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-base-uri-32",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-base-uri-33",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-base-uri-38",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-base-uri-39",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-base-uri-40",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-base-uri-43",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-BaseURIFunc-7",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-BaseURIFunc-9",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-BaseURIFunc-10",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-BaseURIFunc-11",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-BaseURIFunc-12",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-BaseURIFunc-18",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-BaseURIFunc-19",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-BaseURIFunc-20",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-BaseURIFunc-30",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

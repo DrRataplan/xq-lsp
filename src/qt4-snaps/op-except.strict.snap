@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "fn-except-node-args-003",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-except-node-args-017",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "contextDecl-030",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "contextDecl-041",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

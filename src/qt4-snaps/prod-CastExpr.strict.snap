@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "CastAs675a",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K-SeqExprCast-145",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

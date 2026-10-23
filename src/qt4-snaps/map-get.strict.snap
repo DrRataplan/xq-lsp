@@ -1,0 +1,32 @@
+[
+  {
+    "testCase": "map-get-024",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "map-get-901",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "map-get-902",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "map-get-903",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "map-get-906",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

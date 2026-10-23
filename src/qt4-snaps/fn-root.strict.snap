@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "fn-root-15",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-NodeRootFunc-2",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

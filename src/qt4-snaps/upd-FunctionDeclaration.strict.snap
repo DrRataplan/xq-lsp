@@ -1,0 +1,32 @@
+[
+  {
+    "testCase": "id-function-declaration-002",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-function-declaration-007",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-function-declaration-009",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-function-declaration-011",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-function-declaration-013",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

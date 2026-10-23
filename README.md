@@ -140,6 +140,30 @@ map {
 }
 ```
 
+### Strict mode
+
+By default the type checker only reports *certain* static type errors. Some
+mistakes are only dynamic errors (XPTY0004) that a static analyzer cannot prove —
+for example passing a value of type `item()*` to a parameter declared `as item()`:
+the sequence may have length 0 or 2 at runtime. Opt in to stricter checking with
+the `strict` map to get these reported as **warnings**:
+
+```xquery
+map {
+	"glob": "src/**/*.xq",
+	"strict": map {
+		"cardinality": true()
+	}
+}
+```
+
+With `"cardinality": true()`, an argument whose inferred cardinality is not
+guaranteed to fit the parameter's occurrence indicator is flagged as a warning
+(still with code `XPTY0004`). For example, passing `item()*` where `item()` is
+expected, or `item()?` where `item()+` is expected. The check respects narrowing:
+inside `if (exists($x)) then …` a variable of type `item()*` is treated as
+`item()+`.
+
 ## Roadmap
 
 - **Completion of keywords** — like `function`, `declare` and `ancestor-or-self`, which saves you

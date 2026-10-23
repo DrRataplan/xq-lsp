@@ -649,3 +649,178 @@ describe("checkTypes: inferred binding types", () => {
 		assert.equal(check(src).length, 0);
 	});
 });
+
+describe("checkTypes: strict cardinality", () => {
+	function check(src: string, options: { strictCardinality?: boolean } = { strictCardinality: true }) {
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		return checkTypes(ast, src, analyze(src, "file:///test.xq"), new Map(), options);
+	}
+
+	test("item()* argument to item() param is not flagged by default", () => {
+		const src = `
+			declare function local:seq() as item()* { (1, 2) };
+			declare function local:f($x as item()) { $x };
+			local:f(local:seq())
+		`;
+		assert.equal(check(src, {}).length, 0);
+		assert.equal(check(src, { strictCardinality: false }).length, 0);
+	});
+
+	test("item()* argument to item() param warns in strict mode", () => {
+		const src = `
+			declare function local:seq() as item()* { (1, 2) };
+			declare function local:f($x as item()) { $x };
+			local:f(local:seq())
+		`;
+		const errors = check(src);
+		assert.equal(errors.length, 1, `expected 1 warning, got: ${JSON.stringify(errors)}`);
+		assert.equal(errors[0].code, "XPTY0004");
+		assert.equal(errors[0].severity, "warning");
+		assert.ok(errors[0].message.includes("Argument 1"), errors[0].message);
+		assert.ok(errors[0].message.includes("item()"), errors[0].message);
+		assert.ok(errors[0].message.includes("item()*"), errors[0].message);
+	});
+
+	test("sequence-typed let binding to item() param warns in strict mode", () => {
+		const src = `
+			declare function local:f($x as item()) { $x };
+			let $seq := (1, 2, 3)
+			return local:f($seq)
+		`;
+		const errors = check(src);
+		assert.equal(errors.length, 1, `expected 1 warning, got: ${JSON.stringify(errors)}`);
+		assert.equal(errors[0].severity, "warning");
+	});
+
+	test("exactly-one argument to exactly-one param does not warn", () => {
+		const src = `
+			declare function local:f($x as item()) { $x };
+			declare function local:one() as item() { 1 };
+			local:f(local:one())
+		`;
+		assert.equal(check(src).length, 0);
+	});
+
+	test("exactly-one argument to item()* param does not warn", () => {
+		const src = `
+			declare function local:f($x as item()*) { $x };
+			declare function local:one() as item() { 1 };
+			local:f(local:one())
+		`;
+		assert.equal(check(src).length, 0);
+	});
+
+	test("item()* argument to item()? param warns in strict mode", () => {
+		const src = `
+			declare function local:seq() as item()* { (1, 2) };
+			declare function local:f($x as item()?) { $x };
+			local:f(local:seq())
+		`;
+		const errors = check(src);
+		assert.equal(errors.length, 1, `expected 1 warning, got: ${JSON.stringify(errors)}`);
+		assert.equal(errors[0].severity, "warning");
+	});
+
+	test("item()? argument to item()+ param warns in strict mode (may be empty)", () => {
+		const src = `
+			declare function local:maybe() as item()? { () };
+			declare function local:f($x as item()+) { $x };
+			local:f(local:maybe())
+		`;
+		const errors = check(src);
+		assert.equal(errors.length, 1, `expected 1 warning, got: ${JSON.stringify(errors)}`);
+		assert.equal(errors[0].severity, "warning");
+	});
+
+	test("atomic sequence to atomic param warns in strict mode", () => {
+		const src = `
+			declare function local:f($x as xs:string) { $x };
+			let $strings as xs:string* := ("a", "b")
+			return local:f($strings)
+		`;
+		const errors = check(src);
+		assert.equal(errors.length, 1, `expected 1 warning, got: ${JSON.stringify(errors)}`);
+		assert.equal(errors[0].severity, "warning");
+		assert.ok(errors[0].message.includes("xs:string*"), errors[0].message);
+	});
+
+	test("unknown argument type does not warn in strict mode", () => {
+		const src = `
+			declare variable $v external;
+			declare function local:f($x as item()) { $x };
+			local:f($v)
+		`;
+		assert.equal(check(src).length, 0);
+	});
+
+	test("empty-sequence() to item() param warns in strict mode", () => {
+		// Note: isAssignable treats empty-sequence() as assignable to item() (the
+		// to.kind === "item" check precedes the empty check), so the default checker
+		// stays silent; strict mode flags the cardinality mismatch as a warning.
+		const src = `
+			declare function local:f($x as item()) { $x };
+			local:f(())
+		`;
+		assert.equal(check(src, {}).length, 0);
+		const errors = check(src);
+		assert.equal(errors.length, 1, `expected 1 warning, got: ${JSON.stringify(errors)}`);
+		assert.equal(errors[0].severity, "warning");
+		assert.equal(errors[0].code, "XPTY0004");
+	});
+
+	test("empty-sequence() to item()? param does not warn", () => {
+		const src = `
+			declare function local:f($x as item()?) { $x };
+			local:f(())
+		`;
+		assert.equal(check(src).length, 0);
+	});
+
+	test("empty-sequence() to xs:string param stays an error, not a warning", () => {
+		const src = `
+			declare function local:f($x as xs:string) { $x };
+			local:f(())
+		`;
+		const errors = check(src);
+		assert.equal(errors.length, 1, `expected 1 error, got: ${JSON.stringify(errors)}`);
+		assert.equal(errors[0].severity, undefined);
+		assert.equal(errors[0].code, "XPTY0004");
+	});
+
+	test("item-wise type mismatch is an error, not a strict warning", () => {
+		const src = `
+			declare function local:f($x as node()) { $x };
+			let $s as xs:string* := ("a", "b")
+			return local:f($s)
+		`;
+		const errors = check(src);
+		assert.equal(errors.length, 1, `expected 1 error, got: ${JSON.stringify(errors)}`);
+		assert.equal(errors[0].severity, undefined);
+	});
+
+	test("exists($x) narrows item()* to item()+, which fits an item()+ param", () => {
+		const src = `
+			declare function local:f($x as item()+) { $x };
+			declare function local:g($seq as item()*) {
+				if (exists($seq)) then local:f($seq) else ()
+			};
+			1
+		`;
+		assert.equal(check(src).length, 0, `unexpected warnings: ${JSON.stringify(check(src))}`);
+	});
+
+	test("exists($x) narrows item()* to item()+, which still does not fit an item() param", () => {
+		// exists() proves non-empty, not singleton — strict mode must still warn.
+		const src = `
+			declare function local:f($x as item()) { $x };
+			declare function local:g($seq as item()*) {
+				if (exists($seq)) then local:f($seq) else ()
+			};
+			1
+		`;
+		const errors = check(src);
+		assert.equal(errors.length, 1, `expected 1 warning, got: ${JSON.stringify(errors)}`);
+		assert.equal(errors[0].severity, "warning");
+	});
+});

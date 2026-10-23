@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "fn-function-arity-009",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-function-arity-013",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

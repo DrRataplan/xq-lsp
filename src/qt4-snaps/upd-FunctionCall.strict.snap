@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "id-function-call-002",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-function-call-005",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

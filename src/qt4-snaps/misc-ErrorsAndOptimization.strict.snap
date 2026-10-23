@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "errors-and-optimization-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "errors-and-optimization-4",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

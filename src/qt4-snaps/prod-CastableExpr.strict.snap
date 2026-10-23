@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "CastableAs649",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "CastableAs650",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

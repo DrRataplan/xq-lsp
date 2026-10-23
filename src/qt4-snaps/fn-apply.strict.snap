@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "fn-apply-07",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-apply-08",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

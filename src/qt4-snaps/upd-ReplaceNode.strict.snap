@@ -1,0 +1,14 @@
+[
+  {
+    "testCase": "id-replace-expr-045",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "id-replace-expr-045-no-inherit",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

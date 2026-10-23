@@ -1,0 +1,68 @@
+[
+  {
+    "testCase": "Constr-attr-entref-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-29",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-30",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-31",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-32",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-34",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-35",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-36",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-37",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-38",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "K2-DirectConElemAttr-39",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

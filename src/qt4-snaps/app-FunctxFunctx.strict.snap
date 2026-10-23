@@ -1,0 +1,878 @@
+[
+  {
+    "testCase": "functx-functx-all-whitespace-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-all-whitespace-4",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-all-whitespace-5",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-all-whitespace-6",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-all-whitespace-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-change-element-names-deep-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-change-element-names-deep-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-change-element-names-deep-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-change-element-names-deep-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-copy-attributes-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-copy-attributes-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-copy-attributes-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-copy-attributes-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-day-in-year-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-day-in-year-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-day-in-year-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-day-in-year-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-depth-of-node-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-depth-of-node-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-depth-of-node-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-dynamic-path-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-dynamic-path-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-first-day-of-month-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-first-day-of-month-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-first-day-of-month-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-first-day-of-month-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-first-day-of-year-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-first-day-of-year-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-first-day-of-year-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-first-day-of-year-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-follows-not-descendant-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-follows-not-descendant-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-follows-not-descendant-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-follows-not-descendant-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-get-matches-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-get-matches-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-get-matches-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-get-matches-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-element-only-content-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-element-only-content-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-element-only-content-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-element-only-content-4",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-element-only-content-5",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-element-only-content-6",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-element-only-content-7",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-element-only-content-8",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-element-only-content-9",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-element-only-content-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-empty-content-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-empty-content-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-empty-content-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-empty-content-4",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-empty-content-5",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-empty-content-6",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-empty-content-7",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-empty-content-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-mixed-content-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-mixed-content-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-mixed-content-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-mixed-content-4",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-mixed-content-5",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-mixed-content-6",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-mixed-content-7",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-mixed-content-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-simple-content-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-simple-content-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-simple-content-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-simple-content-4",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-simple-content-5",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-simple-content-6",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-has-simple-content-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-id-from-element-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-if-empty-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-if-empty-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-if-empty-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-if-empty-4",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-if-empty-5",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-if-empty-6",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-if-empty-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-index-of-deep-equal-node-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-index-of-deep-equal-node-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-index-of-node-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-index-of-node-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-index-of-node-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-index-of-node-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-a-number-7",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-a-number-8",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-a-number-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-ancestor-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-ancestor-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-ancestor-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-ancestor-4",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-ancestor-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-descendant-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-descendant-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-descendant-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-descendant-4",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-descendant-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-node-among-descendants-deep-equal-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-node-among-descendants-deep-equal-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-node-among-descendants-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-node-among-descendants-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-node-in-sequence-deep-equal-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-node-in-sequence-deep-equal-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-node-in-sequence-deep-equal-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-node-in-sequence-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-node-in-sequence-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-is-node-in-sequence-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-last-day-of-month-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-last-day-of-month-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-last-day-of-month-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-last-day-of-month-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-last-day-of-year-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-last-day-of-year-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-last-day-of-year-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-last-day-of-year-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-leaf-elements-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-leaf-elements-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-max-depth-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-max-depth-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-path-to-node-with-pos-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-path-to-node-with-pos-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-path-to-node-with-pos-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-precedes-not-ancestor-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-precedes-not-ancestor-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-precedes-not-ancestor-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-precedes-not-ancestor-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-replace-multi-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-sequence-type-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-sequence-type-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-sequence-type-3",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-sequence-type-4",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-sequence-type-5",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-sequence-type-6",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-sequence-type-7",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-sequence-type-8",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-sequence-type-9",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-sequence-type-10",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-sequence-type-11",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-sequence-type-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-siblings-same-name-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-siblings-same-name-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-siblings-same-name-all",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-siblings-1",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-siblings-2",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "functx-functx-siblings-all",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

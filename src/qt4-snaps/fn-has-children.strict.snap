@@ -1,0 +1,44 @@
+[
+  {
+    "testCase": "fn-has-children-019",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-has-children-023",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-has-children-025",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-has-children-027",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-has-children-029",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-has-children-031",
+    "got": [
+      "XPTY0004"
+    ]
+  },
+  {
+    "testCase": "fn-has-children-033",
+    "got": [
+      "XPTY0004"
+    ]
+  }
+]

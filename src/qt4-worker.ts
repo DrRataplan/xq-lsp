@@ -29,6 +29,9 @@ export interface TestOutput {
 	outcome: "pass" | "false-positive" | "false-negative";
 	expectedCode: string | null;
 	got: string[];
+	// Codes of opt-in strict-mode warnings (severity "warning") from a second run
+	// with strictCardinality enabled. Tracked separately: they never affect `outcome`.
+	strictGot: string[];
 }
 
 const BUILTINS = new Map([["builtin:fn", getBuiltins()]]);
@@ -39,7 +42,7 @@ function collectCodes(
 	envVariables: Array<{ prefix: string; localName: string }>,
 	moduleCatalog: Array<{ uri: string; text: string }>,
 	envContextItem: boolean,
-): string[] {
+): { got: string[]; strictGot: string[] } {
 	try {
 		const { analysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq");
 		const imports = new Map<string, FileAnalysis>(BUILTINS);
@@ -81,19 +84,25 @@ function collectCodes(
 			}
 		}
 		const codes: string[] = [];
+		const strictCodes: string[] = [];
 		if (parseError) codes.push("XPST0003");
 		if (ast) {
 			for (const d of runDiagnostics(ast, query, analysis, imports, { externalContextItem: envContextItem })) codes.push(d.code);
+			// Second pass with strict cardinality checking: warning-severity diagnostics
+			// are tracked separately and never affect the outcome.
+			for (const d of runDiagnostics(ast, query, analysis, imports, { externalContextItem: envContextItem, strictCardinality: true })) {
+				if (d.severity === "warning") strictCodes.push(d.code);
+			}
 		}
-		return [...new Set(codes)];
+		return { got: [...new Set(codes)], strictGot: [...new Set(strictCodes)] };
 	} catch {
-		return [];
+		return { got: [], strictGot: [] };
 	}
 }
 
 const batch = workerData as TestInput[];
 const results: TestOutput[] = batch.map((tc) => {
-	const got = collectCodes(tc.query, tc.envNamespaces, tc.envVariables, tc.moduleCatalog, tc.envContextItem);
+	const { got, strictGot } = collectCodes(tc.query, tc.envNamespaces, tc.envVariables, tc.moduleCatalog, tc.envContextItem);
 	const hasError = got.length > 0;
 	// A static analyzer may detect a dynamic error early: when the test expects a
 	// dynamic error (e.g. XPTY0004) and that is exactly what we reported, it's a pass.
@@ -105,7 +114,7 @@ const results: TestOutput[] = batch.map((tc) => {
 			: !hasError || got.every((c) => c === tc.expectedCode)
 				? "pass"
 				: "false-positive";
-	return { testSetSlug: tc.testSetSlug, testCase: tc.testCase, outcome, expectedCode: tc.expectedCode, got };
+	return { testSetSlug: tc.testSetSlug, testCase: tc.testCase, outcome, expectedCode: tc.expectedCode, got, strictGot };
 });
 
 parentPort!.postMessage(results);
