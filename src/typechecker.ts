@@ -1618,3 +1618,39 @@ export function checkTypes(
 	);
 	return errors;
 }
+
+/**
+ * The type of the variable referenced at the given source span (the span of the name,
+ * without `$`), as seen by the type checker: the declared type, the inferred
+ * initializer type, or a narrowed type inside a condition (e.g. `item()*` narrowed to
+ * `item()+` inside `if (exists($x))`). Returns undefined when no reference to a known
+ * variable covers the span.
+ */
+export function variableTypeAtOffset(
+	ast: Node,
+	analysis: FileAnalysis,
+	importedAnalyses: Map<string, FileAnalysis>,
+	start: number,
+	end: number,
+): XQueryType | undefined {
+	const declaredFns = allFunctionsFlat(analysis, importedAnalyses);
+	const outerScope = externalVariableTypes(analysis, importedAnalyses.values(), declaredFns);
+	const allFns = withInferredReturnTypes(ast, analysis, declaredFns, outerScope);
+	let result: XQueryType | undefined;
+	walkModuleScopes(
+		ast,
+		analysis,
+		allFns,
+		{
+			onNode: (node, scope) => {
+				if (node.type !== "VarRef") return;
+				if (start < node.start || end > (node.end ?? node.start)) return;
+				const qname = asVarRef(node, analysis);
+				if (!qname) return;
+				result = scope.get(qnameKey(qname));
+			},
+		},
+		outerScope,
+	);
+	return result;
+}
