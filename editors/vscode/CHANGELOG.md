@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/DrRataplan/xq-lsp/compare/vscode-v0.8.0...vscode-v0.9.0) (2026-10-26)
+
+
+### Features
+
+* **diagnostics:** opt-in strict cardinality checking ([#188](https://github.com/DrRataplan/xq-lsp/issues/188)) ([f5570ee](https://github.com/DrRataplan/xq-lsp/commit/f5570ee7c2c8a201514c27e1ed325ee518050afb))
+
 ## [0.8.0](https://github.com/DrRataplan/xq-lsp/compare/vscode-v0.7.1...vscode-v0.8.0) (2026-09-01)
 
 
