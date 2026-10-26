@@ -123,6 +123,39 @@ describe("findConfig", () => {
 			assert.deepEqual(result.config.prefixes, {});
 		});
 	});
+
+	test("strict.cardinality defaults to false", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(path.join(dir, "lsp-config.xq"), `map { "glob": "**/*.xq" }`);
+			const result = findConfig(pathToFileURL(path.join(dir, "main.xq")).toString());
+			assert.ok(result);
+			assert.deepEqual(result.config.strict, { cardinality: false });
+		});
+	});
+
+	test("strict.cardinality can be set to true", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "lsp-config.xq"),
+				`map { "glob": "**/*.xq", "strict": map { "cardinality": true() } }`,
+			);
+			const result = findConfig(pathToFileURL(path.join(dir, "main.xq")).toString());
+			assert.ok(result);
+			assert.deepEqual(result.config.strict, { cardinality: true });
+		});
+	});
+
+	test("strict.cardinality can be explicitly set to false", () => {
+		withTmpDir((dir) => {
+			fs.writeFileSync(
+				path.join(dir, "lsp-config.xq"),
+				`map { "glob": "**/*.xq", "strict": map { "cardinality": false() } }`,
+			);
+			const result = findConfig(pathToFileURL(path.join(dir, "main.xq")).toString());
+			assert.ok(result);
+			assert.deepEqual(result.config.strict, { cardinality: false });
+		});
+	});
 });
 
 // ── expandGlobs ───────────────────────────────────────────────────────────────

@@ -84,4 +84,6 @@ export interface TypeDiagnostic {
 	code: string; // XQuery error code, e.g. "XPTY0004"
 	offset: number; // character offset into the source
 	length: number;
+	/** Set to "warning" for opt-in strict-mode diagnostics (possible, not certain, errors). */
+	severity?: "warning";
 }

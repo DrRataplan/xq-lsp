@@ -11,23 +11,33 @@ export interface LspConfig {
 	lib: string[];
 	/** Maps prefix names to namespace URIs, from the `prefixes` key in lsp-config.xq. Default: {}. */
 	prefixes: Record<string, string>;
+	/** Opt-in stricter checks, from the `strict` map in lsp-config.xq. All default to false. */
+	strict: {
+		/** Warn (instead of error) when an argument's cardinality may not fit the parameter's occurrence indicator — a possible dynamic XPTY0004. */
+		cardinality: boolean;
+	};
 }
 
-function parseConfig(text: string): { globs: string[]; generateLocationHints: boolean } {
+function parseConfig(text: string): { globs: string[]; generateLocationHints: boolean; strict: LspConfig["strict"] } {
 	// Evaluate the config as an XPath 3.1 expression.
 	// The config file should contain a map expression, e.g.:
 	//   map { "glob": "src/**/*.xq" }
 	// or with options:
 	//   map { "glob": "src/**/*.xq", "import": map { "generateLocationHints": false() } }
+	// or with strict-mode opt-ins:
+	//   map { "glob": "src/**/*.xq", "strict": map { "cardinality": true() } }
 	const trimmed = text.trim();
 	try {
 		const globs = evaluateXPathToStrings(`(${trimmed})?glob`, null, null, {});
 		// Check for opt-out: import?generateLocationHints defaults to true when absent.
 		const hints = evaluateXPathToStrings(`string((${trimmed})?import?generateLocationHints)`, null, null, {});
 		const generateLocationHints = hints.length === 0 || hints[0] !== "false";
-		return { globs, generateLocationHints };
+		// Check for opt-in: strict?cardinality defaults to false when absent.
+		const cardinality = evaluateXPathToStrings(`string((${trimmed})?strict?cardinality)`, null, null, {});
+		const strict = { cardinality: cardinality.length > 0 && cardinality[0] === "true" };
+		return { globs, generateLocationHints, strict };
 	} catch {
-		return { globs: [], generateLocationHints: true };
+		return { globs: [], generateLocationHints: true, strict: { cardinality: false } };
 	}
 }
 

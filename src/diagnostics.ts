@@ -6,7 +6,7 @@
  */
 import type { Node } from "xq-parser";
 import type { TypeDiagnostic, FileAnalysis } from "./types.ts";
-import { checkTypes } from "./typechecker.ts";
+import { checkTypes, type TypeCheckOptions } from "./typechecker.ts";
 import { checkFunctionCalls } from "./functioncall-diagnostics.ts";
 import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
 import { checkContextItemUsage } from "./context-item-diagnostics.ts";
@@ -29,10 +29,10 @@ export function runDiagnostics(
 	text: string,
 	analysis: FileAnalysis,
 	imports: Map<string, FileAnalysis>,
-	options: { externalContextItem?: boolean } = {},
+	options: { externalContextItem?: boolean } & TypeCheckOptions = {},
 ): TypeDiagnostic[] {
 	return [
-		...checkTypes(ast, text, analysis, imports),
+		...checkTypes(ast, text, analysis, imports, options),
 		...checkFunctionCalls(ast, analysis, imports),
 		...findUndeclaredPrefixUsages(ast, analysis),
 		...checkContextItemUsage(ast, options),

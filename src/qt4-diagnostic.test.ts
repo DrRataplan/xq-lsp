@@ -421,7 +421,7 @@ if (QT4_DIR) {
 		const snapPath = path.join(SNAP_DIR, `${slug}.snap`);
 
 		test(`qt4/${slug}`, async (t) => {
-			await t.assert.fileSnapshot(failures, snapPath);
+			t.assert.fileSnapshot(failures, snapPath);
 		});
 	}
 }
