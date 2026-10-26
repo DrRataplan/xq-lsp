@@ -297,7 +297,7 @@ const inlayHintsField = StateField.define<DecorationSet>({
 // ── AST panel ─────────────────────────────────────────────────────────────────
 // Dumps the raw xq-parser tree for the current doc, for debugging analyzer/
 // diagnostic logic against a specific parse shape. Runnable outside the
-// browser too — see `node scripts/dump-ast.ts` (documented in CLAUDE.md).
+// browser too — see `node scripts/dump-ast.ts` (documented in AGENTS.md).
 
 const astPanel = document.getElementById("ast-panel")!;
 const astOutput = document.getElementById("ast-output")!;
