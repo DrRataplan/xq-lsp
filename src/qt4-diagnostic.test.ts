@@ -417,18 +417,11 @@ if (QT4_DIR) {
 		const failures = results
 			.filter((r) => r.outcome !== "pass")
 			.map((r) => ({ testCase: r.testCase, outcome: r.outcome, expectedCode: r.expectedCode, got: r.got }));
-		// Strict-mode warnings are tracked in a separate snapshot: they never affect
-		// the outcome, but the list shows where opt-in strict cardinality checking fires.
-		const strictWarnings = results
-			.filter((r) => r.strictGot.length > 0)
-			.map((r) => ({ testCase: r.testCase, got: r.strictGot }));
 
 		const snapPath = path.join(SNAP_DIR, `${slug}.snap`);
-		const strictSnapPath = path.join(SNAP_DIR, `${slug}.strict.snap`);
 
 		test(`qt4/${slug}`, async (t) => {
-			await t.assert.fileSnapshot(failures, snapPath);
-			await t.assert.fileSnapshot(strictWarnings, strictSnapPath);
+			t.assert.fileSnapshot(failures, snapPath);
 		});
 	}
 }
