@@ -625,6 +625,9 @@ function functionTypeOf(fn: FunctionSymbol): XQueryType {
 
 // Kind of node selected by an axis step: `@x`/`attribute::x` → attribute, a plain name test on
 // any other axis → element, a kind test → that kind, `..` → any node.
+// A named attribute test (`@id`, `attribute(id)`) matches at most one attribute per
+// element, so its per-node occurrence is `?`; wildcards (`@*`, `@*:id`, `attribute(*)`,
+// bare `attribute()`) and all other steps are `*`.
 function axisStepType(step: Node): XQueryType {
 	const text = nodeText(step);
 	if (text.startsWith("..")) return NODE_STEP;
@@ -632,10 +635,17 @@ function axisStepType(step: Node): XQueryType {
 	if (kindTests.length > 0) {
 		const kind = nodeText(kindTests[0]).replace(/\(.*$/s, "");
 		const name = kind === "schema-element" ? "element" : kind === "schema-attribute" ? "attribute" : kind;
-		return { kind: "node", name, occurrence: "*" };
+		// `attribute(id)` — AttributeName present — matches at most one per element.
+		// `attribute(*)` uses a '*' terminal (not a Wildcard node); bare `attribute()` has neither.
+		const isSpecificAttribute = name === "attribute" && findAll(step, "AttributeName").length > 0;
+		return { kind: "node", name, occurrence: isSpecificAttribute ? "?" : "*" };
 	}
 	const isAttributeAxis = text.startsWith("@") || text.startsWith("attribute::");
-	return { kind: "node", name: isAttributeAxis ? "attribute" : "element", occurrence: "*" };
+	if (isAttributeAxis) {
+		const hasWildcard = findAll(step, "Wildcard").length > 0;
+		return { kind: "node", name: "attribute", occurrence: hasWildcard ? "*" : "?" };
+	}
+	return { kind: "node", name: "element", occurrence: "*" };
 }
 
 function inferPathExpr(nt: NonTerminal, varTypes: Map<string, XQueryType>, analysis: FileAnalysis, allFns: FunctionSymbol[]): XQueryType {
@@ -648,8 +658,28 @@ function inferPathExpr(nt: NonTerminal, varTypes: Map<string, XQueryType>, analy
 		return stepType.kind !== "unknown" && stepType.kind !== "node" && stepType.kind !== "item";
 	});
 	if (definitelyNotNodes) return UNKNOWN;
+	// Track cardinality through the path: the base's cardinality multiplied by each
+	// step's per-node cardinality. A named attribute test (`@id`) yields at most one
+	// attribute per element, so `$c/@id` on a single node is `attribute()?`, not `attribute()*`.
+	let card: Card;
+	let firstStep: number;
+	if (nt.type === "PathExpr") {
+		// Absolute path: "/" starts from the root (exactly one), "//" from
+		// descendant-or-self::node() (zero or more). The single child is the RelativePathExpr.
+		const isDescendant = nt.children.some((c) => isTerminal(c) && c.value === "//");
+		card = isDescendant ? { min: 0, max: 2 } : { min: 1, max: 1 };
+		firstStep = 0;
+	} else {
+		card = cardOf(inferExprType(steps[0], varTypes, analysis, allFns));
+		firstStep = 1;
+	}
+	for (let i = firstStep; i < steps.length - 1; i++) {
+		card = multiplyCard(card, cardOf(inferExprType(steps[i], varTypes, analysis, allFns)));
+	}
 	const last = inferExprType(steps[steps.length - 1], varTypes, analysis, allFns);
-	if (last.kind === "node" || last.kind === "atomic") return withCard(last, { min: 0, max: 2 });
+	if (last.kind === "node" || last.kind === "atomic") {
+		return withCard(itemTypeOf(last), multiplyCard(card, cardOf(last)));
+	}
 	return NODE_STEP;
 }
 

@@ -243,6 +243,36 @@ describe("inlay-hints: inferred types of compound expressions", () => {
 		assert.equal(hints.texts, ": text()*");
 	});
 
+	test("named attribute test on a single node is optional, wildcards are not", () => {
+		const hints = typeHintsByVar(`
+			declare function local:f($c as node()) {
+				let $named := $c/@id
+				let $wildcard := $c/@*
+				let $nsWildcard := $c/@*:id
+				let $kindNamed := $c/attribute(id)
+				let $kindWildcard := $c/attribute(*)
+				let $kindBare := $c/attribute()
+				return 1
+			}; 1`);
+		assert.equal(hints.named, ": attribute()?");
+		assert.equal(hints.wildcard, ": attribute()*");
+		assert.equal(hints.nsWildcard, ": attribute()*");
+		assert.equal(hints.kindNamed, ": attribute()?");
+		assert.equal(hints.kindWildcard, ": attribute()*");
+		assert.equal(hints.kindBare, ": attribute()*");
+	});
+
+	test("named attribute test on a sequence stays many", () => {
+		const hints = typeHintsByVar(`
+			declare function local:f($cs as node()*) {
+				let $many := $cs/@id
+				let $afterChild := $cs/foo/@id
+				return 1
+			}; 1`);
+		assert.equal(hints.many, ": attribute()*");
+		assert.equal(hints.afterChild, ": attribute()*");
+	});
+
 	test("simple map operator tracks the context item", () => {
 		const hints = typeHintsByVar(`let $plus := (1, 2) ! (. + 1) return 1`);
 		assert.equal(hints.plus, ": xs:integer+");
