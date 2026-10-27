@@ -190,6 +190,21 @@ describe("lint: lintTargets", () => {
 			assert.equal(results[0].filePath, path.join("src", "bad.xq"));
 		});
 	});
+
+	test("an unreadable file is fatal", () => {
+		withTmpDir((dir) => {
+			writeProject(dir);
+			const locked = path.join(dir, "src", "locked.xq");
+			writeFile(dir, "src/locked.xq", `1\n`);
+			fs.chmodSync(locked, 0o000);
+			try {
+				const { fatal } = lintTargets(["src/locked.xq"], { cwd: dir });
+				assert.match(fatal!, /Cannot read file/);
+			} finally {
+				fs.chmodSync(locked, 0o644);
+			}
+		});
+	});
 });
 
 describe("lint: computeExitCode", () => {

@@ -1,10 +1,12 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { withTmpDir } from "./test-utils.ts";
+import { parseArgs } from "./cli.ts";
 
 const MAIN_TS = fileURLToPath(new URL("./main.ts", import.meta.url));
 const PACKAGE_VERSION = JSON.parse(
@@ -44,6 +46,65 @@ function writeProject(dir: string): void {
 	writeFile(dir, "src/hint.xq", `declare %private function local:helper() { 42 };\n1\n`);
 	writeFile(dir, "src/warn.xq", `import module namespace foo = "http://example.com/foo";\n1\n`);
 }
+
+describe("cli: parseArgs", () => {
+	test("defaults", () => {
+		const p = parseArgs([], true);
+		assert.deepEqual(p.targets, []);
+		assert.equal(p.format, "stylish");
+		assert.equal(p.quiet, false);
+		assert.equal(p.help, false);
+		assert.equal(p.version, false);
+		assert.equal(p.color, true);
+		assert.equal(p.config, undefined);
+		assert.equal(p.maxWarnings, undefined);
+		assert.equal(p.error, undefined);
+	});
+
+	test("targets and all flags", () => {
+		const p = parseArgs(["src", "-q", "-f", "json", "-c", "cfg.xq", "--max-warnings", "3", "a.xq"], false);
+		assert.deepEqual(p.targets, ["src", "a.xq"]);
+		assert.equal(p.quiet, true);
+		assert.equal(p.format, "json");
+		assert.equal(p.config, "cfg.xq");
+		assert.equal(p.maxWarnings, 3);
+		assert.equal(p.color, false);
+	});
+
+	test("long flags with inline = values", () => {
+		const p = parseArgs(["--format=compact", "--config=cfg.xq", "--max-warnings=0"], false);
+		assert.equal(p.format, "compact");
+		assert.equal(p.config, "cfg.xq");
+		assert.equal(p.maxWarnings, 0);
+	});
+
+	test("missing values are errors", () => {
+		assert.match(parseArgs(["--config"], false).error!, /Missing value/);
+		assert.match(parseArgs(["-f"], false).error!, /Missing value/);
+		assert.match(parseArgs(["--max-warnings"], false).error!, /Invalid value/);
+	});
+
+	test("invalid --max-warnings values are errors", () => {
+		assert.match(parseArgs(["--max-warnings", "lots"], false).error!, /Invalid value/);
+		assert.match(parseArgs(["--max-warnings", "-1"], false).error!, /Invalid value/);
+		assert.match(parseArgs(["--max-warnings", "1.5"], false).error!, /Invalid value/);
+	});
+
+	test("unknown options are errors; a lone dash is a target", () => {
+		assert.match(parseArgs(["--bogus"], false).error!, /Unknown option/);
+		assert.match(parseArgs(["-x"], false).error!, /Unknown option/);
+		assert.deepEqual(parseArgs(["-"], false).targets, ["-"]);
+	});
+
+	test("help, version, and color flags", () => {
+		assert.equal(parseArgs(["-h"], false).help, true);
+		assert.equal(parseArgs(["--help"], false).help, true);
+		assert.equal(parseArgs(["-v"], false).version, true);
+		assert.equal(parseArgs(["--version"], false).version, true);
+		assert.equal(parseArgs(["--no-color"], true).color, false);
+		assert.equal(parseArgs(["--color"], false).color, true);
+	});
+});
 
 describe("cli: xq-lsp lint", () => {
 	test("clean file: exit 0, no output", () => {
@@ -157,6 +218,18 @@ describe("cli: xq-lsp lint", () => {
 		});
 	});
 
+	test("--color forces ANSI colors, --no-color suppresses them", () => {
+		withTmpDir((dir) => {
+			writeProject(dir);
+			const colored = runLint(dir, ["src/bad.xq", "--color"]);
+			assert.equal(colored.status, 1);
+			assert.match(colored.stdout, /\x1b\[/);
+			const plain = runLint(dir, ["src/bad.xq", "--no-color"]);
+			assert.equal(plain.status, 1);
+			assert.doesNotMatch(plain.stdout, /\x1b\[/);
+		});
+	});
+
 	test("--help and --version", () => {
 		withTmpDir((dir) => {
 			const help = runLint(dir, ["--help"]);
@@ -168,5 +241,42 @@ describe("cli: xq-lsp lint", () => {
 			assert.equal(version.status, 0);
 			assert.equal(version.stdout.trim(), PACKAGE_VERSION);
 		});
+	});
+
+	test("non-lint arguments start the language server (dispatcher)", { timeout: 30000 }, async () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xq-lsp-cli-test-"));
+		try {
+			writeProject(dir);
+			const msg = JSON.stringify({
+				jsonrpc: "2.0",
+				id: 1,
+				method: "initialize",
+				params: { processId: null, rootUri: null, capabilities: {} },
+			});
+			await new Promise<void>((resolve, reject) => {
+				const proc = spawn(process.execPath, [MAIN_TS, "--stdio"], { cwd: dir });
+				const timer = setTimeout(() => {
+					proc.kill();
+					reject(new Error("server did not answer initialize"));
+				}, 25000);
+				proc.stdout.on("data", (d) => {
+					if (d.toString().includes('"capabilities"')) {
+						clearTimeout(timer);
+						// Killed on purpose: a cleanly-exiting server would flush V8 coverage
+						// for src/server.ts (~450 mostly-uncovered entry-point lines) into the
+						// report, dragging the project total below main's.
+						proc.kill();
+						resolve();
+					}
+				});
+				proc.on("error", (e) => {
+					clearTimeout(timer);
+					reject(e);
+				});
+				proc.stdin.write(`Content-Length: ${Buffer.byteLength(msg)}\r\n\r\n${msg}`);
+			});
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
 	});
 });

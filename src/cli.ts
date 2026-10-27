@@ -40,7 +40,7 @@ Exit codes:
   2  Fatal error (bad arguments, no files matched, unreadable file or config)
 `;
 
-interface ParsedArgs {
+export interface ParsedArgs {
 	targets: string[];
 	config?: string;
 	format: string;
@@ -52,7 +52,8 @@ interface ParsedArgs {
 	error?: string;
 }
 
-function parseArgs(args: string[], colorDefault: boolean): ParsedArgs {
+/** Exported for unit tests; runCli is the real entry point. */
+export function parseArgs(args: string[], colorDefault: boolean): ParsedArgs {
 	const out: ParsedArgs = {
 		targets: [],
 		format: "stylish",
