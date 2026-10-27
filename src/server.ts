@@ -5,7 +5,6 @@ import {
 	TextDocuments,
 	ProposedFeatures,
 	TextDocumentSyncKind,
-	DiagnosticSeverity,
 	DocumentDiagnosticReportKind,
 	CodeAction,
 	CodeActionKind,
@@ -14,276 +13,33 @@ import {
 	ErrorCodes,
 } from "vscode-languageserver/node.js";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import * as path from "path";
 import * as fs from "fs";
-import { fileURLToPath, pathToFileURL } from "url";
-import { analyzeWithAst } from "./analyzer.ts";
-import { getBuiltins } from "./builtins.ts";
 import { getCompletions } from "./completion.ts";
 import { getHover, getSignatureHelp, getDocumentSymbols } from "./features.ts";
 import { getDefinition } from "./definition.ts";
 import { getDocumentLinks } from "./document-links.ts";
 import { getInlayHints } from "./inlay-hints.ts";
 import { getReferences, getRenameRangeAtOffset, getRenameLocations, getDocumentHighlights } from "./references.ts";
-import type { FileRecord, LoadAst } from "./references.ts";
+import type { FileRecord } from "./references.ts";
 import { buildCodeLenses, resolveCodeLens } from "./code-lens.ts";
 import type { CodeLensData } from "./code-lens.ts";
 import { prepareCallHierarchy, getIncomingCalls, getOutgoingCalls } from "./call-hierarchy.ts";
-import type { FileAnalysis, TypeDiagnostic } from "./types.ts";
-import { findConfig, expandGlobs } from "./config.ts";
-import type { LspConfig } from "./config.ts";
+import type { FileAnalysis } from "./types.ts";
+import { findConfig } from "./config.ts";
 import { findImportInsertPosition, findDeclareNsInsertPosition, computeRelativePath } from "./namespace-diagnostics.ts";
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
-import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
-import { runDiagnostics, runHints } from "./diagnostics.ts";
-import { checkUnresolvedImports } from "./module-import-diagnostics.ts";
-import {
-	getRuntimeAnalyses,
-	getRuntimePredeclaredNamespaces,
-	withPredeclaredNs,
-	withDeclaredBuiltinModules,
-	getRuntimePredeclaredVariables,
-	withPredeclaredVariables,
-} from "./runtimes.ts";
 import { buildOrganizeImportsEdit, buildExtractVariableEdit, buildExtractFunctionEdit } from "./refactor-actions.ts";
 import type { OffsetEdit } from "./refactor-actions.ts";
 import { getWorkspaceSymbols } from "./workspace-symbol.ts";
-import { siblingModuleAnalysis } from "./module-siblings.ts";
 import { getSemanticTokensData, SEMANTIC_TOKENS_LEGEND } from "./semantic-tokens.ts";
+import { createWorkspace, uriToPath } from "./workspace.ts";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 
-const analysisCache = new Map<string, FileAnalysis>();
-const lastValidAnalysisCache = new Map<string, FileAnalysis>(); // last AST-path analysis per URI
-
-// Glob analyses keyed by config directory, then by module namespace URI.
-// Populated lazily on the first request for a given config root.
-const globAnalysesByConfigDir = new Map<string, Map<string, FileAnalysis>>();
-
-function analyzeDocument(doc: TextDocument): FileAnalysis {
-	const { analysis } = analyzeWithAst(doc.getText(), doc.uri);
-	analysisCache.set(doc.uri, analysis);
-	if (analysis.usedAstPath) lastValidAnalysisCache.set(doc.uri, analysis);
-	return analysis;
-}
-
-function analyzeDocumentFull(doc: TextDocument): {
-	analysis: FileAnalysis;
-	parseDiagnostics: ReturnType<typeof buildParseDiagnostics>;
-	hasAst: boolean;
-	ast: import("xq-parser").Node | null;
-} {
-	const { analysis, ast, parseError } = analyzeWithAst(doc.getText(), doc.uri);
-	analysisCache.set(doc.uri, analysis);
-	if (analysis.usedAstPath) lastValidAnalysisCache.set(doc.uri, analysis);
-	return { analysis, parseDiagnostics: buildParseDiagnostics(parseError), hasAst: ast !== null, ast };
-}
-
-function buildParseDiagnostics(parseError: Error | null) {
-	if (!parseError) return [];
-	const msg = parseError.message;
-	const loc = msg.match(/at line (\d+), column (\d+)/);
-	const line = loc ? parseInt(loc[1]) - 1 : 0;
-	const col = loc ? parseInt(loc[2]) - 1 : 0;
-	return [
-		{
-			severity: DiagnosticSeverity.Error,
-			range: { start: { line, character: col }, end: { line, character: col + 1 } },
-			message: msg.split("\n")[0],
-			code: "XPST0003",
-			source: "xquery-lsp",
-		},
-	];
-}
-
-function uriToPath(uri: string): string {
-	try {
-		return fileURLToPath(uri);
-	} catch {
-		return uri.replace(/^file:\/\//, "");
-	}
-}
-
-function resolveImportUri(currentUri: string, atPath: string): string {
-	const currentPath = uriToPath(currentUri);
-	const dir = path.dirname(currentPath);
-	const resolved = path.resolve(dir, atPath);
-	return pathToFileURL(resolved).toString();
-}
-
-function getImportedAnalysis(importUri: string): FileAnalysis | null {
-	if (analysisCache.has(importUri)) return analysisCache.get(importUri)!;
-	try {
-		const text = fs.readFileSync(uriToPath(importUri), "utf-8");
-		const { analysis } = analyzeWithAst(text, importUri);
-		analysisCache.set(importUri, analysis);
-		return analysis;
-	} catch {
-		return null;
-	}
-}
-
-// Loads text + analysis for a call-hierarchy item's uri, which may not be an open document.
-function loadAnalysisForUri(uri: string): { text: string; analysis: FileAnalysis } | null {
-	const doc = documents.get(uri);
-	if (doc) return { text: doc.getText(), analysis: analysisCache.get(uri) ?? analyzeDocument(doc) };
-	try {
-		const text = fs.readFileSync(uriToPath(uri), "utf-8");
-		const { analysis } = analyzeWithAst(text, uri);
-		return { text, analysis };
-	} catch {
-		return null;
-	}
-}
-
-function mergeAnalyses(a: FileAnalysis, b: FileAnalysis): FileAnalysis {
-	return {
-		...a,
-		functions: [...a.functions, ...b.functions],
-		moduleVariables: [...a.moduleVariables, ...b.moduleVariables],
-	};
-}
-
-// Lightweight (ast-free) per-file records for every glob-matched file: source text plus the
-// *extracted* FileAnalysis (functions, module variables, imports, namespace decls, ...), with
-// the AST itself dropped once those fields are pulled out. xq-parser's AST runs roughly two
-// orders of magnitude larger than the source text — XQuery's operator-precedence grammar wraps
-// even a bare `$x` variable reference in ~30 levels of single-child wrapper nodes, none of them
-// collapsed — so retaining a full AST for every glob-matched file (often hundreds, only a
-// handful of which anyone is actually looking at) is the dominant memory cost of any glob-backed
-// feature. None of the FileAnalysis fields other than `.ast` hold node references (they're all
-// plain offsets/strings — see types.ts), so dropping `.ast` after extraction is safe: nothing
-// downstream keeps the tree reachable. Populated lazily per config dir; never invalidated.
-const globFileSummariesByConfigDir = new Map<string, Map<string, FileRecord>>();
-
-function buildGlobFileSummaries(config: LspConfig, configDir: string): Map<string, FileRecord> {
-	const records = new Map<string, FileRecord>();
-	for (const filePath of expandGlobs(config.globs, configDir)) {
-		const fileUri = pathToFileURL(filePath).toString();
-		try {
-			const text = fs.readFileSync(filePath, "utf-8");
-			const { analysis } = analyzeWithAst(text, fileUri);
-			records.set(fileUri, { uri: fileUri, text, analysis: { ...analysis, ast: undefined } });
-		} catch {
-			/* unreadable file, skip */
-		}
-	}
-	return records;
-}
-
-function getGlobFileSummaries(configDir: string, config: LspConfig): Map<string, FileRecord> {
-	if (!globFileSummariesByConfigDir.has(configDir)) {
-		globFileSummariesByConfigDir.set(configDir, buildGlobFileSummaries(config, configDir));
-	}
-	return globFileSummariesByConfigDir.get(configDir)!;
-}
-
-function getGlobAnalyses(currentUri: string): { byNamespace: Map<string, FileAnalysis>; lib: string[] } {
-	const found = findConfig(currentUri);
-	if (!found) return { byNamespace: new Map(), lib: [] };
-
-	const { config, configDir } = found;
-	const lib = config.lib;
-
-	if (globAnalysesByConfigDir.has(configDir)) {
-		return { byNamespace: globAnalysesByConfigDir.get(configDir)!, lib };
-	}
-
-	const byNamespace = new Map<string, FileAnalysis>();
-	for (const { analysis } of getGlobFileSummaries(configDir, config).values()) {
-		if (!analysis.moduleNamespaceUri) continue;
-		const existing = byNamespace.get(analysis.moduleNamespaceUri);
-		byNamespace.set(analysis.moduleNamespaceUri, existing ? mergeAnalyses(existing, analysis) : analysis);
-	}
-	globAnalysesByConfigDir.set(configDir, byNamespace);
-	return { byNamespace, lib };
-}
-
-/**
- * Cross-file access for find-references / rename / call-hierarchy: `getOtherFiles` returns the
- * cached, ast-free summaries above for cheap candidate filtering (see references.ts's text
- * pre-filter); `loadAst` parses one specific candidate's full AST on demand, once it survives
- * that filter, reusing `analysisCache` when the file is already resident (open document, or
- * explicitly imported elsewhere) instead of re-parsing. The parsed result is intentionally NOT
- * cached here — a cross-file search should never retain more than the handful of files it's
- * actually walking.
- */
-function getGlobFileAccess(currentUri: string): { getOtherFiles: () => FileRecord[]; loadAst: LoadAst } {
-	const found = findConfig(currentUri);
-	if (!found) return { getOtherFiles: () => [], loadAst: () => null };
-	const { config, configDir } = found;
-	const predeclaredNs = getRuntimePredeclaredNamespaces(config.lib);
-
-	return {
-		getOtherFiles: () => [...getGlobFileSummaries(configDir, config).values()].map((r) => ({ ...r, analysis: withPredeclaredNs(r.analysis, predeclaredNs) })),
-		loadAst: (uri: string, text: string) => {
-			const cached = analysisCache.get(uri);
-			if (cached?.ast) return withPredeclaredNs(cached, predeclaredNs);
-			const { analysis } = analyzeWithAst(text, uri);
-			return withPredeclaredNs(analysis, predeclaredNs);
-		},
-	};
-}
-
-function resolveContext(
-	currentUri: string,
-	rawAnalysis: FileAnalysis,
-): { analysis: FileAnalysis; imported: Map<string, FileAnalysis> } {
-	const result = new Map<string, FileAnalysis>();
-	result.set("builtin:fn", getBuiltins());
-	const { byNamespace: globAnalyses, lib } = getGlobAnalyses(currentUri);
-	const predeclaredNs = getRuntimePredeclaredNamespaces(lib);
-	const predeclaredVars = getRuntimePredeclaredVariables(lib, currentUri);
-	const withPredeclared = withPredeclaredVariables(withPredeclaredNs(rawAnalysis, predeclaredNs), predeclaredVars);
-
-	const runtimeByNamespace = new Map<string, FileAnalysis>();
-	for (const runtimeAnalysis of getRuntimeAnalyses(lib)) {
-		if (runtimeAnalysis.moduleNamespaceUri) {
-			const existing = runtimeByNamespace.get(runtimeAnalysis.moduleNamespaceUri);
-			runtimeByNamespace.set(
-				runtimeAnalysis.moduleNamespaceUri,
-				existing ? mergeAnalyses(existing, runtimeAnalysis) : runtimeAnalysis,
-			);
-		}
-	}
-	const analysis = withDeclaredBuiltinModules(withPredeclared, new Set(runtimeByNamespace.keys()));
-	// Their functions are callable by namespace URI alone (see withDeclaredBuiltinModules).
-	for (const nd of analysis.namespaceDecls) {
-		const runtimeAnalysis = nd.offset === -1 ? runtimeByNamespace.get(nd.namespaceUri) : undefined;
-		if (runtimeAnalysis && !result.has(nd.namespaceUri)) result.set(nd.namespaceUri, runtimeAnalysis);
-	}
-	for (const imp of rawAnalysis.imports) {
-		let imported: FileAnalysis | undefined;
-		if (imp.atPath) {
-			const uri = resolveImportUri(currentUri, imp.atPath);
-			imported = getImportedAnalysis(uri) ?? undefined;
-		}
-		if (!imported) {
-			// No "at" path, or the location hint didn't resolve: fall back to matching the
-			// namespace URI against glob-loaded modules or runtime defs.
-			imported = globAnalyses.get(imp.namespaceUri) ?? runtimeByNamespace.get(imp.namespaceUri);
-		}
-		if (imported) {
-			if (imp.atPath) result.set(imp.atPath, imported);
-			result.set(imp.namespaceUri, imported);
-		}
-	}
-	// Other files implementing the same module namespace are in scope without an import.
-	if (rawAnalysis.moduleNamespaceUri) {
-		const merged = globAnalyses.get(rawAnalysis.moduleNamespaceUri);
-		const siblings = merged && siblingModuleAnalysis(merged, currentUri);
-		if (siblings) result.set(rawAnalysis.moduleNamespaceUri, siblings);
-	}
-	// Add pre-declared runtime analyses directly — available without explicit import
-	for (const nd of predeclaredNs) {
-		if (!result.has(nd.namespaceUri)) {
-			const runtimeAnalysis = runtimeByNamespace.get(nd.namespaceUri);
-			if (runtimeAnalysis) result.set(nd.namespaceUri, runtimeAnalysis);
-		}
-	}
-	return { analysis, imported: result };
-}
+// All cross-file machinery (config discovery, glob indexes, import resolution, the
+// diagnostic pipeline) lives in the shared Workspace — the lint CLI uses the same one.
+const ws = createWorkspace({ getOpenDocument: (uri) => documents.get(uri) });
 
 // ── LSP lifecycle ────────────────────────────────────────────────────────────
 
@@ -326,52 +82,8 @@ connection.onInitialize((params) => {
 	};
 });
 
-function computeDiagnostics(doc: TextDocument) {
-	const { analysis: rawAnalysis, parseDiagnostics: parseDiags, hasAst, ast } = analyzeDocumentFull(doc);
-	const { analysis, imported: resolvedImported } = resolveContext(doc.uri, rawAnalysis);
-	const config = findConfig(doc.uri)?.config;
-
-	// Run all error-level diagnostics and hints via the central registry.
-	// findUndeclaredPrefixUsages returns [] when ast is null; runDiagnostics guards the rest.
-	const nsDiagRaw = findUndeclaredPrefixUsages(ast, analysis);
-	const errorDiagRaw =
-		hasAst && ast !== null
-			? runDiagnostics(ast, doc.getText(), analysis, resolvedImported, {
-					strictCardinality: config?.strict.cardinality ?? false,
-				})
-			: [];
-	const hintDiagRaw = hasAst && ast !== null ? runHints(ast, analysis) : [];
-
-	const unresolvedImportRaw = hasAst ? checkUnresolvedImports(analysis, resolvedImported) : [];
-
-	function toLsp(d: TypeDiagnostic, severity: DiagnosticSeverity) {
-		return {
-			severity,
-			range: { start: doc.positionAt(d.offset), end: doc.positionAt(d.offset + d.length) },
-			message: d.message,
-			code: d.code,
-			source: "xquery-lsp",
-		};
-	}
-
-	const nsDiags = nsDiagRaw.map((nd) => ({
-		...toLsp(nd, DiagnosticSeverity.Error),
-		data: { prefix: nd.prefix, usageKind: nd.usageKind } as { prefix: string; usageKind: NamespaceUsageKind },
-	}));
-	// nsDiags already covers XQST0081 (with the code-action data field), so exclude those here.
-	// Opt-in strict-mode diagnostics are flagged severity "warning" and surface as warnings.
-	const errorDiags = errorDiagRaw
-		.filter((d) => d.code !== "XQST0081")
-		.map((d) => toLsp(d, d.severity === "warning" ? DiagnosticSeverity.Warning : DiagnosticSeverity.Error));
-	const hintDiags = hintDiagRaw.map((d) => toLsp(d, DiagnosticSeverity.Hint));
-
-	const unresolvedImportDiags = unresolvedImportRaw.map((d) => toLsp(d, DiagnosticSeverity.Warning));
-
-	return [...parseDiags, ...nsDiags, ...errorDiags, ...unresolvedImportDiags, ...hintDiags];
-}
-
 documents.onDidChangeContent((change) => {
-	connection.sendDiagnostics({ uri: change.document.uri, diagnostics: computeDiagnostics(change.document) });
+	connection.sendDiagnostics({ uri: change.document.uri, diagnostics: ws.computeDiagnostics(change.document) });
 });
 
 // LSP 3.17 pull diagnostics. Falls back to reading the file from disk so clients that edit
@@ -386,17 +98,17 @@ connection.languages.diagnostics.on((params) => {
 			return { kind: DocumentDiagnosticReportKind.Full, items: [] };
 		}
 	}
-	return { kind: DocumentDiagnosticReportKind.Full, items: computeDiagnostics(doc) };
+	return { kind: DocumentDiagnosticReportKind.Full, items: ws.computeDiagnostics(doc) };
 });
 
 connection.onCompletion((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return [];
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
+	const { analysis, imported } = ws.resolveContext(doc.uri, rawAnalysis);
 	const offset = doc.offsetAt(params.position);
 
-	const { byNamespace: globAnalyses } = getGlobAnalyses(doc.uri);
+	const { byNamespace: globAnalyses } = ws.getGlobAnalyses(doc.uri);
 	const config = findConfig(doc.uri)?.config;
 	const generateLocationHints = config?.generateLocationHints ?? true;
 
@@ -427,7 +139,7 @@ connection.onCompletion((params) => {
 		analysis,
 		imported,
 		snippetSupport,
-		lastValidAnalysisCache.get(doc.uri),
+		ws.lastValidAnalysisCache.get(doc.uri),
 		availableAnalyses,
 		knownNamespaces,
 		{ docText: doc.getText(), docUri: doc.uri, generateLocationHints },
@@ -437,23 +149,23 @@ connection.onCompletion((params) => {
 connection.onHover((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return null;
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
+	const { analysis, imported } = ws.resolveContext(doc.uri, rawAnalysis);
 	return getHover(doc, doc.offsetAt(params.position), analysis, imported);
 });
 
 connection.onSignatureHelp((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return null;
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
+	const { analysis, imported } = ws.resolveContext(doc.uri, rawAnalysis);
 	return getSignatureHelp(doc, doc.offsetAt(params.position), analysis, imported);
 });
 
 connection.onDocumentSymbol((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return [];
-	const analysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const analysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
 	return getDocumentSymbols(doc, analysis);
 });
 
@@ -461,7 +173,7 @@ connection.onWorkspaceSymbol((params) => {
 	// No single document anchors a workspace-wide request, so gather config dirs from every open document.
 	const filesByUri = new Map<string, FileRecord>();
 	for (const doc of documents.all()) {
-		for (const file of getGlobFileAccess(doc.uri).getOtherFiles()) filesByUri.set(file.uri, file);
+		for (const file of ws.getGlobFileAccess(doc.uri).getOtherFiles()) filesByUri.set(file.uri, file);
 	}
 	return getWorkspaceSymbols([...filesByUri.values()], params.query);
 });
@@ -469,17 +181,17 @@ connection.onWorkspaceSymbol((params) => {
 connection.onDefinition((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return null;
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
+	const { analysis, imported } = ws.resolveContext(doc.uri, rawAnalysis);
 	return getDefinition(doc, doc.offsetAt(params.position), analysis, imported);
 });
 
 connection.onReferences((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return [];
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const { analysis } = resolveContext(doc.uri, rawAnalysis);
-	const { getOtherFiles, loadAst } = getGlobFileAccess(doc.uri);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
+	const { analysis } = ws.resolveContext(doc.uri, rawAnalysis);
+	const { getOtherFiles, loadAst } = ws.getGlobFileAccess(doc.uri);
 	return getReferences(doc.uri, doc.getText(), doc.offsetAt(params.position), analysis, params.context.includeDeclaration, getOtherFiles, loadAst);
 });
 
@@ -488,8 +200,8 @@ const NCNAME_RE = /^[A-Za-z_][\w.-]*$/;
 connection.onPrepareRename((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return null;
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const { analysis } = resolveContext(doc.uri, rawAnalysis);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
+	const { analysis } = ws.resolveContext(doc.uri, rawAnalysis);
 	const range = getRenameRangeAtOffset(doc.getText(), doc.offsetAt(params.position), analysis);
 	if (!range) return null;
 	return { start: doc.positionAt(range.start), end: doc.positionAt(range.end) };
@@ -501,9 +213,9 @@ connection.onRenameRequest((params) => {
 	if (!NCNAME_RE.test(params.newName)) {
 		throw new ResponseError(ErrorCodes.InvalidParams, `"${params.newName}" is not a valid XQuery name`);
 	}
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const { analysis } = resolveContext(doc.uri, rawAnalysis);
-	const { getOtherFiles, loadAst } = getGlobFileAccess(doc.uri);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
+	const { analysis } = ws.resolveContext(doc.uri, rawAnalysis);
+	const { getOtherFiles, loadAst } = ws.getGlobFileAccess(doc.uri);
 	const locations = getRenameLocations(doc.uri, doc.getText(), doc.offsetAt(params.position), analysis, getOtherFiles, loadAst);
 	if (!locations) return null;
 
@@ -517,8 +229,8 @@ connection.onRenameRequest((params) => {
 connection.languages.inlayHint.on((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return [];
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
+	const { analysis, imported } = ws.resolveContext(doc.uri, rawAnalysis);
 	if (!analysis.ast) return []; // mid-edit / regex fallback — no AST to walk
 	return getInlayHints(doc, analysis.ast, analysis, imported, params.range);
 });
@@ -526,16 +238,16 @@ connection.languages.inlayHint.on((params) => {
 connection.onDocumentHighlight((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return null;
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const { analysis } = resolveContext(doc.uri, rawAnalysis);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
+	const { analysis } = ws.resolveContext(doc.uri, rawAnalysis);
 	return getDocumentHighlights(doc.getText(), doc.offsetAt(params.position), analysis);
 });
 
 connection.onCodeLens((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return [];
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const { analysis } = resolveContext(doc.uri, rawAnalysis);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
+	const { analysis } = ws.resolveContext(doc.uri, rawAnalysis);
 	return buildCodeLenses(doc, analysis);
 });
 
@@ -543,40 +255,40 @@ connection.onCodeLensResolve((lens) => {
 	const data = lens.data as CodeLensData | undefined;
 	const doc = data && documents.get(data.uri);
 	if (!doc) return { ...lens, command: { title: "0 references", command: "" } };
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const { analysis } = resolveContext(doc.uri, rawAnalysis);
-	const { getOtherFiles, loadAst } = getGlobFileAccess(doc.uri);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
+	const { analysis } = ws.resolveContext(doc.uri, rawAnalysis);
+	const { getOtherFiles, loadAst } = ws.getGlobFileAccess(doc.uri);
 	return resolveCodeLens(lens, doc.getText(), analysis, getOtherFiles, loadAst);
 });
 
 connection.onDocumentLinks((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return [];
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const { analysis } = resolveContext(doc.uri, rawAnalysis);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
+	const { analysis } = ws.resolveContext(doc.uri, rawAnalysis);
 	return getDocumentLinks(analysis, doc);
 });
 
 connection.languages.callHierarchy.onPrepare((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return null;
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
-	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
+	const { analysis, imported } = ws.resolveContext(doc.uri, rawAnalysis);
 	return prepareCallHierarchy(doc.uri, doc.getText(), doc.offsetAt(params.position), analysis, imported);
 });
 
 connection.languages.callHierarchy.onIncomingCalls((params) => {
-	const loaded = loadAnalysisForUri(params.item.uri);
+	const loaded = ws.loadAnalysisForUri(params.item.uri);
 	if (!loaded) return null;
-	const { analysis } = resolveContext(params.item.uri, loaded.analysis);
-	const { getOtherFiles, loadAst } = getGlobFileAccess(params.item.uri);
+	const { analysis } = ws.resolveContext(params.item.uri, loaded.analysis);
+	const { getOtherFiles, loadAst } = ws.getGlobFileAccess(params.item.uri);
 	return getIncomingCalls(params.item, loaded.text, analysis, getOtherFiles, loadAst);
 });
 
 connection.languages.callHierarchy.onOutgoingCalls((params) => {
-	const loaded = loadAnalysisForUri(params.item.uri);
+	const loaded = ws.loadAnalysisForUri(params.item.uri);
 	if (!loaded) return null;
-	const { analysis, imported } = resolveContext(params.item.uri, loaded.analysis);
+	const { analysis, imported } = ws.resolveContext(params.item.uri, loaded.analysis);
 	return getOutgoingCalls(params.item, loaded.text, analysis, imported);
 });
 
@@ -592,8 +304,8 @@ function toEditRange(doc: TextDocument, edit: OffsetEdit) {
 connection.languages.semanticTokens.on((params) => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return { data: [] };
-	const { analysis: rawAnalysis, ast } = analyzeDocumentFull(doc);
-	const { analysis, imported } = resolveContext(doc.uri, rawAnalysis);
+	const { analysis: rawAnalysis, ast } = ws.analyzeDocumentFull(doc);
+	const { analysis, imported } = ws.resolveContext(doc.uri, rawAnalysis);
 	return { data: getSemanticTokensData(ast, doc.getText(), analysis, imported) };
 });
 
@@ -602,7 +314,7 @@ connection.onCodeAction((params) => {
 	if (!doc) return [];
 
 	const text = doc.getText();
-	const globAnalyses = getGlobAnalyses(doc.uri);
+	const globAnalyses = ws.getGlobAnalyses(doc.uri);
 	const config = findConfig(doc.uri)?.config;
 	const generateLocationHints = config?.generateLocationHints ?? true;
 	const configPrefixes = config?.prefixes ?? {};
@@ -703,7 +415,7 @@ connection.onCodeAction((params) => {
 		});
 	}
 
-	const rawAnalysis = analysisCache.get(doc.uri) ?? analyzeDocument(doc);
+	const rawAnalysis = ws.analysisCache.get(doc.uri) ?? ws.analyzeDocument(doc);
 	const ast = rawAnalysis.ast ?? null;
 
 	if (ast && matchesOnly(CodeActionKind.SourceOrganizeImports, only)) {
