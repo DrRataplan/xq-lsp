@@ -44,10 +44,15 @@ function collectCodes(
 	envContextItem: boolean,
 ): { got: string[]; strictGot: string[] } {
 	try {
+		
 		const { analysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq");
 		const imports = new Map<string, FileAnalysis>(BUILTINS);
 		for (const m of moduleCatalog) {
-			const modAnalysis = analyzeWithAst(m.text, "file:///catalog-module.xq").analysis;
+			
+			const { analysis: modAnalysis, ast: modAst } = analyzeWithAst(m.text, "file:///catalog-module.xq");
+			if (modAst) {
+				modAnalysis.diagnostics = runDiagnostics(modAst, m.text, modAnalysis, new Map(), {});
+			}
 			// Multiple <module> catalog entries can share the same uri (alternate
 			// location-hint candidates for one namespace) — merge their symbols
 			// rather than letting the last one clobber the others.
@@ -87,7 +92,14 @@ function collectCodes(
 		const strictCodes: string[] = [];
 		if (parseError) codes.push("XPST0003");
 		if (ast) {
+			// Run diagnostics on the main query
 			for (const d of runDiagnostics(ast, query, analysis, imports, { externalContextItem: envContextItem })) codes.push(d.code);
+			// Aggregate diagnostics from imported modules
+			for (const [uri, importedAnalysis] of imports) {
+				if (importedAnalysis.diagnostics) {
+					for (const d of importedAnalysis.diagnostics) codes.push(d.code);
+				}
+			}
 			// Second pass with strict cardinality checking: warning-severity diagnostics
 			// are tracked separately and never affect the outcome.
 			for (const d of runDiagnostics(ast, query, analysis, imports, { externalContextItem: envContextItem, strictCardinality: true })) {
