@@ -630,7 +630,9 @@ function functionTypeOf(fn: FunctionSymbol): XQueryType {
 // bare `attribute()`) and all other steps are `*`.
 function axisStepType(step: Node): XQueryType {
 	const text = nodeText(step);
-	if (text.startsWith("..")) return NODE_STEP;
+	// `..` / `parent::` select at most one node (element or document-node) per context node.
+	if (text.startsWith("..")) return { kind: "node", name: "node", occurrence: "?" };
+	const isParentAxis = text.startsWith("parent::");
 	const kindTests = findAll(step, "KindTest");
 	if (kindTests.length > 0) {
 		const kind = nodeText(kindTests[0]).replace(/\(.*$/s, "");
@@ -638,14 +640,14 @@ function axisStepType(step: Node): XQueryType {
 		// `attribute(id)` — AttributeName present — matches at most one per element.
 		// `attribute(*)` uses a '*' terminal (not a Wildcard node); bare `attribute()` has neither.
 		const isSpecificAttribute = name === "attribute" && findAll(step, "AttributeName").length > 0;
-		return { kind: "node", name, occurrence: isSpecificAttribute ? "?" : "*" };
+		return { kind: "node", name, occurrence: isParentAxis || isSpecificAttribute ? "?" : "*" };
 	}
 	const isAttributeAxis = text.startsWith("@") || text.startsWith("attribute::");
 	if (isAttributeAxis) {
 		const hasWildcard = findAll(step, "Wildcard").length > 0;
 		return { kind: "node", name: "attribute", occurrence: hasWildcard ? "*" : "?" };
 	}
-	return { kind: "node", name: "element", occurrence: "*" };
+	return { kind: "node", name: "element", occurrence: isParentAxis ? "?" : "*" };
 }
 
 function inferPathExpr(nt: NonTerminal, varTypes: Map<string, XQueryType>, analysis: FileAnalysis, allFns: FunctionSymbol[]): XQueryType {
@@ -701,7 +703,10 @@ function inferPostfixExpr(
 			const predType = expr ? inferExprType(expr, predScope, analysis, allFns) : UNKNOWN;
 			// A single numeric predicate (`$seq[1]`, `$seq[$i]`) selects at most one item.
 			const positional = predType.occurrence === "" && numericAtomicName(predType) !== null;
-			t = withCard(t, { min: 0, max: positional && card.max > 1 ? 1 : card.max });
+			// `[1]` and `[last()]` always select an item when the input is non-empty.
+			const predText = expr ? nodeText(expr).replace(/\s+/g, "") : "";
+			const alwaysHits = predText === "1" || predText === "last()" || predText === "fn:last()";
+			t = withCard(t, { min: alwaysHits && card.min >= 1 ? 1 : 0, max: positional && card.max > 1 ? 1 : card.max });
 		} else if (postfix.type === "Lookup") {
 			t = lookupType(t, postfix);
 		} else if (postfix.type === "ArgumentList" && t.kind === "function" && t.occurrence === "" && t.name?.includes(" as ")) {

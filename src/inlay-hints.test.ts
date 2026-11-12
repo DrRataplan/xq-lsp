@@ -169,7 +169,7 @@ describe("inlay-hints: inferred types of compound expressions", () => {
 			return 1`);
 		assert.equal(hints.seq, ": xs:integer+");
 		assert.equal(hints.empty, ": empty-sequence()");
-		assert.equal(hints.first, ": xs:integer?");
+		assert.equal(hints.first, ": xs:integer");
 		assert.equal(hints.filtered, ": xs:integer*");
 	});
 
@@ -241,6 +241,40 @@ describe("inlay-hints: inferred types of compound expressions", () => {
 		assert.equal(hints.elems, ": element()*");
 		assert.equal(hints.attrs, ": attribute()*");
 		assert.equal(hints.texts, ": text()*");
+	});
+
+	test("positional predicate [1] narrows the cardinality", () => {
+		const hints = typeHintsByVar(`
+			declare function local:f($star as node()*, $plus as node()+, $opt as node()?, $one as node()) {
+				let $a := $star[1]
+				let $b := $plus[1]
+				let $c := $opt[1]
+				let $d := $one[1]
+				let $e := $star[last()]
+				let $f := $plus[last()]
+				let $g := $plus[2]
+				return 1
+			}; 1`);
+		assert.equal(hints.a, ": node()?");
+		assert.equal(hints.b, ": node()");
+		assert.equal(hints.c, ": node()?");
+		assert.equal(hints.d, ": node()");
+		assert.equal(hints.e, ": node()?");
+		assert.equal(hints.f, ": node()");
+		assert.equal(hints.g, ": node()?");
+	});
+
+	test("parent step on a single node is node()?", () => {
+		const hints = typeHintsByVar(`
+			declare function local:f($n as node()) {
+				let $abbrev := $n/..
+				let $axis := $n/parent::node()
+				let $named := $n/parent::a
+				return 1
+			}; 1`);
+		assert.equal(hints.abbrev, ": node()?");
+		assert.equal(hints.axis, ": node()?");
+		assert.equal(hints.named, ": element()?");
 	});
 
 	test("named attribute test on a single node is optional, wildcards are not", () => {
