@@ -1,8 +1,1 @@
-[
-  {
-    "testCase": "Serialization-003",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0108",
-    "got": []
-  }
-]
+[]
