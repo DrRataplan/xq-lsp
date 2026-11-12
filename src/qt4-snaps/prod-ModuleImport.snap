@@ -84,12 +84,6 @@
     "got": []
   },
   {
-    "testCase": "modules-pub-priv-28",
-    "outcome": "false-negative",
-    "expectedCode": "XPST0017",
-    "got": []
-  },
-  {
     "testCase": "modules-pub-priv-29",
     "outcome": "false-negative",
     "expectedCode": "XQST0106",
