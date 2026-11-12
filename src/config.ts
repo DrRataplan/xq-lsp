@@ -70,6 +70,19 @@ function parsePrefixes(text: string): Record<string, string> {
 	}
 }
 
+export function loadConfigAt(configPath: string): { config: LspConfig; configDir: string } | null {
+	try {
+		const text = fs.readFileSync(configPath, "utf-8");
+		const parsed = parseConfig(text);
+		return {
+			config: { ...parsed, lib: parseLib(text), prefixes: parsePrefixes(text) },
+			configDir: path.dirname(path.resolve(configPath)),
+		};
+	} catch {
+		return null;
+	}
+}
+
 export function findConfig(fromUri: string): { config: LspConfig; configDir: string } | null {
 	let dir: string;
 	try {
@@ -79,14 +92,8 @@ export function findConfig(fromUri: string): { config: LspConfig; configDir: str
 	}
 
 	for (let i = 0; i < 20; i++) {
-		const configPath = path.join(dir, "lsp-config.xq");
-		try {
-			const text = fs.readFileSync(configPath, "utf-8");
-			const parsed = parseConfig(text);
-			return { config: { ...parsed, lib: parseLib(text), prefixes: parsePrefixes(text) }, configDir: dir };
-		} catch {
-			/* not found here, try parent */
-		}
+		const found = loadConfigAt(path.join(dir, "lsp-config.xq"));
+		if (found) return found;
 		const parent = path.dirname(dir);
 		if (parent === dir) break;
 		dir = parent;

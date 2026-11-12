@@ -2,7 +2,7 @@
 
 # xq-lsp
 
-Language Server Protocol implementation for XQuery, providing autocompletion, hover documentation, signature help, go-to-definition, and diagnostics.
+Language Server Protocol implementation for XQuery, providing autocompletion, hover documentation, signature help, go-to-definition, and diagnostics — plus an eslint-style command-line linter (`xq-lsp lint`).
 
 ## Features
 
@@ -13,6 +13,7 @@ Language Server Protocol implementation for XQuery, providing autocompletion, ho
 - **Go to definition** — jump to function or variable declarations, including across imported files
 - **Document symbols** — file outline of all declared functions and variables
 - **Diagnostics** — syntax errors, undeclared namespace prefixes, type mismatches, and unused symbols — pushed on change, and also available on request via LSP 3.17 pull diagnostics (`textDocument/diagnostic`), including for files that are not open
+- **Command-line linting** — `xq-lsp lint` runs the same diagnostics over files, directories, and globs from the shell, with eslint-style output and exit codes, for CI
 
 ## Configuration
 
@@ -163,6 +164,51 @@ guaranteed to fit the parameter's occurrence indicator is flagged as a warning
 expected, or `item()?` where `item()+` is expected. The check respects narrowing:
 inside `if (exists($x)) then …` a variable of type `item()*` is treated as
 `item()+`.
+
+## Command-line linting
+
+The same binary ships an eslint-style linter, `xq-lsp lint`, for use in CI or from
+the shell — no editor required:
+
+```sh
+xq-lsp lint src/                       # lint a directory recursively
+xq-lsp lint "src/**/*.xq"              # lint a glob
+xq-lsp lint ./somewhere/something.xq   # lint a single file
+xq-lsp lint src/ --max-warnings 0      # fail on warnings too (CI)
+```
+
+With no arguments, the current directory is linted. Directories are searched
+recursively for `.xq`, `.xqm`, `.xql`, and `.xquery` files.
+
+The linter runs the exact same diagnostics as the editor — syntax errors,
+undeclared variables and namespace prefixes, type errors, and unresolved imports —
+plus hint-level checks like unused symbols. It finds the nearest `lsp-config.xq`
+per file, so the same configuration (glob index, `lib` runtimes, `strict` mode,
+`prefixes`) applies as in the editor. Use `--config` to pin a specific config file:
+
+```sh
+xq-lsp lint src/ --config ./ci/lsp-config.xq
+```
+
+Output uses eslint's `stylish` format by default; `-f json` and `-f compact` are
+available for machine consumption, and `--no-color` (or the `NO_COLOR` environment
+variable) disables colors:
+
+```
+src/bad.xq
+  1:1  error  Variable '$undeclared' is not declared  XPST0008
+
+✖ 1 problem (1 error)
+```
+
+Exit codes, like eslint: `0` when clean, `1` when errors are found (or when
+warnings exceed `--max-warnings <n>`), and `2` on fatal errors (bad arguments, no
+files matched, unreadable file or config). Hints (unused symbols, redundant
+namespace declarations, …) are reported but never affect the exit code;
+`--quiet` reports errors only.
+
+Install with `npm install -g xq-lsp`, or run it without installing via
+`npx xq-lsp lint`.
 
 ## Roadmap
 
