@@ -13,6 +13,7 @@ import { checkContextItemUsage } from "./context-item-diagnostics.ts";
 import { checkUndeclaredVariables } from "./variable-diagnostics.ts";
 import { checkDuplicateFunctions } from "./duplicate-function-diagnostics.ts";
 import { checkDuplicatePrologDecls } from "./prolog-diagnostics.ts";
+import { checkModuleNamespaceDecls } from "./module-namespace-diagnostics.ts";
 import { checkModuleImportTargets } from "./module-import-diagnostics.ts";
 import { checkUnused } from "./unused-diagnostics.ts";
 import { checkBracedUriWhitespace } from "./braced-uri-diagnostics.ts";
@@ -39,6 +40,7 @@ export function runDiagnostics(
 		...checkUndeclaredVariables(ast, analysis, imports),
 		...checkDuplicateFunctions(ast, analysis, imports),
 		...checkDuplicatePrologDecls(ast, analysis),
+		...checkModuleNamespaceDecls(ast, analysis),
 		...checkModuleImportTargets(analysis, imports),
 	];
 }
