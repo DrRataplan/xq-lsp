@@ -1,4 +1,5 @@
 import { workerData, parentPort } from "node:worker_threads";
+import type { Node } from "xq-parser";
 import { analyzeWithAst, resolvePrefix } from "./analyzer.ts";
 import { runDiagnostics } from "./diagnostics.ts";
 import { getBuiltins } from "./builtins.ts";
@@ -46,8 +47,14 @@ function collectCodes(
 	try {
 		const { analysis, ast, parseError } = analyzeWithAst(query, "file:///test.xq");
 		const imports = new Map<string, FileAnalysis>(BUILTINS);
+		// Analyze all catalog modules up front so their symbols are in `imports`
+		// both when diagnosing the main query and when diagnosing each other —
+		// otherwise calls to builtins or sibling-module functions in a module
+		// would be falsely reported as XPST0017.
+		const modules: Array<{ uri: string; text: string; analysis: FileAnalysis; ast: Node | null }> = [];
 		for (const m of moduleCatalog) {
-			const modAnalysis = analyzeWithAst(m.text, "file:///catalog-module.xq").analysis;
+			const { analysis: modAnalysis, ast: modAst } = analyzeWithAst(m.text, "file:///catalog-module.xq");
+			modules.push({ uri: m.uri, text: m.text, analysis: modAnalysis, ast: modAst });
 			// Multiple <module> catalog entries can share the same uri (alternate
 			// location-hint candidates for one namespace) — merge their symbols
 			// rather than letting the last one clobber the others.
@@ -87,7 +94,41 @@ function collectCodes(
 		const strictCodes: string[] = [];
 		if (parseError) codes.push("XPST0003");
 		if (ast) {
+			// Run diagnostics on the main query
 			for (const d of runDiagnostics(ast, query, analysis, imports, { externalContextItem: envContextItem })) codes.push(d.code);
+			// Aggregate diagnostics from imported modules. The same module file can
+			// be registered under several catalog uris (alternate location hints)
+			// and several files can share one uri (import-cycle tests): when
+			// diagnosing one of them, its own declarations must not collide with
+			// themselves as XQST0034, so the imports entries for its own uris get
+			// those declarations filtered out (they remain visible through the
+			// module's own analysis). The context-item check is suppressed too:
+			// whether a module gets a context item is decided at
+			// fn:load-xquery-module call time, not statically.
+			const urisByText = new Map<string, string[]>();
+			for (const m of modules) {
+				const arr = urisByText.get(m.text) ?? [];
+				arr.push(m.uri);
+				urisByText.set(m.text, arr);
+			}
+			const diagnosedTexts = new Set<string>();
+			for (const m of modules) {
+				if (!m.ast || diagnosedTexts.has(m.text)) continue;
+				diagnosedTexts.add(m.text);
+				const moduleImports = new Map(imports);
+				for (const u of urisByText.get(m.text) ?? []) {
+					const entry = imports.get(u);
+					if (!entry) continue;
+					const ownKeys = new Set(m.analysis.functions.map((f) => `${qnameKey(f.qname)}#${f.arity}`));
+					const ownVarKeys = new Set(m.analysis.moduleVariables.map((v) => qnameKey(v.qname)));
+					moduleImports.set(u, {
+						...entry,
+						functions: entry.functions.filter((f) => !ownKeys.has(`${qnameKey(f.qname)}#${f.arity}`)),
+						moduleVariables: entry.moduleVariables.filter((v) => !ownVarKeys.has(qnameKey(v.qname))),
+					});
+				}
+				for (const d of runDiagnostics(m.ast, m.text, m.analysis, moduleImports, { externalContextItem: true })) codes.push(d.code);
+			}
 			// Second pass with strict cardinality checking: warning-severity diagnostics
 			// are tracked separately and never affect the outcome.
 			for (const d of runDiagnostics(ast, query, analysis, imports, { externalContextItem: envContextItem, strictCardinality: true })) {
