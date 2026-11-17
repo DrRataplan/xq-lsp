@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.9.0...lsp-v1.10.0) (2026-11-17)
+
+
+### Features
+
+* aggregate diagnostics from imported modules ([#195](https://github.com/DrRataplan/xq-lsp/issues/195)) ([a5eca04](https://github.com/DrRataplan/xq-lsp/commit/a5eca0414c10b2aa3dd502c638bba4d193389c14))
+
 ## [1.9.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.8.2...lsp-v1.9.0) (2026-11-12)
 
 
