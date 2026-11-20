@@ -875,4 +875,22 @@ describe("checkTypes: strict cardinality false positives", () => {
 		});
 	});
 
+	describe("[1] narrows to at most one", () => {
+		test("@*[pred][1] fits an attribute()? param", () => {
+			noWarnings(`${one} declare function local:f($e as element()) { local:one($e/@*[. = "x"][1]) }; 1`);
+		});
+
+		test("$seq[pred][1] fits a ? param", () => {
+			noWarnings(`${one} declare function local:f($e as element()) { let $a := $e/@*[starts-with(., "x")][1] return local:one($a) }; 1`);
+		});
+
+		test("(path)[1] fits a ? param", () => {
+			noWarnings(`${one} declare function local:f($e as element()) { local:one(($e//@id)[1]) }; 1`);
+		});
+
+		test("$seq[1] after an element step fits an element()? param", () => {
+			noWarnings(`declare function local:g($x as element()?) { $x }; declare function local:f($e as element()) { local:g($e/*[@a][1]) }; 1`);
+		});
+	});
+
 });
