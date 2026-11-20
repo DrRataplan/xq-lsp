@@ -824,3 +824,55 @@ describe("checkTypes: strict cardinality", () => {
 		assert.equal(errors[0].severity, "warning");
 	});
 });
+
+describe("checkTypes: strict cardinality false positives", () => {
+	function check(src: string) {
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		return checkTypes(ast, src, analyze(src, "file:///test.xq"), new Map(), { strictCardinality: true });
+	}
+	const noWarnings = (src: string) => {
+		const errors = check(src);
+		assert.equal(errors.length, 0, `unexpected warnings: ${JSON.stringify(errors.map((e) => e.message))}`);
+	};
+	const one = `declare function local:one($x as attribute()?) { $x };`;
+
+	describe("exists/empty guards narrow", () => {
+		const g = `declare function local:g($x as node()) { $x };`;
+
+		test("not(empty($t)) and call($t)", () => {
+			noWarnings(`${g} declare function local:f($t as node()?) { not(empty($t)) and local:g($t) is $t }; 1`);
+		});
+
+		test("exists($t) and call($t)", () => {
+			noWarnings(`${g} declare function local:f($t as node()?) { exists($t) and local:g($t) is $t }; 1`);
+		});
+
+		test("empty($t) or call($t)", () => {
+			noWarnings(`${g} declare function local:f($t as node()?) { empty($t) or local:g($t) is $t }; 1`);
+		});
+
+		test("if (exists($t)) then call($t)", () => {
+			noWarnings(`${g} declare function local:f($t as node()?) { if (exists($t)) then local:g($t) else () }; 1`);
+		});
+
+		test("if (empty($t)) then () else call($t)", () => {
+			noWarnings(`${g} declare function local:f($t as node()?) { if (empty($t)) then () else local:g($t) }; 1`);
+		});
+
+		test("if (not(empty($t))) then call($t)", () => {
+			noWarnings(`${g} declare function local:f($t as node()?) { if (not(empty($t))) then local:g($t) else () }; 1`);
+		});
+
+		test("guard on one variable does not narrow another", () => {
+			const errors = check(`${g} declare function local:f($t as node()?, $u as node()?) { if (exists($t)) then local:g($u) else () }; 1`);
+			assert.equal(errors.length, 1);
+		});
+
+		test("unguarded call still warns", () => {
+			const errors = check(`${g} declare function local:f($t as node()?) { local:g($t) }; 1`);
+			assert.equal(errors.length, 1);
+		});
+	});
+
+});

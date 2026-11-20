@@ -1411,6 +1411,17 @@ function walkScoped(
 		case "IfExpr":
 			processIf(nt, scope, analysis, allFns, visitor);
 			return;
+		case "AndExpr":
+		case "OrExpr": {
+			// Later operands are only evaluated when earlier ones were true (and) / false (or).
+			let operandScope = scope;
+			for (const child of nt.children) {
+				if (isTerminal(child)) continue;
+				walkScoped(child, operandScope, analysis, allFns, hooks);
+				operandScope = narrowScope(child, operandScope, node.type === "AndExpr", analysis);
+			}
+			return;
+		}
 		case "XQUF_TransformExpr":
 			processTransform(nt, scope, analysis, allFns, visitor);
 			return;
