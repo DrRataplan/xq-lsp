@@ -837,6 +837,24 @@ describe("checkTypes: strict cardinality false positives", () => {
 	};
 	const one = `declare function local:one($x as attribute()?) { $x };`;
 
+	describe("[1] narrows to at most one", () => {
+		test("@*[pred][1] fits an attribute()? param", () => {
+			noWarnings(`${one} declare function local:f($e as element()) { local:one($e/@*[. = "x"][1]) }; 1`);
+		});
+
+		test("$seq[pred][1] fits a ? param", () => {
+			noWarnings(`${one} declare function local:f($e as element()) { let $a := $e/@*[starts-with(., "x")][1] return local:one($a) }; 1`);
+		});
+
+		test("(path)[1] fits a ? param", () => {
+			noWarnings(`${one} declare function local:f($e as element()) { local:one(($e//@id)[1]) }; 1`);
+		});
+
+		test("$seq[1] after an element step fits an element()? param", () => {
+			noWarnings(`declare function local:g($x as element()?) { $x }; declare function local:f($e as element()) { local:g($e/*[@a][1]) }; 1`);
+		});
+	});
+
 	describe("exists/empty guards narrow", () => {
 		const g = `declare function local:g($x as node()) { $x };`;
 
@@ -875,22 +893,57 @@ describe("checkTypes: strict cardinality false positives", () => {
 		});
 	});
 
-	describe("[1] narrows to at most one", () => {
-		test("@*[pred][1] fits an attribute()? param", () => {
-			noWarnings(`${one} declare function local:f($e as element()) { local:one($e/@*[. = "x"][1]) }; 1`);
+	describe("for variables are exactly one item", () => {
+		test("attribute step on a for variable fits an attribute()? param", () => {
+			noWarnings(`${one} declare function local:f($es as element()*) { for $e in $es return local:one($e/@id) }; 1`);
 		});
 
-		test("$seq[pred][1] fits a ? param", () => {
-			noWarnings(`${one} declare function local:f($e as element()) { let $a := $e/@*[starts-with(., "x")][1] return local:one($a) }; 1`);
+		test("for variable over a path is a single item", () => {
+			noWarnings(`declare function local:g($x as element()) { $x }; declare function local:f($d as document-node()) { for $e in $d//item return local:g($e) }; 1`);
 		});
 
-		test("(path)[1] fits a ? param", () => {
-			noWarnings(`${one} declare function local:f($e as element()) { local:one(($e//@id)[1]) }; 1`);
+		test("attribute step on a for variable inside a nested expression", () => {
+			noWarnings(`${one} declare function local:f($d as element(), $removed-ids as xs:string*) {
+				for $removed in $d//removed
+				let $id := $removed/@id
+				return local:one($id)
+			}; 1`);
 		});
 
-		test("$seq[1] after an element step fits an element()? param", () => {
-			noWarnings(`declare function local:g($x as element()?) { $x }; declare function local:f($e as element()) { local:g($e/*[@a][1]) }; 1`);
+		test("for variable over an untyped function parameter is a single item", () => {
+			noWarnings(`
+				declare function local:f($id as attribute()?) { $id };
+				declare function local:g($previous) as item()* {
+					for $removed in $previous return local:f($removed/@id)
+				};
+				1`);
+		});
+
+		test("for variable over an undeclared function call (filtered) is a single item", () => {
+			noWarnings(`
+				declare namespace u = "urn:u";
+				declare function local:f($id as attribute()?) { $id };
+				declare function local:g($id as xs:string) as item()* {
+					let $previous := u:undeclared($id)
+					return for $removed in $previous[not(@id = "x")] return local:f($removed/@id)
+				};
+				1`);
+		});
+
+		test("for variable over an element()* source narrows the same way", () => {
+			noWarnings(`
+				declare function local:f($id as attribute()?) { $id };
+				declare function local:src($id as xs:string) as element()* { () };
+				declare function local:g($id as xs:string) as item()* {
+					let $previous := local:src($id)
+					return for $removed in $previous[not(@id = "x")] return local:f($removed/@id)
+				};
+				1`);
+		});
+
+		test("let variable over a sequence still warns", () => {
+			const errors = check(`declare function local:g($x as element()) { $x }; declare function local:f($es as element()*) { let $e := $es return local:g($e) }; 1`);
+			assert.equal(errors.length, 1);
 		});
 	});
-
 });
