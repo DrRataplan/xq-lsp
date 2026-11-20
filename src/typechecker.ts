@@ -18,6 +18,9 @@ import { asArithmeticExpr, asFunctionCall, asNamedFunctionRef, asVarRef, asVarNa
 // ── Type constants ───────────────────────────────────────────────────────────
 
 const UNKNOWN: XQueryType = { kind: "unknown", occurrence: "" };
+// An item of unknown type that is nonetheless known to be exactly one (a `for` variable over
+// a source of unknown type). Lets `$x/@id` stay `attribute()?` instead of `attribute()*`.
+const UNKNOWN_SINGLE: XQueryType = { kind: "unknown", name: "single", occurrence: "" };
 
 // ── Type parsing ─────────────────────────────────────────────────────────────
 
@@ -204,7 +207,7 @@ const ONE: Card = { min: 1, max: 1 };
 
 function cardOf(t: XQueryType): Card {
 	if (t.kind === "empty") return { min: 0, max: 0 };
-	if (t.kind === "unknown") return { min: 0, max: 2 };
+	if (t.kind === "unknown") return t.name === "single" ? ONE : { min: 0, max: 2 };
 	switch (t.occurrence) {
 		case "?":
 			return { min: 0, max: 1 };
@@ -867,6 +870,7 @@ function processFLWOR(
 					const seq = evaluate(directChildOf(b, "ExprSingle"));
 					const allowingEmpty = (b as NonTerminal).children.some((c) => isTerminal(c) && c.value === "allowing");
 					let item = itemTypeOf(seq);
+					if (item.kind === "unknown" && !allowingEmpty) item = UNKNOWN_SINGLE;
 					let seqCard = cardOf(seq);
 					if (allowingEmpty) {
 						item = seqCard.min === 1 ? item : withCard(item, { min: 0, max: 1 });
