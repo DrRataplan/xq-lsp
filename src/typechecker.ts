@@ -1323,8 +1323,16 @@ export function inferExprType(
 		case "RelativePathExpr":
 			if (!isPathExpr(node)) break;
 			return inferPathExpr(nt, varTypes, analysis, allFns);
-		case "AxisStep":
-			return axisStepType(node);
+		case "AxisStep": {
+			const stepType = axisStepType(node);
+			// A positional predicate (`[1]`, `[last()]`) keeps at most one node per context node.
+			const list = directChildOf(node, "PredicateList");
+			const positional = (list ? directChildrenOf(list, "Predicate") : []).some((pred) => {
+				const text = nodeText(pred).replace(/[\s\[\]]+/g, "");
+				return /^\d+$/.test(text) || text === "last()" || text === "fn:last()";
+			});
+			return positional ? withCard(stepType, { min: 0, max: 1 }) : stepType;
+		}
 		case "ForwardStep":
 		case "ReverseStep":
 		case "AbbrevForwardStep":
