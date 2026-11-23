@@ -42,18 +42,6 @@
     "got": []
   },
   {
-    "testCase": "modules-17",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0048",
-    "got": []
-  },
-  {
-    "testCase": "modules-44",
-    "outcome": "false-negative",
-    "expectedCode": "XQST0048",
-    "got": []
-  },
-  {
     "testCase": "K-ModuleImport-1",
     "outcome": "false-negative",
     "expectedCode": "XQST0088",
