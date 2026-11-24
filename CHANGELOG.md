@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.10.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.9.0...lsp-v1.10.0) (2026-11-24)
+
+
+### Features
+
+* add an action for linting ([#200](https://github.com/DrRataplan/xq-lsp/issues/200)) ([a7900dc](https://github.com/DrRataplan/xq-lsp/commit/a7900dc38cd5b88c492c74e3f68cb3b3fe6db3b7))
+* aggregate diagnostics from imported modules ([#195](https://github.com/DrRataplan/xq-lsp/issues/195)) ([a5eca04](https://github.com/DrRataplan/xq-lsp/commit/a5eca0414c10b2aa3dd502c638bba4d193389c14))
+* **hover:** show the inferred type when hovering a variable binding ([46a4214](https://github.com/DrRataplan/xq-lsp/commit/46a4214e3925b3d6cd25b54c60e1c7c29c592471))
+* **typecheck:** infer fold-left/fold-right result types ([2e2e234](https://github.com/DrRataplan/xq-lsp/commit/2e2e234d0b1a5401fbbe4bce10478ac9a78013dc))
+* **typecheck:** refine a declared function(*) return type from the function body ([ad8d756](https://github.com/DrRataplan/xq-lsp/commit/ad8d75637e4372db69415445af6d4c37311118ed))
+
+
+### Bug Fixes
+
+* **arity:** mark path expressions with specific filters as exactly-one ([b65679b](https://github.com/DrRataplan/xq-lsp/commit/b65679b0295d014dabed28c9839972fdc26776ed))
+* **typecheck:** keep non-emptiness through concatenation with unknown operands ([05cdf4d](https://github.com/DrRataplan/xq-lsp/commit/05cdf4d4af0866da44897cb1bbd979f96f03309d))
+* **typecheck:** narrow on count(), ignore error() branches, fix function return types ([b3af4f1](https://github.com/DrRataplan/xq-lsp/commit/b3af4f1973db53d67e25661345bd1646441aa60a))
+* **typecheck:** narrow variables in and/or operands after exists/empty guards ([d8509d1](https://github.com/DrRataplan/xq-lsp/commit/d8509d18b4c9f62054dab9898efe06044b77e3fe))
+* **typecheck:** treat positional predicates on a path step as at-most-one ([9a91b83](https://github.com/DrRataplan/xq-lsp/commit/9a91b83a0a3cbb2a42dd2dcfa48e87b900b71f84))
+* **typecheck:** type a for variable over an unknown source as exactly one item ([9f415ee](https://github.com/DrRataplan/xq-lsp/commit/9f415eee29543a8b6bb23845f37b6c7092eed69c))
+
 ## [1.9.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.8.2...lsp-v1.9.0) (2026-11-12)
 
 
