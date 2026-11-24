@@ -1852,6 +1852,11 @@ export function variableTypeAtOffset(
 				if (!qname) return;
 				result = scope.get(qnameKey(qname));
 			},
+			// The binding site itself (`let $x :=`, `for $x in`): the type it is bound to.
+			onBinding: (nameNode, type) => {
+				if (type.kind === "unknown" || end < nameNode.start || start > (nameNode.end ?? nameNode.start)) return;
+				result = type;
+			},
 		},
 		outerScope,
 	);

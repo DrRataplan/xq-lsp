@@ -170,6 +170,18 @@ describe("hover: variable types", () => {
 		assert.ok(value?.includes("$s as xs:string"), `type missing, got: ${value}`);
 	});
 
+	test("inferred type is shown when hovering the let binding itself", () => {
+		// hoverValue finds the first occurrence of the needle, which is the binding here.
+		const value = hoverValue(`let $s := "a" return $s`, "$s");
+		assert.ok(value?.includes("$s as xs:string"), `type missing, got: ${value}`);
+		const folded = hoverValue(
+			`declare function local:mk() as function(*) { function($a as map(*)?, $m as item()*) as map(*)? { $a } };
+			 let $user := array:fold-left([1], (), local:mk()) return $user`,
+			"$user",
+		);
+		assert.ok(folded?.includes("$user as map(*)?"), `type missing, got: ${folded}`);
+	});
+
 	test("item type of a for binding is shown", () => {
 		const value = hoverValue(`for $i in (1, 2, 3) return $i`, "$i");
 		assert.ok(value?.includes("$i as xs:integer"), `type missing, got: ${value}`);
