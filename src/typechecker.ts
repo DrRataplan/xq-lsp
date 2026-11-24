@@ -36,6 +36,18 @@ const NODE_KIND_PREFIXES = [
 	"schema-attribute(",
 ];
 
+function isFunctionTypeWithReturn(text: string): boolean {
+	if (!text.startsWith("function")) return false;
+	const open = text.indexOf("(");
+	if (open < 0 || text.slice(8, open).trim() !== "") return false;
+	let depth = 0;
+	for (let i = open; i < text.length; i++) {
+		if (text[i] === "(") depth++;
+		else if (text[i] === ")" && --depth === 0) return /^\s+as\s/.test(text.slice(i + 1)) || text.slice(i + 1).trimStart().startsWith("as ");
+	}
+	return false;
+}
+
 export function parseType(typeStr: string): XQueryType {
 	const trimmed = typeStr.trim();
 	if (!trimmed) return UNKNOWN;
@@ -43,7 +55,9 @@ export function parseType(typeStr: string): XQueryType {
 	let occurrence: XQueryType["occurrence"] = "";
 	let base = trimmed;
 	const last = trimmed[trimmed.length - 1];
-	if (last === "*") {
+	if (isFunctionTypeWithReturn(trimmed)) {
+		// `function(…) as T*`: the occurrence belongs to the return type T, not the function item.
+	} else if (last === "*") {
 		occurrence = "*";
 		base = trimmed.slice(0, -1).trim();
 	} else if (last === "+") {
@@ -191,6 +205,10 @@ export function isAssignable(from: XQueryType, to: XQueryType): boolean {
 // ── Type algebra ──────────────────────────────────────────────────────────────
 
 const EMPTY: XQueryType = { kind: "empty", occurrence: "" };
+// The type of an expression that never returns normally (`fn:error()`). Behaves like the empty
+// sequence on its own, but is dropped from a choice (`if`/`switch`/`try`), so `if (…) then error()
+// else $x` has the type of `$x` rather than "`$x` or ()".
+const NEVER: XQueryType = { kind: "empty", name: "never", occurrence: "" };
 const BOOLEAN: XQueryType = { kind: "atomic", name: "xs:boolean", occurrence: "" };
 const STRING: XQueryType = { kind: "atomic", name: "xs:string", occurrence: "" };
 const INTEGER: XQueryType = { kind: "atomic", name: "xs:integer", occurrence: "" };
@@ -278,6 +296,8 @@ function itemUnion(a: XQueryType, b: XQueryType): XQueryType {
 
 /** Type of an expression that yields either `a` or `b` (if/else, switch, typeswitch, try/catch). */
 export function choiceType(a: XQueryType, b: XQueryType): XQueryType {
+	if (a.kind === "empty" && a.name === "never") return b;
+	if (b.kind === "empty" && b.name === "never") return a;
 	if (a.kind === "unknown" || b.kind === "unknown") return UNKNOWN;
 	if (a.kind === "empty" && b.kind === "empty") return EMPTY;
 	const ca = cardOf(a);
@@ -441,9 +461,24 @@ function nodeText(node: Node): string {
 	return (node as NonTerminal).children.map(nodeText).join("");
 }
 
+// Source text of a type with canonical spacing: tokens are joined without whitespace, which would
+// glue the `as` of `function(xs:string) as xs:string` to its neighbours, so rebuild it from the
+// terminals instead (`function (xs:string) as item()` → `function(xs:string) as item()`).
+export function typeNodeText(node: Node): string {
+	const tokens: string[] = [];
+	const collect = (n: Node) => (isTerminal(n) ? tokens.push(n.value) : (n as NonTerminal).children.forEach(collect));
+	collect(node);
+	let out = "";
+	for (const tok of tokens) {
+		const needsSpace = out !== "" && (tok === "as" || out.endsWith(" as") || (/\w$/.test(out) && /^\w/.test(tok)) || out.endsWith(","));
+		out += (needsSpace ? " " : "") + tok;
+	}
+	return out;
+}
+
 function sequenceTypeOf(node: Node | undefined): XQueryType | undefined {
 	if (!node) return undefined;
-	const text = nodeText(node);
+	const text = typeNodeText(node);
 	// Typeswitch case unions (`case xs:integer | xs:string`) are a choice of their members.
 	if (text.includes("|")) return text.split("|").map(parseType).reduce(choiceType);
 	return parseType(text);
@@ -458,7 +493,6 @@ function declaredTypeOf(node: Node): XQueryType | undefined {
 // Generic built-ins whose declared signature (item()*) loses the argument's item type.
 // Maps local name → the cardinality of the result relative to the first argument's item type.
 const FN_SEQUENCE_PRESERVING: Record<string, Card | "same"> = {
-	head: { min: 0, max: 1 },
 	"exactly-one": ONE,
 	"zero-or-one": { min: 0, max: 1 },
 	"one-or-more": { min: 1, max: 2 },
@@ -469,7 +503,6 @@ const FN_SEQUENCE_PRESERVING: Record<string, Card | "same"> = {
 	reverse: "same",
 	unordered: "same",
 	sort: "same",
-	foot: { min: 0, max: 1 },
 	trunk: { min: 0, max: 2 },
 };
 
@@ -506,6 +539,8 @@ function inferPolymorphicBuiltin(ns: string, name: string, args: XQueryType[]): 
 	if (!first || first.kind === "unknown") return undefined;
 	const card = cardOf(first);
 	if (ns === XMLNS_FN) {
+		// The first/last item of a non-empty sequence always exists.
+		if (name === "head" || name === "foot") return withCard(first, card.min === 1 ? ONE : { min: 0, max: 1 });
 		if (name in FN_SEQUENCE_PRESERVING) {
 			const rule = FN_SEQUENCE_PRESERVING[name];
 			return rule === "same" ? first : withCard(first, rule);
@@ -617,6 +652,7 @@ function inferCallResult(
 		const special = inferPolymorphicBuiltin(qname.namespaceUri, qname.localName, argTypes());
 		if (special) return special;
 	}
+	if (qname.namespaceUri === XMLNS_FN && qname.localName === "error") return NEVER;
 	const fn = resolveFunction(qname, argCount, allFns);
 	return fn?.returnType ? parseType(fn.returnType) : UNKNOWN;
 }
@@ -1060,6 +1096,56 @@ function varKeyOf(node: Node, analysis: FileAnalysis): string | null {
 	return qname ? qnameKey(qname) : null;
 }
 
+const FLIP_COMPARISON: Record<string, string> = { eq: "ne", ne: "eq", gt: "le", le: "gt", ge: "lt", lt: "ge" };
+const MIRROR_COMPARISON: Record<string, string> = { eq: "eq", ne: "ne", gt: "lt", lt: "gt", ge: "le", le: "ge" };
+const GENERAL_TO_VALUE: Record<string, string> = { "=": "eq", "!=": "ne", ">": "gt", "<": "lt", ">=": "ge", "<=": "le" };
+
+/**
+ * For `count($v) <op> N` (or `N <op> count($v)`) with an integer literal N: the variable and the
+ * inclusive range the item count of `$v` lies in where the comparison is true (or false, when
+ * `positive` is false). `hi` is Infinity when unbounded. `ne` yields a range only for `ne 0`.
+ */
+function countBounds(ops: Node[], positive: boolean, analysis: FileAnalysis): { key: string; lo: number; hi: number } | null {
+	const opText = nodeText(ops[1]);
+	let op = GENERAL_TO_VALUE[opText] ?? opText;
+	if (!(op in FLIP_COMPARISON)) return null;
+	const countSide = (n: Node) => {
+		const core = coreExpr(n);
+		const call = core.type === "FunctionCall" ? asFunctionCall(core, analysis) : null;
+		if (!call || call.qname.namespaceUri !== XMLNS_FN || call.qname.localName !== "count" || call.args.length !== 1) return null;
+		const arg = argExpr(call.args[0]);
+		return arg ? varKeyOf(arg, analysis) : null;
+	};
+	const intSide = (n: Node) => {
+		const core = coreExpr(n);
+		const lit = core.type === "NumericLiteral" ? (core as NonTerminal).children[0] : core;
+		return isTerminal(lit) && literalKind(lit) === "integer" ? Number(lit.value) : null;
+	};
+	let key = countSide(ops[0]);
+	let n = intSide(ops[2]);
+	if (key === null || n === null) {
+		key = countSide(ops[2]);
+		n = intSide(ops[0]);
+		op = MIRROR_COMPARISON[op];
+	}
+	if (key === null || n === null) return null;
+	if (!positive) op = FLIP_COMPARISON[op];
+	switch (op) {
+		case "eq":
+			return { key, lo: n, hi: n };
+		case "ne":
+			return n === 0 ? { key, lo: 1, hi: Infinity } : null;
+		case "gt":
+			return { key, lo: n + 1, hi: Infinity };
+		case "ge":
+			return { key, lo: n, hi: Infinity };
+		case "lt":
+			return { key, lo: 0, hi: n - 1 };
+		default:
+			return { key, lo: 0, hi: n };
+	}
+}
+
 /**
  * Variable types that hold where `cond` is known to be true (`positive`) or false.
  * Understands `$x instance of T`, `exists($x)`, `empty($x)`, a bare `$x` (its effective
@@ -1088,6 +1174,15 @@ function narrowScope(cond: Node, scope: Map<string, XQueryType>, positive: boole
 		// Only ever make a type more specific: `$int instance of xs:decimal` tells us nothing new.
 		if (current && current.kind !== "unknown" && !isAssignable(narrowed, current)) return scope;
 		return new Map(scope).set(key, narrowed);
+	}
+	if (core.type === "ComparisonExpr" && ops.length === 3) {
+		const bounds = countBounds(ops, positive, analysis);
+		if (!bounds) return scope;
+		const t = scope.get(bounds.key);
+		if (!t || t.kind === "unknown" || t.kind === "empty") return scope;
+		const c = cardOf(t);
+		const next: Card = { min: bounds.lo >= 1 ? 1 : c.min, max: bounds.hi === 0 ? 0 : bounds.hi <= 1 && c.max > 1 ? 1 : c.max };
+		return next.min === c.min && next.max === c.max ? scope : new Map(scope).set(bounds.key, withCard(t, next));
 	}
 	if (core.type === "FunctionCall") {
 		const call = asFunctionCall(core, analysis);
