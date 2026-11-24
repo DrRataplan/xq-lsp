@@ -1557,7 +1557,9 @@ function walkScoped(
  * Fills in `returnType` for functions in this module declared without `as …`, inferred from
  * their bodies. Iterates to a fixpoint (bounded) so functions calling other untyped functions,
  * declared before or after them, resolve too; directly recursive functions stay unknown unless
- * a non-recursive branch alone determines the type. Callers use the returned list in place of
+ * a non-recursive branch alone determines the type. A bare `as function(*)` return type is
+ * refined the same way when the body is a function item with a known result type, so
+ * `fold-left($a, (), make-folder())` can see what the folder returns. Callers use the returned list in place of
  * `allFns` so every call site — hints and type checks alike — sees the inferred types.
  */
 export function withInferredReturnTypes(
@@ -1571,8 +1573,11 @@ export function withInferredReturnTypes(
 		const decl = directChildOf(annotated, "FunctionDecl");
 		const body = decl ? directChildOf(decl, "FunctionBody") : undefined;
 		if (decl && body && !directChildOf(decl, "SequenceType")) bodies.set(annotated.start, { decl, body });
+		else if (decl && body && nodeText(directChildOf(decl, "SequenceType")!) === "function(*)") bodies.set(annotated.start, { decl, body });
 	}
-	const untyped = analysis.functions.filter((f) => !f.returnType && f.sourceOffset !== undefined && bodies.has(f.sourceOffset));
+	const untyped = analysis.functions.filter(
+		(f) => (!f.returnType || f.returnType === "function(*)") && f.sourceOffset !== undefined && bodies.has(f.sourceOffset),
+	);
 	if (untyped.length === 0) return allFns;
 
 	const inferred = new Map<FunctionSymbol, string>();
@@ -1587,6 +1592,8 @@ export function withInferredReturnTypes(
 			collectParamTypes(directChildOf(decl, "ParamList"), analysis, scope);
 			const t = inferExprType(body, scope, analysis, fns);
 			const text = formatType(t);
+			// A declared `function(*)` is only worth refining to a function with a known result.
+			if (fn.returnType === "function(*)" && !(t.kind === "function" && t.occurrence === "" && t.name?.includes(" as "))) continue;
 			// Only keep types that round-trip through the signature parser the call sites use.
 			if (t.kind === "unknown" || parseType(text).kind === "unknown" || inferred.get(fn) === text) continue;
 			inferred.set(fn, text);
