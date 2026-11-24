@@ -2,7 +2,8 @@ import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { analyze, analyzeWithAst } from "./analyzer.ts";
 import { getBuiltins } from "./builtins.ts";
-import { parseType, isAssignable, checkTypes, formatType } from "./typechecker.ts";
+import { parseType, isAssignable, checkTypes, formatType, typeNodeText } from "./typechecker.ts";
+import { findAll } from "./analyzer.ts";
 import type { XQueryType } from "./types.ts";
 
 // ── parseType ────────────────────────────────────────────────────────────────
@@ -822,6 +823,93 @@ describe("checkTypes: strict cardinality", () => {
 		const errors = check(src);
 		assert.equal(errors.length, 1, `expected 1 warning, got: ${JSON.stringify(errors)}`);
 		assert.equal(errors[0].severity, "warning");
+	});
+});
+
+describe("checkTypes: strict cardinality narrowing", () => {
+	function warnings(body: string, paramType = "map(*)*") {
+		const src = `
+			declare function local:f($x as map(*)) { $x };
+			declare function local:g($xs as ${paramType}) { ${body} };
+			1
+		`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		return checkTypes(ast, src, analyze(src, "file:///test.xq"), new Map(), { strictCardinality: true });
+	}
+
+	test("a fn:error() branch does not make the if type optional", () => {
+		assert.equal(warnings(`local:f(if (empty($xs)) then error() else head($xs))`).length, 0);
+		assert.equal(warnings(`local:f(if (empty($xs)) then error(xs:QName("local:E"), "none") else head($xs))`).length, 0);
+	});
+
+	test("fn:error() in the else branch is ignored too", () => {
+		assert.equal(warnings(`local:f(if (exists($xs)) then head($xs) else error())`).length, 0);
+	});
+
+	test("head() and foot() of a non-empty sequence are exactly one item", () => {
+		assert.equal(warnings(`local:f(head($xs))`, "map(*)+").length, 0);
+		assert.equal(warnings(`local:f(foot($xs))`, "map(*)+").length, 0);
+		assert.equal(warnings(`local:f(head($xs))`).length, 1);
+	});
+
+	for (const cond of ["count($xs) eq 1", "count($xs) = 1", "1 eq count($xs)", "count($xs) le 1 and exists($xs)", "not(count($xs) ne 1)"]) {
+		test(`${cond} narrows to exactly one item`, () => {
+			assert.equal(warnings(`if (${cond}) then local:f($xs) else ()`).length, 0);
+		});
+	}
+
+	test("count($xs) gt 0 narrows to non-empty only", () => {
+		assert.equal(warnings(`if (count($xs) gt 0) then local:f($xs) else ()`).length, 1);
+		assert.equal(warnings(`if (count($xs) gt 0) then local:f(head($xs)) else ()`).length, 0);
+	});
+
+	test("count($xs) eq 2 does not narrow to one item", () => {
+		assert.equal(warnings(`if (count($xs) eq 2) then local:f($xs) else ()`).length, 1);
+	});
+
+	test("the else branch of count($xs) gt 1 is at most one item", () => {
+		const src = `
+			declare function local:o($x as map(*)?) { $x };
+			declare function local:g($xs as map(*)*) {
+				(if (count($xs) gt 1) then () else local:o($xs),
+				 if (count($xs) gt 1) then local:o($xs) else ())
+			};
+			1
+		`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const w = checkTypes(ast, src, analyze(src, "file:///test.xq"), new Map(), { strictCardinality: true });
+		assert.equal(w.length, 1, JSON.stringify(w)); // only the `then` branch (2+ items) warns
+	});
+});
+
+describe("function types with a return type", () => {
+	test("the trailing occurrence belongs to the return type, not the function item", () => {
+		const t = parseType("function(xs:string) as function(*)?");
+		assert.equal(t.kind, "function");
+		assert.equal(t.occurrence, "");
+		assert.equal(parseType("function(*)?").occurrence, "?");
+	});
+
+	test("a function item with an optional return type fits a function(*) parameter", () => {
+		const src = `
+			declare function local:use($f as function(*)) { $f };
+			declare function local:g($lookup as function (xs:string) as function(*)?) { local:use($lookup) };
+			1
+		`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const w = checkTypes(ast, src, analyze(src, "file:///test.xq"), new Map(), { strictCardinality: true });
+		assert.equal(w.length, 0, JSON.stringify(w));
+	});
+
+	test("type text keeps the spaces around `as`", () => {
+		const src = `declare function local:g($l as function (xs:string) as function(*)?) { $l }; 1`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const [seqType] = findAll(ast, "SequenceType");
+		assert.equal(typeNodeText(seqType), "function(xs:string) as function(*)?");
 	});
 });
 
