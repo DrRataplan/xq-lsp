@@ -910,6 +910,34 @@ describe("checkTypes: concatenation cardinality", () => {
 	});
 });
 
+describe("checkTypes: fold-left / fold-right result types", () => {
+	function warnings(body: string, prolog = "") {
+		const src = `
+			declare function local:one($x as map(*)) { $x };
+			${prolog}
+			declare function local:g($xs as array(*), $seq as item()*) { local:one(${body}) };
+			1
+		`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		const analysis = analyze(src, "file:///test.xq");
+		const builtins = getBuiltins();
+		return checkTypes(ast, src, analysis, new Map([["builtin:fn", builtins]]), { strictCardinality: true });
+	}
+
+	test("array:fold-left is the zero value or what the folder returns", () => {
+		const f = `function($acc as map(*), $m as item()*) as map(*) { $acc }`;
+		assert.equal(warnings(`array:fold-left($xs, map {}, ${f})`).length, 0);
+		assert.equal(warnings(`fold-left($seq, map {}, ${f})`).length, 0);
+		assert.equal(warnings(`array:fold-right($xs, map {}, ${f})`).length, 0);
+	});
+
+	test("an optional folder result makes the fold optional", () => {
+		const f = `function($acc as map(*)?, $m as item()*) as map(*)? { $acc }`;
+		assert.equal(warnings(`array:fold-left($xs, (), ${f})`).length, 1);
+	});
+});
+
 describe("function types with a return type", () => {
 	test("the trailing occurrence belongs to the return type, not the function item", () => {
 		const t = parseType("function(xs:string) as function(*)?");
