@@ -518,6 +518,12 @@ function functionResultType(f: XQueryType): XQueryType | undefined {
 	return r.kind === "unknown" ? undefined : r;
 }
 
+/** Result of `fold-left`/`fold-right` (`fn:` and `array:`): `$zero` for empty input, else what `$f` returns. */
+function foldResultType(zero: XQueryType | undefined, f: XQueryType | undefined): XQueryType | undefined {
+	const r = f && functionResultType(f);
+	return r && zero && choiceType(zero, r);
+}
+
 /** Member types of a single map(K, V) / array(T): `[K, V]` or `[T]`, or undefined for `map(*)` etc. */
 function containerArgs(t: XQueryType, kind: "map" | "array"): XQueryType[] | undefined {
 	if (t.kind !== kind || t.occurrence !== "" || !t.name) return undefined;
@@ -575,6 +581,9 @@ function inferPolymorphicBuiltin(ns: string, name: string, args: XQueryType[]): 
 				const avgName = isAtomicSubtype(item, "xs:decimal") ? "xs:decimal" : item;
 				return { kind: "atomic", name: name === "avg" ? avgName : item, occurrence: card.min === 1 ? "" : "?" };
 			}
+			case "fold-left":
+			case "fold-right":
+				return foldResultType(second, third);
 			case "for-each": {
 				const r = second && functionResultType(second);
 				return r && withCard(r, multiplyCard(card, cardOf(r)));
@@ -621,6 +630,7 @@ function inferPolymorphicBuiltin(ns: string, name: string, args: XQueryType[]): 
 		return undefined;
 	}
 	if (ns === XMLNS_ARRAY) {
+		if (name === "fold-left" || name === "fold-right") return foldResultType(second, third);
 		const members = containerArgs(first, "array");
 		if (!members) return undefined;
 		const [member] = members;
