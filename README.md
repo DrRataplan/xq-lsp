@@ -218,6 +218,34 @@ the exit code; `--quiet` reports errors only.
 
 Install with `npm install -g xq-lsp`, or run it without installing via `npx xq-lsp lint`.
 
+### EXPath package dependencies
+
+`xq-lsp fetch-deps [expath-pkg.xml]` reads the `<dependency package="…"/>` entries of an
+`expath-pkg.xml` (default: `./expath-pkg.xml`), resolves them from eXist-db's
+[public-repo](https://exist-db.org/exist/apps/public-repo), and unpacks the XARs — including their
+own dependencies — into `.xq-deps/<package>/`. `xq-lsp lint` and the language server index the
+modules under each package's `content/` directory, so `import module` of those packages resolves.
+Packages the repository cannot resolve are reported and skipped.
+
+Override the directory with `--deps-dir <dir>` (lint) / `-o <dir>` (fetch-deps), or the
+`XQ_LSP_DEPS_DIR` environment variable; `XQ_LSP_REPO_URL` / `--repo` selects another repository. Dependencies are matched by package name URI against the repository index, for the eXist-db version given by `--exist-version` (default 6.0.0).
+
+### GitHub Action
+
+```yaml
+- uses: actions/checkout@v4
+- uses: DrRataplan/xq-lsp@v1
+  with:
+      paths: content test
+```
+
+Inputs: `paths`, `version`, `fetch-deps` (default `true`), `expath-pkg`, `deps-dir`, `format`,
+`max-warnings`, `working-directory`.
+
+By default the action uses `--format github`: each diagnostic becomes an inline annotation on the
+pull request, and a markdown report (totals plus a table of findings) is written to the run's step
+summary. Run `xq-lsp lint --format github` yourself in any workflow for the same output.
+
 ## Roadmap
 
 - **Completion of keywords** — like `function`, `declare` and `ancestor-or-self`, which saves you

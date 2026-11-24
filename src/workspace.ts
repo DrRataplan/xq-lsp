@@ -13,7 +13,7 @@ import { DiagnosticSeverity, type Diagnostic } from "vscode-languageserver/node.
 import type { Node } from "xq-parser";
 import { analyzeWithAst } from "./analyzer.ts";
 import { getBuiltins } from "./builtins.ts";
-import { expandGlobs, findConfig, loadConfigAt } from "./config.ts";
+import { expandDepsFiles, expandGlobs, findConfig, loadConfigAt } from "./config.ts";
 import type { LspConfig } from "./config.ts";
 import { findUndeclaredPrefixUsages } from "./namespace-diagnostics.ts";
 import type { NamespaceUsageKind } from "./namespace-diagnostics.ts";
@@ -74,6 +74,8 @@ function buildParseDiagnostics(parseError: Error | null): Diagnostic[] {
 export interface WorkspaceOptions {
 	/** Pin a specific `lsp-config.xq` instead of walking up from each file's directory. */
 	configPath?: string;
+	/** Directory of fetched EXPath dependencies (see `xq-lsp fetch-deps`). Default: `$XQ_LSP_DEPS_DIR`, else `.xq-deps` next to the config. */
+	depsDir?: string;
 	/** Returns a currently open (in-editor) document for a URI, if any — its live text wins over disk. */
 	getOpenDocument?: (uri: string) => TextDocument | undefined;
 }
@@ -163,16 +165,25 @@ export function createWorkspace(options: WorkspaceOptions = {}): Workspace {
 
 	function buildGlobFileSummaries(config: LspConfig, configDir: string): Map<string, FileRecord> {
 		const records = new Map<string, FileRecord>();
-		for (const filePath of expandGlobs(config.globs, configDir)) {
+		const indexFile = (filePath: string, skipNamespaces?: Set<string>): void => {
 			const fileUri = pathToFileURL(filePath).toString();
 			try {
 				const text = fs.readFileSync(filePath, "utf-8");
 				const { analysis } = analyzeWithAst(text, fileUri);
+				// A fetched dependency never shadows a project module of the same namespace
+				// (e.g. linting a package whose own test app depends on it).
+				if (skipNamespaces && analysis.moduleNamespaceUri && skipNamespaces.has(analysis.moduleNamespaceUri))
+					return;
 				records.set(fileUri, { uri: fileUri, text, analysis: { ...analysis, ast: undefined } });
 			} catch {
 				/* unreadable file, skip */
 			}
-		}
+		};
+		for (const filePath of expandGlobs(config.globs, configDir)) indexFile(filePath);
+		const projectNamespaces = new Set<string>();
+		for (const r of records.values())
+			if (r.analysis.moduleNamespaceUri) projectNamespaces.add(r.analysis.moduleNamespaceUri);
+		for (const filePath of expandDepsFiles(configDir, options.depsDir)) indexFile(filePath, projectNamespaces);
 		return records;
 	}
 

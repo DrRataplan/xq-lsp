@@ -8,7 +8,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { computeExitCode, lintTargets } from "./lint.ts";
-import { getFormatter } from "./lint-format.ts";
+import { formatMarkdownSummary, getFormatter } from "./lint-format.ts";
 import { loadConfigAt } from "./config.ts";
 
 const USAGE = `xq-lsp lint — lint XQuery files from the command line
@@ -23,7 +23,9 @@ Arguments:
 
 Options:
   -c, --config <path>     Use this lsp-config.xq instead of walking up from each file
-  -f, --format <name>     Output format: stylish (default), json, compact
+      --deps-dir <dir>    Directory of fetched EXPath dependencies (see 'xq-lsp fetch-deps');
+                          default $XQ_LSP_DEPS_DIR, else .xq-deps next to the config
+  -f, --format <name>     Output format: stylish (default), json, compact, github
   -q, --quiet             Report errors only
       --max-warnings <n>  Exit with code 1 when more than n warnings are reported
       --no-color          Disable colored output
@@ -43,6 +45,7 @@ Exit codes:
 export interface ParsedArgs {
 	targets: string[];
 	config?: string;
+	depsDir?: string;
 	format: string;
 	quiet: boolean;
 	maxWarnings?: number;
@@ -82,6 +85,10 @@ export function parseArgs(args: string[], colorDefault: boolean): ParsedArgs {
 			case "--config":
 				out.config = takeValue();
 				if (out.config === undefined) out.error = `Missing value for ${arg}`;
+				break;
+			case "--deps-dir":
+				out.depsDir = takeValue();
+				if (out.depsDir === undefined) out.error = `Missing value for ${arg}`;
 				break;
 			case "-f":
 			case "--format":
@@ -161,7 +168,9 @@ export async function runCli(args: string[]): Promise<number> {
 
 	const formatter = getFormatter(parsed.format);
 	if (!formatter) {
-		console.error(`xq-lsp lint: error: Unknown format "${parsed.format}" (expected stylish, json, or compact)`);
+		console.error(
+			`xq-lsp lint: error: Unknown format "${parsed.format}" (expected stylish, json, compact, or github)`,
+		);
 		return 2;
 	}
 
@@ -176,7 +185,7 @@ export async function runCli(args: string[]): Promise<number> {
 		}
 	}
 
-	const outcome = lintTargets(targets, { configPath: parsed.config, quiet: parsed.quiet });
+	const outcome = lintTargets(targets, { configPath: parsed.config, depsDir: parsed.depsDir, quiet: parsed.quiet });
 	if (outcome.fatal) {
 		console.error(`xq-lsp lint: error: ${outcome.fatal}`);
 		return 2;
@@ -184,6 +193,16 @@ export async function runCli(args: string[]): Promise<number> {
 
 	const report = formatter(outcome.results, { color: parsed.color });
 	if (report.length > 0) console.log(report);
+
+	// With the GitHub format, also write a markdown report to the run's step summary.
+	const summaryFile = process.env.GITHUB_STEP_SUMMARY;
+	if (parsed.format === "github" && summaryFile) {
+		try {
+			fs.appendFileSync(summaryFile, formatMarkdownSummary(outcome.results) + "\n");
+		} catch {
+			/* summary is best-effort; never fail the lint over it */
+		}
+	}
 
 	return computeExitCode(outcome.results, parsed.maxWarnings);
 }

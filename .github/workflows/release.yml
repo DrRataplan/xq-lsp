@@ -28,6 +28,7 @@ jobs:
         outputs:
             npm-released: ${{ steps.rp.outputs['release_created'] }}
             vscode-released: ${{ steps.rp.outputs['editors/vscode--release_created'] }}
+            major: ${{ steps.rp.outputs.major }}
         steps:
             - uses: googleapis/release-please-action@v4
               id: rp
@@ -53,6 +54,20 @@ jobs:
     # Every push to main that isn't a release gets published under the `next`
     # dist-tag (npm i xq-lsp@next). Lives in this workflow because npm trusted
     # publishing is bound to this workflow file.
+    # Keep a moving major tag (v1, v2, …) pointing at the latest release so other
+    # repositories can use the lint action as `uses: DrRataplan/xq-lsp@v1`.
+    update-major-tag:
+        needs: release-please
+        if: needs.release-please.outputs.npm-released == 'true'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - uses: actions/checkout@v4
+            - run: |
+                  git tag -f "v${{ needs.release-please.outputs.major }}"
+                  git push -f origin "v${{ needs.release-please.outputs.major }}"
+
     publish-npm-prerelease:
         needs: release-please
         if: needs.release-please.outputs.npm-released != 'true'

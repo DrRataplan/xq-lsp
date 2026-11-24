@@ -105,3 +105,19 @@ export function findConfig(fromUri: string): { config: LspConfig; configDir: str
 export function expandGlobs(globs: string[], baseDir: string): string[] {
 	return globs.flatMap((pattern) => fs.globSync(pattern, { cwd: baseDir }).map((f) => path.resolve(baseDir, f)));
 }
+
+/** Default directory `xq-lsp fetch-deps` unpacks EXPath packages into, relative to the config directory. */
+export const DEFAULT_DEPS_DIR = ".xq-deps";
+
+const XQUERY_GLOB = "*.{xq,xql,xqm,xquery}";
+
+/**
+ * Module files of fetched EXPath dependencies: `<depsDir>/<package>/content/**`. `depsDir`
+ * comes from the `XQ_LSP_DEPS_DIR` env var (absolute, or relative to the current directory),
+ * else `.xq-deps` next to the config. A missing directory yields no files.
+ */
+export function expandDepsFiles(baseDir: string, depsDir = process.env.XQ_LSP_DEPS_DIR): string[] {
+	const root = depsDir ? path.resolve(depsDir) : path.resolve(baseDir, DEFAULT_DEPS_DIR);
+	if (!fs.existsSync(root)) return [];
+	return fs.globSync(`*/content/**/${XQUERY_GLOB}`, { cwd: root }).map((f) => path.resolve(root, f));
+}

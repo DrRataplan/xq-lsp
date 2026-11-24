@@ -35,6 +35,8 @@ export interface LintResult {
 export interface LintOptions {
 	/** Pin a specific `lsp-config.xq` instead of walking up from each file. */
 	configPath?: string;
+	/** Directory of fetched EXPath dependencies; overrides `$XQ_LSP_DEPS_DIR` and the `.xq-deps` default. */
+	depsDir?: string;
 	/** Report errors only (eslint `--quiet`). */
 	quiet?: boolean;
 	/** Working directory for glob expansion and display paths. Default: `process.cwd()`. */
@@ -140,7 +142,7 @@ export function lintTargets(targets: string[], options: LintOptions = {}): LintO
 	const expanded = expandLintTargets(targets, cwd);
 	if (expanded.fatal) return { results: [], fatal: expanded.fatal };
 
-	const ws = createWorkspace({ configPath: options.configPath });
+	const ws = createWorkspace({ configPath: options.configPath, depsDir: options.depsDir });
 	const results: LintResult[] = [];
 	for (const file of expanded.files) {
 		let text: string;
