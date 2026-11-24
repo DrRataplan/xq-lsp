@@ -1,0 +1,65 @@
+name: xq-lsp lint
+description: Lint XQuery files with xq-lsp.
+branding:
+    icon: check-circle
+    color: blue
+
+inputs:
+    paths:
+        description: Files, directories or globs to lint (space separated).
+        default: "."
+    version:
+        description: npm version or dist-tag of xq-lsp to install.
+        default: latest
+    fetch-deps:
+        description: Download EXPath dependencies from the exist-db public repository before linting.
+        default: "true"
+    expath-pkg:
+        description: expath-pkg.xml to read dependencies from. Default is auto-detected in the working directory.
+        default: ""
+    deps-dir:
+        description: Directory the dependencies are unpacked into and indexed from (exported as XQ_LSP_DEPS_DIR).
+        default: .xq-deps
+    format:
+        description: Output format (github, stylish, json or compact). `github` makes inline PR annotations and a step summary.
+        default: github
+    max-warnings:
+        description: Fail when more than this many warnings are reported. Empty means no limit.
+        default: ""
+    working-directory:
+        description: Directory to run in.
+        default: "."
+
+runs:
+    using: composite
+    steps:
+        - uses: actions/setup-node@v4
+          with:
+              node-version: "24"
+        - name: Install xq-lsp
+          shell: bash
+          run: npm install --global "xq-lsp@${{ inputs.version }}"
+        - name: Fetch EXPath dependencies
+          if: inputs.fetch-deps == 'true'
+          shell: bash
+          working-directory: ${{ inputs.working-directory }}
+          env:
+              XQ_LSP_DEPS_DIR: ${{ inputs.deps-dir }}
+              EXPATH_PKG: ${{ inputs.expath-pkg }}
+          run: |
+              if [ -n "$EXPATH_PKG" ] || [ -f expath-pkg.xml ] || [ -f expath-pkg.xml.tmpl ]; then
+                  xq-lsp fetch-deps ${EXPATH_PKG:+"$EXPATH_PKG"}
+              else
+                  echo "No expath-pkg.xml found; skipping dependency fetch."
+              fi
+        - name: Lint
+          shell: bash
+          working-directory: ${{ inputs.working-directory }}
+          env:
+              XQ_LSP_DEPS_DIR: ${{ inputs.deps-dir }}
+              MAX_WARNINGS: ${{ inputs.max-warnings }}
+              LINT_FORMAT: ${{ inputs.format }}
+              LINT_PATHS: ${{ inputs.paths }}
+          run: |
+              # shellcheck disable=SC2086 -- paths are intentionally word-split
+              xq-lsp lint --format "$LINT_FORMAT" ${MAX_WARNINGS:+--max-warnings "$MAX_WARNINGS"} $LINT_PATHS

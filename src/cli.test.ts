@@ -7,6 +7,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { withTmpDir } from "./test-utils.ts";
 import { parseArgs } from "./cli.ts";
+import { formatGithub } from "./lint-format.ts";
 
 const MAIN_TS = fileURLToPath(new URL("./main.ts", import.meta.url));
 const PACKAGE_VERSION = JSON.parse(
@@ -157,6 +158,50 @@ describe("cli: xq-lsp lint", () => {
 			assert.equal(r.status, 1, r.stderr);
 			assert.match(r.stdout, /bad\.xq:1:1: error: Variable '\$undeclared' is not declared \[XPST0008\]/);
 		});
+	});
+
+	test("github format prints workflow commands and writes the step summary", () => {
+		withTmpDir((dir) => {
+			writeProject(dir);
+			const summary = path.join(dir, "summary.md");
+			const proc = spawnSync(process.execPath, [MAIN_TS, "lint", "src/bad.xq", "src/warn.xq", "-f", "github"], {
+				cwd: dir,
+				encoding: "utf-8",
+				env: { ...process.env, GITHUB_STEP_SUMMARY: summary },
+			});
+			assert.equal(proc.status, 1, proc.stderr);
+			assert.match(
+				proc.stdout,
+				/^::error file=src\/bad\.xq,line=1,col=1,endLine=1,endColumn=\d+,title=XPST0008::Variable/m,
+			);
+			assert.match(proc.stdout, /^::warning file=src\/warn\.xq,/m);
+			const md = fs.readFileSync(summary, "utf-8");
+			assert.match(md, /### xq-lsp/);
+			assert.match(md, /\| error \| `src\/bad\.xq:1:1` \|/);
+		});
+	});
+
+	test("github format escapes workflow-command metacharacters", () => {
+		const out = formatGithub([
+			{
+				filePath: "a,b:c.xq",
+				messages: [
+					{
+						line: 1,
+						column: 2,
+						endLine: 1,
+						endColumn: 3,
+						severity: "hint",
+						message: "50%\nnext",
+						code: "X:1",
+					},
+				],
+				errorCount: 0,
+				warningCount: 0,
+				hintCount: 1,
+			},
+		]);
+		assert.equal(out, "::notice file=a%2Cb%3Ac.xq,line=1,col=2,endLine=1,endColumn=3,title=X%3A1::50%25%0Anext");
 	});
 
 	test("--quiet reports errors only", () => {

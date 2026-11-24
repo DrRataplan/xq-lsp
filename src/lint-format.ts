@@ -1,7 +1,8 @@
 /**
  * Output formatters for the lint CLI — eslint-style: `stylish` (default, human-readable,
- * colored on a TTY), `json` (machine-readable), and `compact` (unix/gcc-style, one line
- * per message, for piping into other tools).
+ * colored on a TTY), `json` (machine-readable), `compact` (unix/gcc-style, one line
+ * per message, for piping into other tools), and `github` (GitHub Actions workflow commands,
+ * rendered as inline annotations on pull requests).
  */
 import type { LintResult, LintSeverity } from "./lint.ts";
 
@@ -83,10 +84,67 @@ export function formatCompact(results: LintResult[]): string {
 	return lines.join("\n");
 }
 
+const escapeData = (s: string) => s.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
+const escapeProperty = (s: string) => escapeData(s).replace(/:/g, "%3A").replace(/,/g, "%2C");
+
+const ANNOTATION_LEVEL: Record<LintSeverity, string> = { error: "error", warning: "warning", hint: "notice" };
+
+/** GitHub Actions workflow commands: `::warning file=…,line=…,col=…,title=…::message`, one per message. */
+export function formatGithub(results: LintResult[]): string {
+	const lines: string[] = [];
+	for (const result of results) {
+		for (const m of result.messages) {
+			const props = [
+				`file=${escapeProperty(result.filePath)}`,
+				`line=${m.line}`,
+				`col=${m.column}`,
+				`endLine=${m.endLine}`,
+				`endColumn=${m.endColumn}`,
+				`title=${escapeProperty(m.code)}`,
+			].join(",");
+			lines.push(`::${ANNOTATION_LEVEL[m.severity]} ${props}::${escapeData(m.message)}`);
+		}
+	}
+	return lines.join("\n");
+}
+
+const SUMMARY_ROW_LIMIT = 50;
+const escapeCell = (s: string) => s.replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
+
+/**
+ * Markdown report for `$GITHUB_STEP_SUMMARY`: totals plus a table of the first findings. Unlike
+ * annotations (capped by GitHub at 10 per level per step) it lists everything up to the row limit.
+ */
+export function formatMarkdownSummary(results: LintResult[]): string {
+	const { errors, warnings, hints, messages } = totals(results);
+	if (messages === 0) return "### xq-lsp\n\n✅ No problems found.\n";
+	const out = [
+		"### xq-lsp",
+		"",
+		`${errors > 0 ? "❌" : "⚠️"} ${pluralize(messages, "problem")}: ${pluralize(errors, "error")}, ${pluralize(warnings, "warning")}, ${pluralize(hints, "hint")}`,
+		"",
+		"| Severity | Location | Message | Code |",
+		"| --- | --- | --- | --- |",
+	];
+	let rows = 0;
+	for (const result of results) {
+		for (const m of result.messages) {
+			if (rows === SUMMARY_ROW_LIMIT) break;
+			rows++;
+			out.push(
+				`| ${m.severity} | \`${escapeCell(result.filePath)}:${m.line}:${m.column}\` | ${escapeCell(m.message)} | ${escapeCell(m.code)} |`,
+			);
+		}
+	}
+	if (messages > rows) out.push("", `… and ${messages - rows} more.`);
+	return out.join("\n") + "\n";
+}
+
 const FORMATTERS: Record<string, Formatter> = {
 	stylish: formatStylish,
 	json: formatJson,
 	compact: formatCompact,
+	github: formatGithub,
 };
 
 export function getFormatter(name: string): Formatter | null {
