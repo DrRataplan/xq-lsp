@@ -936,6 +936,11 @@ describe("checkTypes: fold-left / fold-right result types", () => {
 		const f = `function($acc as map(*)?, $m as item()*) as map(*)? { $acc }`;
 		assert.equal(warnings(`array:fold-left($xs, (), ${f})`).length, 1);
 	});
+
+	test("a folder from a function declared as function(*) is refined from its body", () => {
+		const prolog = `declare function local:folder() as function(*) { function($acc as map(*)?, $m as item()*) as map(*) { map {} } };`;
+		assert.equal(warnings(`array:fold-left($xs, map {}, local:folder())`, prolog).length, 0);
+	});
 });
 
 describe("function types with a return type", () => {
