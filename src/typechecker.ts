@@ -21,6 +21,8 @@ const UNKNOWN: XQueryType = { kind: "unknown", occurrence: "" };
 // An item of unknown type that is nonetheless known to be exactly one (a `for` variable over
 // a source of unknown type). Lets `$x/@id` stay `attribute()?` instead of `attribute()*`.
 const UNKNOWN_SINGLE: XQueryType = { kind: "unknown", name: "single", occurrence: "" };
+// Likewise for a sequence of unknown items that is known to be non-empty, e.g. `($unknown, 1)`.
+const UNKNOWN_NONEMPTY: XQueryType = { kind: "unknown", name: "nonempty", occurrence: "" };
 
 // ── Type parsing ─────────────────────────────────────────────────────────────
 
@@ -225,7 +227,7 @@ const ONE: Card = { min: 1, max: 1 };
 
 function cardOf(t: XQueryType): Card {
 	if (t.kind === "empty") return { min: 0, max: 0 };
-	if (t.kind === "unknown") return t.name === "single" ? ONE : { min: 0, max: 2 };
+	if (t.kind === "unknown") return t.name === "single" ? ONE : t.name === "nonempty" ? { min: 1, max: 2 } : { min: 0, max: 2 };
 	switch (t.occurrence) {
 		case "?":
 			return { min: 0, max: 1 };
@@ -310,12 +312,15 @@ export function choiceType(a: XQueryType, b: XQueryType): XQueryType {
 
 /** Type of the sequence `(a, b)`. */
 export function concatType(a: XQueryType, b: XQueryType): XQueryType {
-	if (a.kind === "unknown" || b.kind === "unknown") return UNKNOWN;
+	if (a.kind === "unknown" || b.kind === "unknown") {
+		// Unknown items, but one operand being non-empty still makes the whole sequence non-empty.
+		return cardOf(a).min === 1 || cardOf(b).min === 1 ? UNKNOWN_NONEMPTY : UNKNOWN;
+	}
 	if (a.kind === "empty") return b;
 	if (b.kind === "empty") return a;
 	const ca = cardOf(a);
 	const cb = cardOf(b);
-	return withCard(itemUnion(a, b), { min: 1, max: ca.max + cb.max > 1 ? 2 : 1 });
+	return withCard(itemUnion(a, b), { min: ca.min === 1 || cb.min === 1 ? 1 : 0, max: ca.max + cb.max > 1 ? 2 : 1 });
 }
 
 // Splits the parameter list of a parameterized type name, e.g. "map(xs:string, item()*)"
@@ -536,6 +541,7 @@ function aggregateItemName(t: XQueryType, allowAnyAtomic: boolean): string | und
 // arguments carry: aggregates, atomization, higher-order functions, and map/array accessors.
 function inferPolymorphicBuiltin(ns: string, name: string, args: XQueryType[]): XQueryType | undefined {
 	const [first, second, third] = args;
+	if (ns === XMLNS_FN && (name === "head" || name === "foot") && first?.kind === "unknown" && cardOf(first).min === 1) return UNKNOWN_SINGLE;
 	if (!first || first.kind === "unknown") return undefined;
 	const card = cardOf(first);
 	if (ns === XMLNS_FN) {

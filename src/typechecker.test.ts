@@ -884,6 +884,32 @@ describe("checkTypes: strict cardinality narrowing", () => {
 	});
 });
 
+describe("checkTypes: concatenation cardinality", () => {
+	function warnings(params: string, body: string) {
+		const src = `
+			declare function local:f($x as xs:integer) { $x };
+			declare function local:g(${params}) { local:f(${body}) };
+			1
+		`;
+		const { ast } = analyzeWithAst(src, "file:///test.xq");
+		assert.ok(ast);
+		return checkTypes(ast, src, analyze(src, "file:///test.xq"), new Map([["builtin:fn", getBuiltins()]]), { strictCardinality: true });
+	}
+
+	test("head() of a sequence with a non-empty operand is exactly one item", () => {
+		assert.equal(warnings("$d as xs:integer, $r as item()?", "head(($r, $d))").length, 0);
+	});
+
+	test("the same holds when the other operand has an unknown type", () => {
+		assert.equal(warnings("$d as xs:integer, $r as item()*", "head(($r?code, $d))").length, 0);
+	});
+
+	test("head() of two optional operands may still be empty", () => {
+		assert.equal(warnings("$r as xs:integer?, $s as xs:integer?", "head(($r, $s))").length, 1);
+		assert.equal(warnings("$r as item()*, $s as item()*", "head(($r?a, $s?b))").length, 1);
+	});
+});
+
 describe("function types with a return type", () => {
 	test("the trailing occurrence belongs to the return type, not the function item", () => {
 		const t = parseType("function(xs:string) as function(*)?");
