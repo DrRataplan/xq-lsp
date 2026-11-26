@@ -1051,9 +1051,16 @@ function processTypeswitch(
 	if (operand) visitor.expr?.(operand, outer);
 	const operandType = operand ? inferExprType(operand, outer, analysis, allFns) : UNKNOWN;
 
+	// When the operand is a plain `$x`, a matching case clause narrows `$x` itself, like `instance of`.
+	const operandKey = operand ? varKeyOf(operand, analysis) : null;
 	let result: XQueryType | undefined;
-	const branch = (varName: Node | undefined, varType: XQueryType, expr: Node | undefined) => {
+	const branch = (varName: Node | undefined, varType: XQueryType, expr: Node | undefined, narrow = false) => {
 		const scope = new Map(outer);
+		if (narrow && operandKey && varType.kind !== "unknown") {
+			const current = outer.get(operandKey);
+			// Only ever make a type more specific.
+			if (!current || current.kind === "unknown" || isAssignable(varType, current)) scope.set(operandKey, varType);
+		}
 		bindVarName(varName, analysis, varType, scope);
 		if (!expr) return;
 		visitor.expr?.(expr, scope);
@@ -1061,7 +1068,7 @@ function processTypeswitch(
 		result = result === undefined ? t : choiceType(result, t);
 	};
 	for (const clause of directChildrenOf(node, "CaseClause")) {
-		branch(directChildOf(clause, "VarName"), sequenceTypeOf(directChildOf(clause, "SequenceTypeUnion")) ?? UNKNOWN, directChildOf(clause, "ExprSingle"));
+		branch(directChildOf(clause, "VarName"), sequenceTypeOf(directChildOf(clause, "SequenceTypeUnion")) ?? UNKNOWN, directChildOf(clause, "ExprSingle"), true);
 	}
 	branch(directChildOf(node, "VarName"), operandType, directChildOf(node, "ExprSingle"));
 	return result ?? UNKNOWN;

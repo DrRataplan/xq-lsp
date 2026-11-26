@@ -645,6 +645,16 @@ describe("checkTypes: inferred binding types", () => {
 		assert.equal(check(src).length, 0);
 	});
 
+	test("typeswitch case narrows the operand variable inside the branch", () => {
+		const src = `declare function local:f($x as element()) { $x }; declare function local:g($i as item()) { typeswitch ($i) case element() return local:f($i) default return () }; 1`;
+		assert.equal(check(src).length, 0);
+	});
+
+	test("typeswitch narrowed operand is type-checked in its branch only", () => {
+		const src = `declare function local:f($x as node()) { $x }; declare function local:g($i as item()) { typeswitch ($i) case xs:string return local:f($i) default return local:f($i) }; 1`;
+		assert.equal(check(src).length, 1);
+	});
+
 	test("inline function parameters shadow outer bindings", () => {
 		const src = `declare function local:f($x as node()) { $x }; let $n := "a" return function($n as element()) { local:f($n) }`;
 		assert.equal(check(src).length, 0);
