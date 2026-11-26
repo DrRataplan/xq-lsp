@@ -109,7 +109,11 @@ export function formatGithub(results: LintResult[]): string {
 }
 
 const SUMMARY_ROW_LIMIT = 50;
-const escapeCell = (s: string) => s.replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
+const escapeCell = (s: string) =>
+	s
+		.replace(/\r?\n/g, " ")
+		.replace(/[\\`*_[\]<>|~]/g, "\\$&");
+const escapeCodeCell = (s: string) => s.replace(/\r?\n/g, " ").replace(/\|/g, "\\|");
 
 /**
  * Markdown report for `$GITHUB_STEP_SUMMARY`: totals plus a table of the first findings. Unlike
@@ -132,7 +136,7 @@ export function formatMarkdownSummary(results: LintResult[]): string {
 			if (rows === SUMMARY_ROW_LIMIT) break;
 			rows++;
 			out.push(
-				`| ${m.severity} | \`${escapeCell(result.filePath)}:${m.line}:${m.column}\` | ${escapeCell(m.message)} | ${escapeCell(m.code)} |`,
+				`| ${m.severity} | \`${escapeCodeCell(result.filePath)}:${m.line}:${m.column}\` | ${escapeCell(m.message)} | ${escapeCell(m.code)} |`,
 			);
 		}
 	}
