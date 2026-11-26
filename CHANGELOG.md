@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.1](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.10.0...lsp-v1.10.1) (2026-11-26)
+
+
+### Bug Fixes
+
+* **gha:** escape markdown in formatMarkdownSummary ([e3640ff](https://github.com/DrRataplan/xq-lsp/commit/e3640ff01fbbc04cdbda0deeebcc330997a23d86))
+
 ## [1.10.0](https://github.com/DrRataplan/xq-lsp/compare/lsp-v1.9.0...lsp-v1.10.0) (2026-11-24)
 
 
