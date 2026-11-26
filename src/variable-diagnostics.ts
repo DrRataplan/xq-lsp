@@ -2,7 +2,7 @@ import type { Node, NonTerminal } from "xq-parser";
 import type { FileAnalysis, QName } from "./types.ts";
 import { qnameKey } from "./types.ts";
 import { isTerminal, directChildOf, directChildrenOf } from "./analyzer.ts";
-import { asFunctionDecl, asVarRef, asVarName, asBinding, asInlineFunctionExpr, asWindowVars, asTransformExpr } from "./ast-nodes.ts";
+import { asFunctionDecl, asVarRef, asVarName, asBinding, asInlineFunctionExpr, asWindowVars, asTransformExpr, asTypeswitchExpr } from "./ast-nodes.ts";
 
 export interface UndeclaredVariableDiagnostic {
 	message: string;
@@ -186,26 +186,15 @@ function walk(
 			return;
 
 		case "TypeswitchExpr": {
-			const operand = directChildOf(node, "Expr");
-			if (operand) walk(operand, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
-			for (const caseClause of directChildrenOf(node, "CaseClause")) {
+			const ts = asTypeswitchExpr(node, analysis);
+			if (!ts) break;
+			if (ts.operand) walk(ts.operand, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
+			for (const clause of [...ts.cases, ts.default]) {
 				scope.push();
-				const varNameNode = directChildOf(caseClause, "VarName");
-				const qname = varNameNode ? asVarName(varNameNode, analysis) : null;
-				if (qname) scope.add(qnameKey(qname));
-				const returnExpr = directChildOf(caseClause, "ExprSingle");
-				if (returnExpr) walk(returnExpr, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
+				if (clause.qname) scope.add(qnameKey(clause.qname));
+				if (clause.body) walk(clause.body, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
 				scope.pop();
 			}
-			// `default $v return ...` — $v (optional) and the return expr are direct
-			// children of TypeswitchExpr itself, following the last CaseClause.
-			scope.push();
-			const defaultVarNode = directChildOf(node, "VarName");
-			const defaultQname = defaultVarNode ? asVarName(defaultVarNode, analysis) : null;
-			if (defaultQname) scope.add(qnameKey(defaultQname));
-			const defaultExpr = directChildOf(node, "ExprSingle");
-			if (defaultExpr) walk(defaultExpr, scope, analysis, moduleVarKeys, unresolvedImportUris, out);
-			scope.pop();
 			return;
 		}
 
