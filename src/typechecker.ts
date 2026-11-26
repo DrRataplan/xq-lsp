@@ -13,7 +13,8 @@ import {
 	XMLNS_FN,
 	XMLNS_MAP,
 } from "./analyzer.ts";
-import { asArithmeticExpr, asFunctionCall, asNamedFunctionRef, asVarRef, asVarName, literalKind, isPathExpr, argExpr } from "./ast-nodes.ts";
+import { asArithmeticExpr, asFunctionCall, asNamedFunctionRef, asVarRef, asVarName, asTypeswitchExpr, literalKind, isPathExpr, argExpr } from "./ast-nodes.ts";
+import type { TypeswitchClauseShape } from "./ast-nodes.ts";
 
 // ── Type constants ───────────────────────────────────────────────────────────
 
@@ -1047,14 +1048,17 @@ function processTypeswitch(
 	allFns: FunctionSymbol[],
 	visitor: ScopeVisitor = {},
 ): XQueryType {
-	const operand = directChildOf(node, "Expr");
+	const ts = asTypeswitchExpr(node, analysis);
+	if (!ts) return UNKNOWN;
+	const operand = ts.operand;
 	if (operand) visitor.expr?.(operand, outer);
 	const operandType = operand ? inferExprType(operand, outer, analysis, allFns) : UNKNOWN;
 
 	// When the operand is a plain `$x`, a matching case clause narrows `$x` itself, like `instance of`.
 	const operandKey = operand ? varKeyOf(operand, analysis) : null;
 	let result: XQueryType | undefined;
-	const branch = (varName: Node | undefined, varType: XQueryType, expr: Node | undefined, narrow = false) => {
+	const branch = (clause: TypeswitchClauseShape, varType: XQueryType, narrow = false) => {
+		const { varNameNode: varName, body: expr } = clause;
 		const scope = new Map(outer);
 		if (narrow && operandKey && varType.kind !== "unknown") {
 			const current = outer.get(operandKey);
@@ -1067,10 +1071,8 @@ function processTypeswitch(
 		const t = inferExprType(expr, scope, analysis, allFns);
 		result = result === undefined ? t : choiceType(result, t);
 	};
-	for (const clause of directChildrenOf(node, "CaseClause")) {
-		branch(directChildOf(clause, "VarName"), sequenceTypeOf(directChildOf(clause, "SequenceTypeUnion")) ?? UNKNOWN, directChildOf(clause, "ExprSingle"), true);
-	}
-	branch(directChildOf(node, "VarName"), operandType, directChildOf(node, "ExprSingle"));
+	for (const clause of ts.cases) branch(clause, sequenceTypeOf(clause.typeNode) ?? UNKNOWN, true);
+	branch(ts.default, operandType);
 	return result ?? UNKNOWN;
 }
 

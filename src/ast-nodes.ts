@@ -462,6 +462,45 @@ export function asCatchClause(node: Node): { body: Node } | null {
 	return { body };
 }
 
+// ── TypeswitchExpr ────────────────────────────────────────────────────────────
+
+export interface TypeswitchClauseShape {
+	/** The `$v` binding node (for callers that bind it themselves) and its resolved name. */
+	varNameNode?: Node;
+	qname?: QName;
+	/** The `case` SequenceTypeUnion node; undefined for the default clause. */
+	typeNode?: Node;
+	body?: Node;
+}
+
+export interface TypeswitchExprShape {
+	operand?: Node;
+	cases: TypeswitchClauseShape[];
+	default: TypeswitchClauseShape;
+}
+
+/**
+ * Decomposes a TypeswitchExpr. In the grammar the default clause's `$v` and return
+ * expression are direct children of the TypeswitchExpr, after the last CaseClause.
+ */
+export function asTypeswitchExpr(node: Node, analysis: FileAnalysis): TypeswitchExprShape | null {
+	if (node.type !== "TypeswitchExpr") return null;
+	const clause = (owner: Node, typeNode?: Node): TypeswitchClauseShape => {
+		const varNameNode = directChildOf(owner, "VarName");
+		return {
+			varNameNode,
+			qname: (varNameNode && asVarName(varNameNode, analysis)) || undefined,
+			typeNode,
+			body: directChildOf(owner, "ExprSingle"),
+		};
+	};
+	return {
+		operand: directChildOf(node, "Expr"),
+		cases: directChildrenOf(node, "CaseClause").map((c) => clause(c, directChildOf(c, "SequenceTypeUnion"))),
+		default: clause(node),
+	};
+}
+
 // ── Literals ──────────────────────────────────────────────────────────────────
 
 export type LiteralKind = "string" | "integer" | "decimal" | "double";
