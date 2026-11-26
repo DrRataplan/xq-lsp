@@ -12,6 +12,7 @@ import builtinsFn from "../builtins/builtins-fn.xq?raw";
 import builtinsMath from "../builtins/builtins-math.xq?raw";
 import builtinsMap from "../builtins/builtins-map.xq?raw";
 import builtinsArray from "../builtins/builtins-array.xq?raw";
+import builtinsXs from "../builtins/builtins-xs.xq?raw";
 import { findUndeclaredPrefixUsages } from "../src/namespace-diagnostics.ts";
 import { runDiagnostics, runHints } from "../src/diagnostics.ts";
 import { type FileAnalysis } from "../src/types.ts";
@@ -100,7 +101,7 @@ function validateConfig(text: string): string | null {
 let _builtins: ReturnType<typeof analyze> | null = null;
 function getBuiltins() {
 	if (!_builtins) {
-		const analyses = [builtinsFn, builtinsMath, builtinsMap, builtinsArray].map((src, i) =>
+		const analyses = [builtinsFn, builtinsMath, builtinsMap, builtinsArray, builtinsXs].map((src, i) =>
 			analyze(src, `builtin:${i}`),
 		);
 		_builtins = {
